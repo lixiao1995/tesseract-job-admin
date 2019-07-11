@@ -1,17 +1,28 @@
 package admin.service.impl;
 
 import admin.core.scheduler.TesseractScheduleBoot;
+import admin.entity.TesseractExecutor;
 import admin.entity.TesseractGroup;
+import admin.entity.TesseractTrigger;
+import admin.entity.TesseractUser;
 import admin.mapper.TesseractGroupMapper;
+import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractGroupService;
+import admin.service.ITesseractTriggerService;
+import admin.service.ITesseractUserService;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -23,20 +34,57 @@ import tesseract.exception.TesseractException;
  */
 @Service
 public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper, TesseractGroup> implements ITesseractGroupService {
+    @Autowired
+    private ITesseractTriggerService triggerService;
 
+    @Autowired
+    private ITesseractUserService userService;
+
+    @Autowired
+    private ITesseractExecutorService executorService;
+
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteGroup(Integer groupId) {
-        TesseractGroup user = getById(groupId);
-        if (user == null) {
-            throw new TesseractException("用户不存在");
+        TesseractGroup group = getById(groupId);
+        if (group == null) {
+            throw new TesseractException("组不存在");
         }
+        //检测组下触发器，用户，执行器，如果有任何一个引用了这个组禁止删除
+        //触发器
+        QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
+        triggerQueryWrapper.lambda().eq(TesseractTrigger::getGroupId, groupId);
+        List<TesseractTrigger> triggerList = triggerService.list(triggerQueryWrapper);
+        if (!CollectionUtils.isEmpty(triggerList)) {
+            throw new TesseractException("组内还有触发器，不能删除");
+        }
+        //用户
+        QueryWrapper<TesseractUser> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.lambda().eq(TesseractUser::getGroupId, groupId);
+        List<TesseractUser> userList = userService.list(userQueryWrapper);
+        if (!CollectionUtils.isEmpty(userList)) {
+            throw new TesseractException("组内还有用户，不能删除");
+        }
+        //执行器
+        QueryWrapper<TesseractExecutor> executorQueryWrapper = new QueryWrapper<>();
+        executorQueryWrapper.lambda().eq(TesseractExecutor::getGroupId, groupId);
+        List<TesseractExecutor> executorList = executorService.list(executorQueryWrapper);
+        if (!CollectionUtils.isEmpty(executorList)) {
+            throw new TesseractException("组内还有执行器，不能删除");
+        }
+        //删除调度组
         removeById(groupId);
+        //删除组调度器
+        TesseractScheduleBoot.deleteGroupScheduler(group);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdateGroup(TesseractGroup tesseractGroup) {
         long currentTimeMillis = System.currentTimeMillis();
         Integer id = tesseractGroup.getId();
+        //更新操作
         if (id != null) {
             TesseractGroup oldGroup = getById(id);
             if (oldGroup == null) {
@@ -55,9 +103,13 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
             updateById(tesseractGroup);
             return;
         }
+        //新增操作
+        tesseractGroup.setCreator("admin");
         tesseractGroup.setCreateTime(currentTimeMillis);
         tesseractGroup.setUpdateTime(currentTimeMillis);
         this.save(tesseractGroup);
+        //新增组调度器
+        TesseractScheduleBoot.addGroupScheduler(tesseractGroup);
     }
 
     @Override

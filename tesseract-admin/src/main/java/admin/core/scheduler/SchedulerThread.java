@@ -25,6 +25,10 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
         this.groupName = groupName;
     }
 
+    public TesseractTriggerDispatcher getTesseractTriggerDispatcher() {
+        return tesseractTriggerDispatcher;
+    }
+
     @Override
     public void run() {
         log.info("SchedulerThread {} start", groupName);
@@ -43,7 +47,6 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
                         try {
                             this.wait(time);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
                         }
                     }
                 }

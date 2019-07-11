@@ -33,23 +33,11 @@ public class TesseractTriggerDispatcher {
     private IAdminFeignService feignService;
     private ISchedulerThreadPool threadPool;
 
-//    private final String THREAD_NAME_FORMATTER = "TesseractSchedulerThread-%d";
-//    private final AtomicInteger ATOMIC_INTEGER = new AtomicInteger(0);
-//    private final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(10,
-//            100, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(500)
-//            , r -> {
-//        Thread thread = new Thread(r, String.format(THREAD_NAME_FORMATTER, ATOMIC_INTEGER.getAndIncrement()));
-//        thread.setDaemon(true);
-//        return thread;
-//    }, (r, executor) ->
-//
-//    {
-//        log.error("任务数过多，调度线程将阻塞，任务可能无法调度，检查网络设置");
-//        r.run();
-//    });
+    public ISchedulerThreadPool getThreadPool() {
+        return threadPool;
+    }
 
     public void dispatchTrigger(List<TesseractTrigger> triggerList, boolean isOnce) {
-        //triggerList.stream().forEach(trigger -> THREAD_POOL_EXECUTOR.execute(new TaskRunnable(trigger, isOnce)));
         triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce)));
     }
 

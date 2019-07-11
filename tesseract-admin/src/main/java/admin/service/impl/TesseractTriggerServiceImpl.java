@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotBlank;
@@ -146,6 +147,9 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Override
     public void startTrigger(Integer triggerId) throws ParseException {
         TesseractTrigger trigger = getTriggerById(triggerId);
+        if (StringUtils.isEmpty(trigger.getGroupName())) {
+            throw new TesseractException("请先给触发器所属执行器添加组");
+        }
         CronExpression cronExpression = new CronExpression(trigger.getCron());
         trigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
         trigger.setStatus(TRGGER_STATUS_STARTING);
@@ -161,7 +165,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
 
     @Override
     public void deleteTrigger(Integer triggerId) {
-        deleteTrigger(triggerId);
+        this.removeById(triggerId);
     }
 
     private TesseractTrigger getTriggerById(Integer triggerId) {

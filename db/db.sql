@@ -94,7 +94,8 @@ create table tesseract_user
     create_time bigint       not null,
     update_time bigint       not null,
     group_name  varchar(30)  not null,
-    group_id    int unsigned not null
+    group_id    int unsigned not null,
+    unique(name)
 ) engine = InnoDB
   default charset = utf8;
 

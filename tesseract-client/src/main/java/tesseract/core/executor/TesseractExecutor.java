@@ -80,6 +80,7 @@ public class TesseractExecutor {
         registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress, ip, port);
         heartbeatThread.setDaemon(true);
         registryThread.setDaemon(true);
+        heartbeatThread.setTesseractExecutor(this);
         heartbeatThread.setRegistryThread(registryThread);
         registryThread.setHeartbeatThread(heartbeatThread);
         registryThread.startThread();
