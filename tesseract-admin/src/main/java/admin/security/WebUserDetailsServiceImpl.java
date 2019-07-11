@@ -1,25 +1,33 @@
 package admin.security;
 
 import admin.entity.TesseractUser;
+import admin.mapper.TesseractRoleMapper;
+import admin.mapper.TesseractUserMapper;
 import admin.pojo.WebUserDetail;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
- * @description: TODO-Eden.Lee
- * @author: 李明
- * @company: 朴新教育
+ * @description:  security 登录
+ * @author: LeoLee
+ * @company: ***
  * @version:
  * @date: 2019/7/9 14:28
  */
-@Service("webUserDetailsService")
+@Service
 public class WebUserDetailsServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private TesseractUserMapper tesseractUserMapper;
+    @Autowired
+    private TesseractRoleMapper tesseractRoleMapper;
 
     /**
      * 根据用户名登录
@@ -30,25 +38,21 @@ public class WebUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // TODO 数据库中获取用户密码，角色等信息
-
-        TesseractUser tesseractUser = new TesseractUser();
+        QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper();
+        queryWrapper.lambda().eq(TesseractUser::getName, username);
+        TesseractUser tesseractUser = tesseractUserMapper.selectOne(queryWrapper);
         if (ObjectUtils.isEmpty(tesseractUser)) {
             throw new UsernameNotFoundException("用户登录，用户信息查询失败");
         }
-        Set<String> roleSet = new HashSet<>();
+        Integer userId = tesseractUser.getId();
+        List<String> roleList = tesseractRoleMapper.selectRoleCodesByUserId(userId);
 
-        /**
-         封装为框架使用的 userDetail {@link UserDetails}
-         */
+        // TODO 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
         WebUserDetail webUserDetail = new WebUserDetail();
+        webUserDetail.setId(userId);
         webUserDetail.setPassword(tesseractUser.getPassword());
         webUserDetail.setName(tesseractUser.getName());
-        webUserDetail.setRoleSet(roleSet);
-
-        webUserDetail.setPassword("admin");
-        webUserDetail.setName("admin");
-        roleSet.add("admin");
-        webUserDetail.setRoleSet(roleSet);
+        webUserDetail.setRoleList(roleList);
         return webUserDetail;
     }
 }

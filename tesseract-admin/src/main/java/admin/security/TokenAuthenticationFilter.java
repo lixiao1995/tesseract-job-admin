@@ -1,5 +1,6 @@
 package admin.security;
 import admin.config.WebSecurityConfig;
+import admin.constant.AdminConstant;
 import admin.entity.TesseractUser;
 import admin.pojo.CommonResponseVO;
 import admin.pojo.UserAuthVO;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tesseract.exception.TesseractException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @description: TODO-Eden.Lee
+ * @description: 鉴权过滤器
  * @author: LeoLee
  * @company: ***
  * @version:
@@ -40,12 +42,6 @@ import java.util.List;
 public class TokenAuthenticationFilter  extends OncePerRequestFilter {
 
 
-
-    //        @Autowired
-//        RedisTemplate<String, String> redisTemplate;
-    String tokenHeader = "X-Token";
-    //String tokenHead = "Bearer ";
-    // String tokenHeader = "Authorization";
     @Autowired
     private ITesseractUserService tesseractUserService;
     @Autowired
@@ -55,8 +51,8 @@ public class TokenAuthenticationFilter  extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 将 ServletRequest 转换为 HttpServletRequest 才能拿到请求头中的 token
-        String token = request.getHeader(this.tokenHeader);
+
+        String token = request.getHeader(AdminConstant.TOKEN);
         String servletPath = request.getServletPath();
         try{
             if (!StringUtils.isEmpty(token)) {
@@ -68,15 +64,12 @@ public class TokenAuthenticationFilter  extends OncePerRequestFilter {
                 if (userAuthVO != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                     UserDetails userDetails = webUserDetailsService.loadUserByUsername(userAuthVO.getName());
-                    // 权限
-                    List<GrantedAuthority> permissions = new ArrayList<>();
-                    // TODO: 查询用户权限,默认无权限
-                    //可以校验token和username是否有效，目前由于token对应username存在redis，都以默认都是有效的
+                    // 设置用户权限
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(
-                            request));
-                    //验证正常,生成authentication
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // UserContextHolder2.putUser(userAuthVO);
+                    // 验证正常,生成authentication
                     logger.info("authenticated user " + userAuthVO.getName() + ", setting security context");
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
@@ -84,5 +77,11 @@ public class TokenAuthenticationFilter  extends OncePerRequestFilter {
         }finally {
             filterChain.doFilter(request, response);
         }
+    }
+
+    @Override
+    public void destroy() {
+        System.out.println("Filter执行完毕...");
+        super.destroy();
     }
 }
