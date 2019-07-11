@@ -19,6 +19,8 @@ import java.util.Collection;
 public interface ITesseractUserService extends IService<TesseractUser> {
     String userLogin(UserDO userDO);
 
+    String userLoginNew(UserDO userDO);
+
     void userLogout(String token);
 
     IPage<TesseractUser> listByPage(Integer currentPage, Integer pageSize, TesseractUser condition);

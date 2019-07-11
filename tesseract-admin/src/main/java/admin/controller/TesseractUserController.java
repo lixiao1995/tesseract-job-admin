@@ -2,14 +2,13 @@ package admin.controller;
 
 
 import admin.entity.TesseractUser;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.PageVO;
-import admin.pojo.UserDO;
-import admin.pojo.UserVO;
+import admin.pojo.*;
 import admin.service.ITesseractUserService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +37,7 @@ public class TesseractUserController {
 
     @RequestMapping("/login")
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
-        String token = tesseractUserService.userLogin(userDO);
+        String token = tesseractUserService.userLoginNew(userDO);
 //        roles: ['admin'],
 //        introduction: 'I am a super administrator',
 //        avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
@@ -62,6 +61,9 @@ public class TesseractUserController {
     @RequestMapping("/userList")
     public CommonResponseVO userList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractUser condition) {
+        // UserAuthVO user = UserContextHolder2.getUser();
+        WebUserDetail webUserDetail = (WebUserDetail)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(">>>>> UserContextHolder中获取的用户信息: "+ JSON.toJSONString(webUserDetail));
         IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage, pageSize, condition);
         UserVO userVO = new UserVO();
         PageVO pageVO = new PageVO();
