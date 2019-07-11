@@ -11,6 +11,7 @@ import admin.mapper.TesseractUserMapper;
 import admin.pojo.StatisticsLogDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
+import admin.pojo.WebUserDetail;
 import admin.security.WebUserDetailsServiceImpl;
 import admin.service.ITesseractTokenService;
 import admin.service.ITesseractUserService;
@@ -127,8 +128,46 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
-    public String userLoginNew(UserDO userDO) {
-        return null;
+    public String userLoginNew(UserDO userDO){
+        // 认证
+        UsernamePasswordAuthenticationToken upToken = new UsernamePasswordAuthenticationToken(userDO.getUsername(), userDO.getPassword());
+        final Authentication authentication = authenticationManager.authenticate(upToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 获取认证后的信息
+        WebUserDetail userDetail = (WebUserDetail)authentication.getPrincipal();
+        Integer userId = userDetail.getId();
+        String  userName = userDetail.getName();
+        LocalDateTime nowLocalDateTime = LocalDateTime.now();
+        long nowTime = nowLocalDateTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        QueryWrapper<TesseractToken> tesseractTokenQueryWrapper = new QueryWrapper<>();
+        tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getUserId, userId);
+        TesseractToken tesseractToken = tokenService.getOne(tesseractTokenQueryWrapper);
+        String token = "";
+        //如果token已存在
+        if (tesseractToken != null) {
+            //检测是否过期
+            Long expireTime = tesseractToken.getExpireTime();
+            if (nowTime < expireTime) {
+                tesseractToken.setToken(generateToken(userDetail));
+                tesseractToken.setUpdateTime(nowTime);
+                tokenService.updateById(tesseractToken);
+            }
+            // return tesseractToken.getToken();
+            token = tesseractToken.getToken();
+        }else{
+            //创建新的token
+            long expireTime = nowLocalDateTime.plusMinutes(TOKEN_EXPIRE_TIME).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+            token = generateToken(userDetail);
+            tesseractToken = new TesseractToken();
+            tesseractToken.setCreateTime(nowTime);
+            tesseractToken.setUpdateTime(nowTime);
+            tesseractToken.setExpireTime(expireTime);
+            tesseractToken.setToken(token);
+            tesseractToken.setUserId(userId);
+            tesseractToken.setUserName(userName);
+            tokenService.save(tesseractToken);
+        }
+        return token;
     }
 
     @Override
