@@ -119,7 +119,7 @@ create table tesseract_log
   default charset = utf8;
 
 insert into tesseract_user(name, password, status, create_time, update_time)
-values ('admin', '21232F297A57A5A743894A0E4A801FC3', 0, 1562336661000, 1562336661000);
+values ('admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000);
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time)
 values ('testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor',1562512500000, 1562512500000);
