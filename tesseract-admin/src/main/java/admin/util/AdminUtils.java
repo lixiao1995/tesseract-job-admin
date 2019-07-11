@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class AdminUtils {
@@ -67,5 +68,4 @@ public class AdminUtils {
             throw new TesseractException("构建查询条件出错");
         }
     }
-
 }

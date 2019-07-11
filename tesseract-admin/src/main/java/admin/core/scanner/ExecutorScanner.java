@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class ExecutorScanner extends Thread implements IThreadLifycycle {
     private ITesseractExecutorDetailService executorDetailService;
     private volatile boolean isStop = false;
-    private Integer scanIntervalTime = 15 * 1000;
+    private Long scanIntervalTime = 15 * 1000L;
 
     public ExecutorScanner(ITesseractExecutorDetailService executorDetailService) {
         super("ExecutorScanner");

@@ -42,6 +42,7 @@ import static admin.constant.AdminConstant.*;
 public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMapper, TesseractTrigger> implements ITesseractTriggerService {
     @Autowired
     private ITesseractLockService lockService;
+    private Long missfreTime = 30 * 1000L;
 
     /**
      * 获取锁并获取到时间点之前的触发器
@@ -107,6 +108,16 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         tesseractTrigger.setStatus(TRGGER_STATUS_STOPING);
         tesseractTrigger.setUpdateTime(currentTimeMillis);
         this.save(tesseractTrigger);
+    }
+
+    @Override
+    public List<TesseractTrigger> listMissfire(Integer pageSize) {
+        QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
+        triggerQueryWrapper.lambda().eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
+                .le(TesseractTrigger::getNextTriggerTime, System.currentTimeMillis() - missfreTime);
+        Page<TesseractTrigger> triggerPage = new Page<>(1, pageSize);
+        IPage<TesseractTrigger> page = page(triggerPage, triggerQueryWrapper);
+        return page.getRecords();
     }
 
     @Transactional
