@@ -1,5 +1,6 @@
 package admin.config;
 
+import admin.security.TokenAuthenticationEntryPoint;
 import admin.security.TokenAuthenticationFilter;
 import admin.security.TokenLogoutHandler;
 import admin.service.ITesseractUserService;
@@ -74,39 +75,26 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 // 开启授权认证
                 .authorizeRequests()
-                //.antMatchers("/tesseract-user/**").authenticated()
+                // TODO 此处用来配置权限，或者使用注解配置权限
                 .antMatchers("/tesseract-user/userList").hasAuthority("admin")
                 .antMatchers("/tesseract-user/getUserAuthInfo").hasAnyAuthority("admin")
-                // OPTIONS预检请求不处理
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
                 // 其它请求随意访问
                 .anyRequest().authenticated().and()
                 // 基于token，所以不需要session。无状态
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .exceptionHandling().and()
-                //自定义401返回
-                //.authenticationEntryPoint(new TokenAuthenticationEntryPoint()).and()
+                .exceptionHandling()
+                //自定义403返回
+                .authenticationEntryPoint(new TokenAuthenticationEntryPoint()).and()
                 .logout().logoutUrl("/tesseract-user/logout").addLogoutHandler(tokenLogoutHandler).permitAll().and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
 
-    /**
-     * 配置登录验证，可以做加密处理
-     * @param authenticationManagerBuilder
-     * @throws Exception
-     */
     @Autowired
-    public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder
-                // 设置UserDetailsService
-                .userDetailsService(userDetailsService);
-    }
-
-    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(NoOpPasswordEncoder.getInstance());
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Bean
@@ -118,7 +106,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * 密码生成策略.
-     *
+     * 官方推荐使用BCrypt加密，并明确指出 sha 和 md5都是不安全的
      * @return
      */
     @Bean
