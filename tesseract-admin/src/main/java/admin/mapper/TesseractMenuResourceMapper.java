@@ -1,7 +1,6 @@
 package admin.mapper;
 
 import admin.entity.TesseractMenuResource;
-import admin.entity.TesseractRole;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -18,4 +18,8 @@ public interface TesseractRoleMapper extends BaseMapper<TesseractRole> {
 
     List<TesseractRole> selectRolesByUserId(@Param("userId") Integer userId);
 
+
+
+    List<String> selectRoleCodesByUserId(@Param("userId") Integer userId);
+
 }

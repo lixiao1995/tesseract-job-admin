@@ -5,19 +5,22 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="admin.entity.TesseractRole">
         <id column="id" property="id" />
+        <result column="role_code" property="roleCode" />
         <result column="role_name" property="roleName" />
         <result column="role_desc" property="roleDesc" />
         <result column="create_user_id" property="createUserId" />
         <result column="create_user_name" property="createUserName" />
         <result column="update_user_id" property="updateUserId" />
         <result column="update_user_name" property="updateUserName" />
-        <result column="is_del" property="isDel" />
+        <result column="del_flag" property="delFlag" />
         <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, role_name, role_desc, create_user_id, create_user_name, update_user_id, update_user_name, is_del, status
+        id, role_code,role_name, role_desc, create_user_id, create_user_name, update_user_id, update_user_name, del_flag, status,create_time,update_time
     </sql>
 
 
@@ -31,5 +34,16 @@
             ur.user_id = #{userId}
     </select>
 
+
+    <!-- 查询权限码列表 -->
+    <select id="selectRoleCodesByUserId" parameterType="int" resultType="string">
+        SELECT
+            r.role_code
+        FROM
+            tesseract_role AS r
+            LEFT JOIN tesseract_user_role AS ur ON r.id = ur.role_id
+        WHERE
+            ur.user_id = #{userId}
+    </select>
 
 </mapper>

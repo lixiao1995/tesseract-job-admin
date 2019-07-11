@@ -29,6 +29,9 @@ public class TesseractRole implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @ApiModelProperty(value = "角色编码")
+    private String roleCode;
+
     @ApiModelProperty(value = "角色名称")
     private String roleName;
 
@@ -48,10 +51,16 @@ public class TesseractRole implements Serializable {
     private String updateUserName;
 
     @ApiModelProperty(value = "是否删除，0-未删除，1-删除")
-    private Integer isDel;
+    private Integer delFlag;
 
     @ApiModelProperty(value = "状态码，保留字段")
     private Integer status;
+
+    @ApiModelProperty(value = "创建时间")
+    private Long createTime;
+
+    @ApiModelProperty(value = "更新时间")
+    private Long updateTime;
 
 
 }
