@@ -1,13 +1,13 @@
 package admin.pojo;
 
 import admin.entity.TesseractUser;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -17,12 +17,13 @@ import java.util.stream.Collectors;
  * @version:
  * @date: 2019/7/9 15:25
  */
+@Data
 public class WebUserDetail extends TesseractUser implements UserDetails {
 
     /**
      * 角色
      */
-    private Set<String> roleSet;
+    private List<String> roleList;
 
     /**
      * 获取权限信息
@@ -34,25 +35,17 @@ public class WebUserDetail extends TesseractUser implements UserDetails {
         /**
          * 将角色信息封装为框架要求格式
          */
-        if (roleSet == null) {
+        if (roleList == null) {
             return null;
         }
-        return roleSet.stream().map(
+        return roleList.stream().map(
                 s -> new SimpleGrantedAuthority(s)
         ).collect(Collectors.toSet());
     }
 
-    public Set<String> getRoleSet() {
-        return roleSet;
-    }
-
-    public void setRoleSet(Set<String> roleSet) {
-        this.roleSet = roleSet;
-    }
-
     @Override
     public String getUsername() {
-        return null;
+        return getName();
     }
 
     @Override
