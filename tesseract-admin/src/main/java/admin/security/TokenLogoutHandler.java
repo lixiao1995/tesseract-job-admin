@@ -31,18 +31,13 @@ public class TokenLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        try {
-            String token = request.getHeader("X-Token");
-            if (StringUtils.isEmpty(token)) {
-                throw new TesseractException("token为空");
-            }
-            QueryWrapper<TesseractToken> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(TesseractToken::getToken, token);
-            tokenService.remove(queryWrapper);
-            System.out.println("自定义登出:" + tokenService);
-            response.getWriter().print(JSON.toJSONString(CommonResponseVO.SUCCESS));
-        } catch (IOException e) {
-            e.printStackTrace();
+        String token = request.getHeader("X-Token");
+        if (StringUtils.isEmpty(token)) {
+            throw new TesseractException("token为空");
         }
+        QueryWrapper<TesseractToken> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(TesseractToken::getToken, token);
+        tokenService.remove(queryWrapper);
+        System.out.println("自定义登出:" + tokenService);
     }
 }

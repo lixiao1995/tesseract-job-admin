@@ -3,6 +3,7 @@ package admin.config;
 import admin.security.TokenAuthenticationEntryPoint;
 import admin.security.TokenAuthenticationFilter;
 import admin.security.TokenLogoutHandler;
+import admin.security.TokenLogoutSuccessHandler;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private TokenAuthenticationFilter tokenAuthenticationFilter;
     @Autowired
     private TokenLogoutHandler tokenLogoutHandler;
+    @Autowired
+    private TokenLogoutSuccessHandler logoutSuccessHandler;
 
     /**
      * http安全配置
@@ -80,6 +83,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-user/getUserAuthInfo").hasAnyAuthority("admin")
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
+                .antMatchers("/tesseract-user/logout").permitAll()
                 // 其它请求随意访问
                 .anyRequest().authenticated().and()
                 // 基于token，所以不需要session。无状态
@@ -87,7 +91,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling()
                 //自定义403返回
                 .authenticationEntryPoint(new TokenAuthenticationEntryPoint()).and()
-                .logout().logoutUrl("/tesseract-user/logout").addLogoutHandler(tokenLogoutHandler).permitAll().and()
+                .logout()
+                .logoutUrl("/tesseract-user/logout")
+                .addLogoutHandler(tokenLogoutHandler)
+                .logoutSuccessHandler(logoutSuccessHandler).and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
