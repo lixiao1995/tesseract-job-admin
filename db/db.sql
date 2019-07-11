@@ -147,7 +147,7 @@ create table tesseract_group
 insert into tesseract_group(id, name, mail, thread_pool_num, creator, create_time, update_time)
 values (1, 'defaultGroup', 'xxxx@xx.mail', 10, 'admin', 1562512500000, 1562512500000);
 insert into tesseract_user(name, password, status, create_time, update_time, group_id, group_name)
-values ('admin', '21232F297A57A5A743894A0E4A801FC3', 0, 1562336661000, 1562336661000, 1, 'defaultGroup');
+values ('admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000, 1, 'defaultGroup');
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time
                              , group_id, group_name)

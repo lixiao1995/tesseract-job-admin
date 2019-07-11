@@ -1,10 +1,17 @@
 package admin.service.impl;
 
+import admin.entity.TesseractMenuResource;
+import admin.entity.TesseractRole;
 import admin.entity.TesseractToken;
 import admin.entity.TesseractUser;
+import admin.mapper.TesseractMenuResourceMapper;
+import admin.mapper.TesseractRoleMapper;
+import admin.mapper.TesseractRoleResourcesMapper;
 import admin.mapper.TesseractUserMapper;
 import admin.pojo.StatisticsLogDO;
+import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
+import admin.security.WebUserDetailsServiceImpl;
 import admin.service.ITesseractTokenService;
 import admin.service.ITesseractUserService;
 import admin.util.AdminUtils;
@@ -15,18 +22,24 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import tesseract.exception.TesseractException;
 
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static admin.constant.AdminConstant.USER_INVALID;
 import static admin.constant.AdminConstant.USER_VALID;
@@ -52,7 +65,16 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     private String defaultPassword = "666666";
     private String defaultPasswordMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
     private int statisticsDays = 7;
+    @Autowired
+    private UserDetailsService webUserDetailsService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private TesseractRoleMapper tesseractRoleMapper;
+    @Autowired
+    private TesseractMenuResourceMapper tesseractMenuResourceMapper;
 
+    @Deprecated
     @Override
     public String userLogin(UserDO userDO) {
         QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper<>();
@@ -67,6 +89,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         QueryWrapper<TesseractToken> tesseractTokenQueryWrapper = new QueryWrapper<>();
         tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getUserId, user.getId());
         TesseractToken tesseractToken = tokenService.getOne(tesseractTokenQueryWrapper);
+        String token = "";
         //如果token已存在
         if (tesseractToken != null) {
             //检测是否过期
@@ -76,20 +99,36 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
                 tesseractToken.setUpdateTime(nowTime);
                 tokenService.updateById(tesseractToken);
             }
-            return tesseractToken.getToken();
+            // return tesseractToken.getToken();
+            token = tesseractToken.getToken();
+        }else{
+            //创建新的token
+            long expireTime = nowLocalDateTime.plusMinutes(TOKEN_EXPIRE_TIME).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+            token = generateToken(user);
+            tesseractToken = new TesseractToken();
+            tesseractToken.setCreateTime(nowTime);
+            tesseractToken.setUpdateTime(nowTime);
+            tesseractToken.setExpireTime(expireTime);
+            tesseractToken.setToken(token);
+            tesseractToken.setUserId(user.getId());
+            tesseractToken.setUserName(user.getName());
+            tokenService.save(tesseractToken);
         }
-        //创建新的token
-        long expireTime = nowLocalDateTime.plusMinutes(TOKEN_EXPIRE_TIME).toInstant(ZoneOffset.of("+8")).toEpochMilli();
-        String token = generateToken(user);
-        tesseractToken = new TesseractToken();
-        tesseractToken.setCreateTime(nowTime);
-        tesseractToken.setUpdateTime(nowTime);
-        tesseractToken.setExpireTime(expireTime);
-        tesseractToken.setToken(token);
-        tesseractToken.setUserId(user.getId());
-        tesseractToken.setUserName(user.getName());
-        tokenService.save(tesseractToken);
+
+        // 生成token
+        @NotBlank String username = userDO.getUsername();
+        UsernamePasswordAuthenticationToken upToken = new UsernamePasswordAuthenticationToken(userDO.getUsername(), userDO.getPassword());
+        // Perform the security 此处为认证
+        final Authentication authentication = authenticationManager.authenticate(upToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Reload password post-security so we can generate token
+        final UserDetails userDetails = webUserDetailsService.loadUserByUsername(username);
         return token;
+    }
+
+    @Override
+    public String userLoginNew(UserDO userDO) {
+        return null;
     }
 
     @Override
@@ -103,9 +142,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
-    public IPage<TesseractUser> listByPage(Integer currentPage, Integer pageSize, TesseractUser condition,
-                                           Long startCreateTime,
-                                           Long endCreateTime) {
+    public IPage<TesseractUser> listByPage(Integer currentPage, Integer pageSize, TesseractUser condition,Long startCreateTime, Long endCreateTime) {
         Page<TesseractUser> page = new Page<>(currentPage, pageSize);
         QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper<>();
         LambdaQueryWrapper<TesseractUser> lambda = queryWrapper.lambda();
@@ -195,7 +232,50 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         removeById(userId);
     }
 
+
     private String generateToken(TesseractUser user) {
         return String.format(TOKEN_FORMATTER, user.getName(), UUID.randomUUID().toString().replace("-", ""));
+    }
+
+    @Override
+    public UserAuthVO getUserAuthInfo(String token) {
+        // TODO 统一做 token 的校验拦截，包括是否存在、已过期、token刷新等问题
+        if (StringUtils.isEmpty(token)) {
+            throw new TesseractException("token为空");
+        }
+        UserAuthVO userAuthVO = new UserAuthVO();
+        QueryWrapper<TesseractToken> tesseractTokenQueryWrapper = new QueryWrapper<>();
+        tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getToken, token);
+        TesseractToken tesseractToken = tokenService.getOne(tesseractTokenQueryWrapper);
+        Integer userId = tesseractToken.getUserId();
+        // 获取用户信息
+        TesseractUser tesseractUser = this.getById(userId);
+        userAuthVO.setName(tesseractUser.getName());
+        List<TesseractRole> tesseractRoles = tesseractRoleMapper.selectRolesByUserId(userId);
+        List<Integer> roleIds = new ArrayList<>(tesseractRoles.size());
+        List<String>  roleNames = new ArrayList<>(tesseractRoles.size());
+        tesseractRoles.stream().forEach(role -> {
+            roleIds.add(role.getId());
+            roleNames.add(role.getRoleName());
+        });
+        userAuthVO.setRoles(roleNames);
+        // 菜单权限
+        List<TesseractMenuResource> menuList = new ArrayList<>();
+        // 按钮权限
+        List<String> btnList = new ArrayList<>();
+        // 角色不为空进行查询
+        if(!CollectionUtils.isEmpty(roleIds)){
+            List<TesseractMenuResource> tesseractMenuResources = tesseractMenuResourceMapper.selectMenusByUserId(roleIds);
+            tesseractMenuResources.stream().forEach(menu -> {
+                menuList.add(menu);
+                String btnCodes = menu.getBtnAuthCodes();
+                if(!StringUtils.isEmpty(btnCodes)){
+                    btnList.addAll(Arrays.asList(btnCodes.split(",")));
+                }
+            });
+        }
+        userAuthVO.setMenuList(menuList);
+        userAuthVO.setBtnList(btnList);
+        return userAuthVO;
     }
 }

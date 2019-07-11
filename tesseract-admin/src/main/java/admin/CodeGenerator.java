@@ -35,7 +35,7 @@ public class CodeGenerator {
         // dsc.setSchemaName("public");
         dsc.setDriverName("com.mysql.jdbc.Driver");
         dsc.setUsername("root");
-        dsc.setPassword("HJ.1995.11.6");
+        dsc.setPassword("123456");
         mpg.setDataSource(dsc);
 
         // 包配置
@@ -112,7 +112,11 @@ public class CodeGenerator {
 //                "tesseract_user"
 //        );
         strategy.setInclude(
-                "tesseract_group"
+                "tesseract_btn_resource"
+//                "tesseract_menu_resource",
+//                "tesseract_role",
+//                "tesseract_role_resources",
+//                "tesseract_user_role"
         );
 
         strategy.setControllerMappingHyphenStyle(true);

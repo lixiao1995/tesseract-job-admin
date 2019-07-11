@@ -45,4 +45,9 @@ public class AdminConstant {
      */
     public static final Integer TRGGER_STATUS_STOPING = 0;
     public static final Integer TRGGER_STATUS_STARTING = 1;
+
+    /**
+     * 安全相关
+     */
+    public static final String TOKEN = "X-Token";
 }

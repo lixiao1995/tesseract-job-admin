@@ -2,14 +2,13 @@ package admin.controller;
 
 
 import admin.entity.TesseractUser;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.PageVO;
-import admin.pojo.UserDO;
-import admin.pojo.UserVO;
+import admin.pojo.*;
 import admin.service.ITesseractUserService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,14 +31,13 @@ import java.util.HashMap;
  */
 @RestController
 @RequestMapping("/tesseract-user")
-@Validated
 public class TesseractUserController {
     @Autowired
     private ITesseractUserService tesseractUserService;
 
     @RequestMapping("/login")
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
-        String token = tesseractUserService.userLogin(userDO);
+        String token = tesseractUserService.userLoginNew(userDO);
 //        roles: ['admin'],
 //        introduction: 'I am a super administrator',
 //        avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
@@ -65,8 +63,11 @@ public class TesseractUserController {
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractUser condition,
                                      Long startCreateTime,
                                      Long endCreateTime) {
-        IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage, pageSize
-                , condition, startCreateTime, endCreateTime);
+        // UserAuthVO user = UserContextHolder2.getUser();
+        // TODO 所有使用当前用户信息的地方可以统一获取
+        WebUserDetail webUserDetail = (WebUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(">>>>> UserContextHolder中获取的用户信息: "+ JSON.toJSONString(webUserDetail));
+        IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage,pageSize,condition,startCreateTime,endCreateTime);
         UserVO userVO = new UserVO();
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(userIPage.getCurrent());
@@ -120,6 +121,17 @@ public class TesseractUserController {
     @RequestMapping("/statisticsUser")
     public CommonResponseVO statisticsUser() {
         return CommonResponseVO.success(tesseractUserService.statisticsUser());
+    }
+
+    /**
+     * 获取用户权限信息，首次从数据库获取，后期考虑Redis中获取
+     * @param httpServletRequest
+     * @return
+     */
+    @RequestMapping("/getUserAuthInfo")
+    public CommonResponseVO getUserInfo(HttpServletRequest httpServletRequest) {
+        String token = httpServletRequest.getHeader("X-Token");
+        return CommonResponseVO.success(tesseractUserService.getUserAuthInfo(token));
     }
 }
 

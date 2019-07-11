@@ -4,10 +4,10 @@ import admin.core.scheduler.CronExpression;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.junit.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * 〈〉
@@ -54,6 +55,16 @@ public class GeneralTest {
             startDate = startDate.plusDays(1);
         }
         System.out.println(linkedHashMap.keySet());
+    }
+
+    @Test
+    public void testPass(){
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        //加密"0"
+        //String encode = bCryptPasswordEncoder.encode("admin");
+        //System.out.println(encode);
+        //结果：$2a$10$/eEV4X7hXPzYGzOLXfCizu6h7iRisp7I116wPA3P9uRcHAKJyY4TK
+        System.out.println(bCryptPasswordEncoder.matches("admin","$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni."));
     }
 
     @Test
