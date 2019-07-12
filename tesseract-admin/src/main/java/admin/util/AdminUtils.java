@@ -2,7 +2,7 @@ package admin.util;
 
 import admin.core.scheduler.CronExpression;
 import admin.pojo.StatisticsLogDO;
-import admin.pojo.WebUserDetail;
+import admin.security.SecurityUserDetail;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +89,7 @@ public class AdminUtils {
      * @param currentTimeMillis
      * @param user
      */
-    public static void buildNewEntityCommonFields(Object obj, long currentTimeMillis, WebUserDetail user) {
+    public static void buildNewEntityCommonFields(Object obj, long currentTimeMillis, SecurityUserDetail user) {
         Integer userId = user.getId();
         String userName = user.getName();
         try {
@@ -114,7 +114,7 @@ public class AdminUtils {
      * @param currentTimeMillis
      * @param user
      */
-    public static void buildUpdateEntityCommonFields(Object obj, long currentTimeMillis, WebUserDetail user) {
+    public static void buildUpdateEntityCommonFields(Object obj, long currentTimeMillis, SecurityUserDetail user) {
         Integer userId = user.getId();
         String userName = user.getName();
         try {

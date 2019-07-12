@@ -46,9 +46,9 @@ public class TesseractMenuResourceController {
      * @param endCreateTime
      * @return: admin.pojo.CommonResponseVO
      * @author: LeoLee
-     * @date: 2019/7/12 12:24
+     * @date: 2019/7/12
      */
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
     @PostMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
@@ -66,6 +66,7 @@ public class TesseractMenuResourceController {
     }
 
 
+    @PreAuthorize("hasPermission('addMenu', 'admin') and hasRole('admin')")
     @PostMapping("/addMenu")
     public CommonResponseVO addMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
         tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);

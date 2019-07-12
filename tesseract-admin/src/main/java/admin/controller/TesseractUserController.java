@@ -3,6 +3,7 @@ package admin.controller;
 
 import admin.entity.TesseractUser;
 import admin.pojo.*;
+import admin.security.SecurityUserDetail;
 import admin.service.ITesseractUserService;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -61,7 +62,7 @@ public class TesseractUserController {
                                      Long endCreateTime) {
         // UserAuthVO user = UserContextHolder2.getUser();
         // TODO 所有使用当前用户信息的地方可以统一获取
-        WebUserDetail webUserDetail = (WebUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SecurityUserDetail webUserDetail = (SecurityUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println(">>>>> UserContextHolder中获取的用户信息: " + JSON.toJSONString(webUserDetail));
         IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage, pageSize, condition, startCreateTime, endCreateTime);
         UserVO userVO = new UserVO();

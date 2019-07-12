@@ -1,9 +1,8 @@
 package admin.service.impl;
 
-import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
 import admin.mapper.TesseractRoleMapper;
-import admin.pojo.WebUserDetail;
+import admin.security.SecurityUserDetail;
 import admin.security.SecurityUserContextHolder;
 import admin.service.ITesseractRoleService;
 import admin.util.AdminUtils;
@@ -48,7 +47,7 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
     @Override
     public void saveOrUpdateRole(TesseractRole tesseractRole) {
         long currentTimeMillis = System.currentTimeMillis();
-        WebUserDetail user = SecurityUserContextHolder.getUser();
+        SecurityUserDetail user = SecurityUserContextHolder.getUser();
         Integer id = tesseractRole.getId();
         if(id != null){
             AdminUtils.buildUpdateEntityCommonFields(tesseractRole,currentTimeMillis,user);

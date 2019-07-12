@@ -1,9 +1,8 @@
 package admin.service.impl;
 
 import admin.entity.TesseractMenuResource;
-import admin.entity.TesseractUser;
 import admin.mapper.TesseractMenuResourceMapper;
-import admin.pojo.WebUserDetail;
+import admin.security.SecurityUserDetail;
 import admin.security.SecurityUserContextHolder;
 import admin.service.ITesseractMenuResourceService;
 import admin.util.AdminUtils;
@@ -13,8 +12,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -50,7 +47,7 @@ public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuR
     @Override
     public void saveOrUpdateMenu(TesseractMenuResource tesseractMenuResource) {
         long currentTimeMillis = System.currentTimeMillis();
-        WebUserDetail user = SecurityUserContextHolder.getUser();
+        SecurityUserDetail user = SecurityUserContextHolder.getUser();
         Integer id = tesseractMenuResource.getId();
         if(id != null){
             AdminUtils.buildUpdateEntityCommonFields(tesseractMenuResource,currentTimeMillis,user);

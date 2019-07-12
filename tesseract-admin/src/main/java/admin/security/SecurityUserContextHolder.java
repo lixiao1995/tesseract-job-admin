@@ -1,6 +1,5 @@
 package admin.security;
 
-import admin.pojo.WebUserDetail;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -16,7 +15,7 @@ public class SecurityUserContextHolder {
      * 获取安全上下文用户信息
      * @return
      */
-    public static WebUserDetail getUser() {
-        return (WebUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public static SecurityUserDetail getUser() {
+        return (SecurityUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

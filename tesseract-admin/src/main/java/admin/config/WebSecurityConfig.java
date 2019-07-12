@@ -1,13 +1,16 @@
 package admin.config;
 
+import admin.pojo.CommonResponseVO;
 import admin.security.TokenAuthenticationEntryPoint;
 import admin.security.TokenAuthenticationFilter;
 import admin.security.TokenLogoutHandler;
 import admin.security.TokenLogoutSuccessHandler;
 import admin.service.ITesseractUserService;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -19,10 +22,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING_SUFFIX;
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING_SUFFIX;
@@ -36,7 +45,7 @@ import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING_SUFFIX;
  */
 @Slf4j
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true,securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
@@ -67,6 +76,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 开启授权认证
                 .authorizeRequests()
                 // TODO 此处用来配置权限，或者使用注解配置权限
+                /*
+                 注解例子: @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+                 #condition 为 资源唯一标志
+                 */
                 .antMatchers("/tesseract-user/userList").hasAuthority("admin")
                 .antMatchers("/tesseract-user/getUserAuthInfo").hasAnyAuthority("admin")
                 .antMatchers("/tesseract-user/login").permitAll()
@@ -80,6 +93,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 基于token，所以不需要session。无状态
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .exceptionHandling()
+                // 自定义权限不足处理
+                .accessDeniedHandler(new AccessDeniedHandler() {
+                    @Override
+                    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
+                    }
+                })
                 //自定义403返回
                 .authenticationEntryPoint(new TokenAuthenticationEntryPoint()).and()
                 .logout()
@@ -104,6 +123,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public GrantedAuthorityDefaults grantedAuthorityDefaults() {
+        // Spring Security 4.0 以上版本角色都默认以'ROLE_'开头
         // 移除注解权限 ROLE_ 前缀匹配
         return new GrantedAuthorityDefaults("");
     }

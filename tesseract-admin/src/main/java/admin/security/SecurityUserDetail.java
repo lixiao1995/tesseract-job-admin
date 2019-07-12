@@ -1,4 +1,4 @@
-package admin.pojo;
+package admin.security;
 
 import admin.entity.TesseractUser;
 import lombok.Data;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @date: 2019/7/9 15:25
  */
 @Data
-public class WebUserDetail extends TesseractUser implements UserDetails {
+public class SecurityUserDetail extends TesseractUser implements UserDetails {
 
     /**
      * 角色

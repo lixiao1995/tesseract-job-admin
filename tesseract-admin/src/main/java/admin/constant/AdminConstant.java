@@ -52,4 +52,5 @@ public class AdminConstant {
      * 安全相关
      */
     public static final String TOKEN = "X-Token";
+    public static final String ANONYMOUS_TAG = "anonymousUser";
 }

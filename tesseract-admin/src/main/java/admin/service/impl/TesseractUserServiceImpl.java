@@ -10,7 +10,7 @@ import admin.mapper.TesseractUserMapper;
 import admin.pojo.StatisticsLogDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
-import admin.pojo.WebUserDetail;
+import admin.security.SecurityUserDetail;
 import admin.service.ITesseractTokenService;
 import admin.service.ITesseractUserService;
 import admin.util.AdminUtils;
@@ -132,7 +132,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         final Authentication authentication = authenticationManager.authenticate(upToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 获取认证后的信息
-        WebUserDetail userDetail = (WebUserDetail) authentication.getPrincipal();
+        SecurityUserDetail userDetail = (SecurityUserDetail) authentication.getPrincipal();
         Integer userId = userDetail.getId();
         String userName = userDetail.getName();
         LocalDateTime nowLocalDateTime = LocalDateTime.now();
