@@ -9,6 +9,7 @@ import admin.service.ITesseractMenuResourceService;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -44,11 +45,12 @@ public class TesseractMenuResourceController {
      * @param startCreateTime
      * @param endCreateTime
      * @return: admin.pojo.CommonResponseVO
-     * @author: 李明
+     * @author: LeoLee
      * @date: 2019/7/12 12:24
      */
+    @PreAuthorize("hasRole('admin')")
     @PostMapping("/menuList")
-    public CommonResponseVO userList(@NotNull @Min(1) Integer currentPage
+    public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
                                      Long startCreateTime,
                                      Long endCreateTime) {
@@ -65,15 +67,15 @@ public class TesseractMenuResourceController {
 
 
     @PostMapping("/addMenu")
-    public CommonResponseVO addUser(@Validated @RequestBody TesseractMenuResource tesseractUser) throws Exception {
-        tesseractMenuResourceService.saveOrUpdateMenu(tesseractUser);
+    public CommonResponseVO addMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
+        tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
 
 
     @PostMapping("/editMenu")
-    public CommonResponseVO editUser(@Validated @RequestBody TesseractMenuResource tesseractUser) throws Exception {
-        tesseractMenuResourceService.saveOrUpdateMenu(tesseractUser);
+    public CommonResponseVO editMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
+        tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
 }
