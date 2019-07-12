@@ -2,10 +2,12 @@ package admin.service.impl;
 
 import admin.core.scheduler.CronExpression;
 import admin.core.scheduler.TesseractScheduleBoot;
+import admin.entity.TesseractExecutor;
 import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractTriggerMapper;
 import admin.pojo.PageVO;
 import admin.pojo.TriggerVO;
+import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractLockService;
 import admin.service.ITesseractTriggerService;
 import admin.util.AdminUtils;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotBlank;
@@ -43,6 +46,8 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Autowired
     private ITesseractLockService lockService;
     private Long missfreTime = 30 * 1000L;
+    @Autowired
+    private ITesseractExecutorService executorService;
 
     /**
      * 获取锁并获取到时间点之前的触发器
@@ -91,6 +96,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         CronExpression cronExpression = new CronExpression(tesseractTrigger.getCron());
         long currentTimeMillis = System.currentTimeMillis();
         Integer triggerId = tesseractTrigger.getId();
+        TesseractExecutor executor;
         //更新
         if (triggerId != null) {
             TesseractTrigger trigger = getById(triggerId);
@@ -99,9 +105,19 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
             if (!tesseractTrigger.getCron().equals(oldCron)) {
                 tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
             }
+            //如果更新了执行器则更新组名
+            if (trigger.getExecutorId().equals(tesseractTrigger.getExecutorId())) {
+                executor = executorService.getById(tesseractTrigger.getExecutorId());
+                tesseractTrigger.setGroupId(executor.getGroupId());
+                tesseractTrigger.setGroupName(executor.getGroupName());
+            }
             updateById(tesseractTrigger);
             return;
         }
+        //新增
+        executor = executorService.getById(tesseractTrigger.getExecutorId());
+        tesseractTrigger.setGroupId(executor.getGroupId());
+        tesseractTrigger.setGroupName(executor.getGroupName());
         tesseractTrigger.setPrevTriggerTime(0L);
         tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
         tesseractTrigger.setCreateTime(currentTimeMillis);
@@ -157,6 +173,9 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Override
     public void startTrigger(Integer triggerId) throws ParseException {
         TesseractTrigger trigger = getTriggerById(triggerId);
+        if (StringUtils.isEmpty(trigger.getGroupName())) {
+            throw new TesseractException("请先给触发器所属执行器添加组");
+        }
         CronExpression cronExpression = new CronExpression(trigger.getCron());
         trigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
         trigger.setStatus(TRGGER_STATUS_STARTING);
@@ -172,7 +191,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
 
     @Override
     public void deleteTrigger(Integer triggerId) {
-        deleteTrigger(triggerId);
+        this.removeById(triggerId);
     }
 
     private TesseractTrigger getTriggerById(Integer triggerId) {

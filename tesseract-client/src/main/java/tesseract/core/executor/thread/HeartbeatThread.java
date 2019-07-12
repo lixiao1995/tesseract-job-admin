@@ -34,6 +34,10 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
         this.port = port;
     }
 
+    public void setTesseractExecutor(TesseractExecutor tesseractExecutor) {
+        this.tesseractExecutor = tesseractExecutor;
+    }
+
     public void setRegistryThread(RegistryThread registryThread) {
         this.registryThread = registryThread;
     }

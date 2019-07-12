@@ -6,12 +6,13 @@ import admin.pojo.CommonResponseVO;
 import admin.pojo.TriggerVO;
 import admin.service.ITesseractTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 
@@ -50,7 +51,10 @@ public class TesseractTriggerController {
     }
 
     @RequestMapping("/execute")
-    public CommonResponseVO execute(@NotBlank String groupName, @NotNull Integer triggerId) {
+    public CommonResponseVO execute(String groupName, @NotNull Integer triggerId) {
+        if (StringUtils.isEmpty(groupName)) {
+            throw new TesseractException("请先给触发器所属执行器添加组");
+        }
         triggerService.executeTrigger(groupName, triggerId);
         return CommonResponseVO.SUCCESS;
     }

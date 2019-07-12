@@ -47,10 +47,11 @@ public class TesseractTrigger implements Serializable {
     @NotBlank
     private String description;
 
-    @NotBlank
+    /**
+     * 触发器的组跟随执行器
+     */
     private String groupName;
 
-    @NotNull
     private Integer groupId;
 
     private Integer status;
