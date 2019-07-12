@@ -4,8 +4,6 @@ import admin.entity.TesseractExecutorDetail;
 import com.baomidou.mybatisplus.extension.service.IService;
 import tesseract.core.dto.TesseractHeartbeatRequest;
 
-import java.util.List;
-
 /**
  * <p>
  * 服务类
@@ -17,5 +15,5 @@ import java.util.List;
 public interface ITesseractExecutorDetailService extends IService<TesseractExecutorDetail> {
     void heartBeat(TesseractHeartbeatRequest heartBeatRequest);
 
-    List<TesseractExecutorDetail> listInvalid();
+    boolean clearInvalidMachine(Integer pageSize, Long time) throws Exception;
 }

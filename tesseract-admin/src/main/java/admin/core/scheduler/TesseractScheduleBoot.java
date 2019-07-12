@@ -114,8 +114,8 @@ public class TesseractScheduleBoot {
                 SCHEDULER_THREAD_MAP.put(groupName, createSchedulerThread(groupName, group.getThreadPoolNum()));
             });
             //创建扫描线程
-            executorScanner = new ExecutorScanner(tesseractLogService, groupService, mailTemplate, mailEventBus, executorDetailService);
-            missfireScanner = new MissfireScanner(mailTemplate, tesseractTriggerService, groupService, mailEventBus);
+            executorScanner = new ExecutorScanner(executorDetailService);
+            missfireScanner = new MissfireScanner(tesseractTriggerService);
             executorScanner.setDaemon(true);
             return;
         }

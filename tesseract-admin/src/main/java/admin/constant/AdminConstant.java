@@ -28,6 +28,7 @@ public class AdminConstant {
     public static final String TRIGGER_LOCK_NAME = "TRIGGER_LOCK";
     public static final String JOB_LOCK_NAME = "JOB_LOCK";
     public static final String MISSFIRE_LOCK_NAME = "MISSFIRE_LOCK_NAME";
+    public static final String EXECUTOR_LOCK_NAME = "EXECUTOR_LOCK_NAME";
     /**
      * 调度策略
      */
