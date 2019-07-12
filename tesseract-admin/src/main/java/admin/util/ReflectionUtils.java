@@ -1,15 +1,13 @@
 package admin.util;
 
-import io.swagger.models.auth.In;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
- * @description: TODO-Eden.Lee
- * @author: 李明
- * @company: 朴新教育
+ * @description: 反射工具类
+ * @author: LeoLee
+ * @company: ***
  * @version:
  * @date: 2019/7/12 14:41
  */
