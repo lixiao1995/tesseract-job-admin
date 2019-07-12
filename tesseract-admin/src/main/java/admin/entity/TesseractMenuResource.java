@@ -53,10 +53,10 @@ public class TesseractMenuResource implements Serializable {
     private Integer level;
 
     @ApiModelProperty(value = "菜单描述")
-    private String desc;
+    private String menuDesc;
 
     @ApiModelProperty(value = "菜单顺序")
-    private Integer order;
+    private Integer menuOrder;
 
     @ApiModelProperty(value = "创建人ID")
     private Integer createUserId;
@@ -72,7 +72,7 @@ public class TesseractMenuResource implements Serializable {
 
     @ApiModelProperty(value = "是否删除，0-未删除，1-删除")
     @TableField(value = "del_flag")
-    private Integer del;
+    private Integer delFlag;
 
     @ApiModelProperty(value = "状态码，保留字段")
     private Integer status;

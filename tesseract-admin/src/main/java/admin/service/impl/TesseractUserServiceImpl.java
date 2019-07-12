@@ -171,6 +171,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
+    @Deprecated
     public void userLogout(String token) {
         if (StringUtils.isEmpty(token)) {
             throw new TesseractException("token为空");
