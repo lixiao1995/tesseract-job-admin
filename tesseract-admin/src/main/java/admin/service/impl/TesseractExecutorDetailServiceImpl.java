@@ -128,6 +128,7 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
         logQueryWrapper.lambda().in(TesseractLog::getExecutorDetailId, detailIdList);
         TesseractLog log = new TesseractLog();
         log.setStatus(LOG_FAIL);
+        log.setMsg("机器失去心跳");
         logService.update(log, logQueryWrapper);
     }
 
