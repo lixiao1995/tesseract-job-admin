@@ -117,6 +117,7 @@ public class TesseractScheduleBoot {
             executorScanner = new ExecutorScanner(executorDetailService);
             missfireScanner = new MissfireScanner(tesseractTriggerService);
             executorScanner.setDaemon(true);
+            missfireScanner.setDaemon(true);
             return;
         }
         log.info("没有调度组");
