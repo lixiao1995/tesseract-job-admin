@@ -1,11 +1,17 @@
 package admin.service.impl;
 
+import admin.core.event.MailEvent;
+import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.CronExpression;
 import admin.core.scheduler.TesseractScheduleBoot;
+import admin.entity.TesseractExecutor;
+import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractTriggerMapper;
 import admin.pojo.PageVO;
 import admin.pojo.TriggerVO;
+import admin.service.ITesseractExecutorService;
+import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLockService;
 import admin.service.ITesseractTriggerService;
 import admin.util.AdminUtils;
@@ -14,18 +20,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotBlank;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static admin.constant.AdminConstant.*;
 
@@ -42,6 +50,22 @@ import static admin.constant.AdminConstant.*;
 public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMapper, TesseractTrigger> implements ITesseractTriggerService {
     @Autowired
     private ITesseractLockService lockService;
+
+    @Autowired
+    private ITesseractExecutorService executorService;
+    @Autowired
+    private ITesseractGroupService groupService;
+
+    @Autowired
+    private EventBus mailEventBus;
+
+    @Autowired
+    private TesseractMailTemplate mailTemplate;
+    /**
+     * 常量
+     */
+    private static final String MISSFIRE_TEMPLATE_NAME = "missfireTemplate.html";
+    private static final String MISSFIRE_SUBJECT = "Tesseract-job  missfire报警邮件";
 
     /**
      * 获取锁并获取到时间点之前的触发器
@@ -87,29 +111,109 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception {
-        CronExpression cronExpression = new CronExpression(tesseractTrigger.getCron());
-        long currentTimeMillis = System.currentTimeMillis();
         Integer triggerId = tesseractTrigger.getId();
+        TesseractExecutor executor;
         //更新
         if (triggerId != null) {
             TesseractTrigger trigger = getById(triggerId);
             @NotBlank String oldCron = trigger.getCron();
             //重新计算下一次调度时间
             if (!tesseractTrigger.getCron().equals(oldCron)) {
-                tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
+                tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
+            }
+            //如果更新了执行器则更新组名
+            if (!trigger.getExecutorId().equals(tesseractTrigger.getExecutorId())) {
+                executor = executorService.getById(tesseractTrigger.getExecutorId());
+                tesseractTrigger.setGroupId(executor.getGroupId());
+                tesseractTrigger.setGroupName(executor.getGroupName());
             }
             updateById(tesseractTrigger);
             return;
         }
+        //新增
+        long currentTimeMillis = System.currentTimeMillis();
+        executor = executorService.getById(tesseractTrigger.getExecutorId());
+        tesseractTrigger.setGroupId(executor.getGroupId());
+        tesseractTrigger.setGroupName(executor.getGroupName());
         tesseractTrigger.setPrevTriggerTime(0L);
-        tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
+        tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
         tesseractTrigger.setCreateTime(currentTimeMillis);
         tesseractTrigger.setStatus(TRGGER_STATUS_STOPING);
         tesseractTrigger.setUpdateTime(currentTimeMillis);
         this.save(tesseractTrigger);
     }
 
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean resovleMissfireTrigger(Integer pageSize, Long time) {
+        lockService.lock(MISSFIRE_LOCK_NAME, MISSFIRE_LOCK_NAME);
+        boolean flag = false;
+        QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
+        triggerQueryWrapper.lambda()
+                .eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
+                //下次触发时间小于等于当前时间减掉校验时间
+                .le(TesseractTrigger::getNextTriggerTime, time);
+        Page<TesseractTrigger> triggerPage = new Page<>(1, pageSize);
+        IPage<TesseractTrigger> page = page(triggerPage, triggerQueryWrapper);
+        List<TesseractTrigger> triggerList = page.getRecords();
+        log.info("missfire trigger:{}", triggerList);
+        if (!CollectionUtils.isEmpty(triggerList)) {
+            flag = true;
+            //按组分类后发送邮件，避免发送多个邮件
+            Map<Integer, List<TesseractTrigger>> map = new HashMap<>();
+            triggerList.forEach(trigger -> {
+                Integer groupId = trigger.getGroupId();
+                List<TesseractTrigger> tmpTriggerList = map.get(groupId);
+                if (tmpTriggerList == null) {
+                    tmpTriggerList = Lists.newArrayList();
+                    map.put(groupId, tmpTriggerList);
+                }
+                tmpTriggerList.add(trigger);
+                //更新触发器调度时间为当前时间
+                trigger.setNextTriggerTime(System.currentTimeMillis());
+            });
+            //发送邮件
+            map.entrySet().parallelStream().forEach(entry -> {
+                Integer groupId = entry.getKey();
+                List<TesseractTrigger> mailTriggerList = entry.getValue();
+                MailEvent mailEvent = buildMailEvent(mailTriggerList, groupId);
+                if (mailEvent != null) {
+                    mailEventBus.post(mailEvent);
+                }
+            });
+            this.updateBatchById(triggerList);
+        }
+        return flag;
+    }
+
+    /**
+     * 构建邮件事件
+     *
+     * @param triggerList
+     * @return
+     */
+    private MailEvent buildMailEvent(List<TesseractTrigger> triggerList, Integer groupId) {
+        MailEvent mailEvent = new MailEvent();
+        try {
+            TesseractGroup tesseractGroup = groupService.getById(groupId);
+            if (tesseractGroup == null) {
+                throw new TesseractException("没有找到组信息，将无法发送邮件。组id:" + groupId);
+            }
+            HashMap<String, Object> model = Maps.newHashMap();
+            model.put("triggerList", triggerList);
+            model.put("groupName", tesseractGroup.getName());
+            String body = mailTemplate.buildMailBody(MISSFIRE_TEMPLATE_NAME, model);
+            mailEvent.setBody(body);
+            mailEvent.setSubject(MISSFIRE_SUBJECT);
+            mailEvent.setTo(tesseractGroup.getMail());
+        } catch (Exception e) {
+            log.error("构建邮件事件异常将无法发送邮件:{}", e.getMessage());
+            return null;
+        }
+        return mailEvent;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public TriggerVO listByPage(Integer currentPage, Integer pageSize, TesseractTrigger condition,
                                 Long startCreateTime,
@@ -146,6 +250,9 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Override
     public void startTrigger(Integer triggerId) throws ParseException {
         TesseractTrigger trigger = getTriggerById(triggerId);
+        if (StringUtils.isEmpty(trigger.getGroupName())) {
+            throw new TesseractException("请先给触发器所属执行器添加组");
+        }
         CronExpression cronExpression = new CronExpression(trigger.getCron());
         trigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
         trigger.setStatus(TRGGER_STATUS_STARTING);
@@ -161,7 +268,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
 
     @Override
     public void deleteTrigger(Integer triggerId) {
-        deleteTrigger(triggerId);
+        this.removeById(triggerId);
     }
 
     private TesseractTrigger getTriggerById(Integer triggerId) {

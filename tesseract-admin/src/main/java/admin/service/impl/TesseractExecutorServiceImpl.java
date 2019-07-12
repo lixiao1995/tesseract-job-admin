@@ -23,9 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import tesseract.core.dto.TesseractAdminJobDetailDTO;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
 import tesseract.core.dto.TesseractAdminRegistryResDTO;
+import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -105,12 +107,31 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdateExecutor(TesseractExecutor tesseractExecutor) {
         Integer executorId = tesseractExecutor.getId();
+        //更新操作
         if (executorId != null) {
+            TesseractExecutor executor = getById(executorId);
+            if (executor == null) {
+                throw new TesseractException("执行器为空");
+            }
+            if (!executor.getGroupName().equals(tesseractExecutor.getGroupName())) {
+                //更新执行器下的触发器的所属组
+                QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
+                List<TesseractTrigger> triggerList = triggerService.list(triggerQueryWrapper);
+                @NotBlank String groupName = tesseractExecutor.getGroupName();
+                @NotNull Integer groupId = tesseractExecutor.getGroupId();
+                triggerList.parallelStream().forEach(trigger -> {
+                    trigger.setGroupName(groupName);
+                    trigger.setGroupId(groupId);
+                });
+                triggerService.updateBatchById(triggerList);
+            }
             this.updateById(tesseractExecutor);
             return;
         }
+        //新增操作
         tesseractExecutor.setCreateTime(System.currentTimeMillis());
         tesseractExecutor.setCreator("admin");
         save(tesseractExecutor);
@@ -118,6 +139,12 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
 
     @Override
     public void deleteExecutor(Integer executorId) {
+        QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
+        triggerQueryWrapper.lambda().eq(TesseractTrigger::getExecutorId, executorId);
+        List<TesseractTrigger> triggerList = triggerService.list(triggerQueryWrapper);
+        if (!CollectionUtils.isEmpty(triggerList)) {
+            throw new TesseractException("执行器内还有触发器，不能删除");
+        }
         removeById(executorId);
     }
 
@@ -176,6 +203,8 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
     }
 
     /**
+     * 将机器和执行器绑定
+     *
      * @param executor
      */
     private void bindExecutor(TesseractExecutor executor, String socket) {
@@ -190,10 +219,13 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
         }
         long currentTimeMillis = System.currentTimeMillis();
         executorDetail = new TesseractExecutorDetail();
+        executorDetail.setGroupId(executor.getGroupId());
+        executorDetail.setGroupName(executor.getGroupName());
         executorDetail.setExecutorId(executorId);
         executorDetail.setSocket(socket);
         executorDetail.setUpdateTime(currentTimeMillis);
         executorDetail.setCreateTime(currentTimeMillis);
+        executorDetail.setLoadFactor(0D);
         executorDetailService.save(executorDetail);
     }
 }

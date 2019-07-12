@@ -6,8 +6,11 @@ import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import freemarker.template.Configuration;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -58,13 +61,13 @@ public class GeneralTest {
     }
 
     @Test
-    public void testPass(){
+    public void testPass() {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         //加密"0"
         //String encode = bCryptPasswordEncoder.encode("admin");
         //System.out.println(encode);
         //结果：$2a$10$/eEV4X7hXPzYGzOLXfCizu6h7iRisp7I116wPA3P9uRcHAKJyY4TK
-        System.out.println(bCryptPasswordEncoder.matches("admin","$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni."));
+        System.out.println(bCryptPasswordEncoder.matches("admin", "$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni."));
     }
 
     @Test
@@ -86,5 +89,17 @@ public class GeneralTest {
         tesseractExecutorDetailList.add(tesseractExecutorDetail1);
         loadFactorRouter.routerExecutor(tesseractExecutorDetailList);
         System.out.println(tesseractExecutorDetailList);
+    }
+
+
+    @Test
+    public void testFreeMarker() throws Exception {
+        FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean = new FreeMarkerConfigurationFactoryBean();
+        freeMarkerConfigurationFactoryBean.setTemplateLoaderPath("classpath:mailTemplate");
+        freeMarkerConfigurationFactoryBean.afterPropertiesSet();
+        Configuration configuration = freeMarkerConfigurationFactoryBean.getObject();
+        String string = FreeMarkerTemplateUtils.processTemplateIntoString(
+                configuration.getTemplate("missfireTemplate.html"), Maps.newHashMap());
+        System.out.println(string);
     }
 }

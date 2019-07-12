@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -27,7 +29,7 @@ public class TesseractUser implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-
+    @NotBlank
     private String name;
 
     private String password;
@@ -38,7 +40,9 @@ public class TesseractUser implements Serializable {
 
     private Long updateTime;
 
+    @NotBlank
     private String groupName;
 
+    @NotNull
     private Integer groupId;
 }

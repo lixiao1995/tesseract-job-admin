@@ -34,4 +34,5 @@ public interface ITesseractTriggerService extends IService<TesseractTrigger> {
     void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception;
 
 
+    boolean resovleMissfireTrigger(Integer pageSize, Long time);
 }
