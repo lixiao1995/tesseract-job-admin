@@ -145,6 +145,7 @@ public class TesseractTriggerDispatcher {
             tesseractLog.setSocket(executorDetail.getSocket());
             tesseractLog.setMsg("执行中");
             tesseractLog.setStatus(AdminConstant.LOG_WAIT);
+            tesseractLog.setExecutorDetailId(executorDetail.getId());
             tesseractLogService.save(tesseractLog);
             //将触发器加入fired_trigger
             TesseractFiredTrigger tesseractFiredTrigger = new TesseractFiredTrigger();
