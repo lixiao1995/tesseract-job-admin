@@ -7,38 +7,24 @@ import admin.security.TokenLogoutSuccessHandler;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.access.AccessDecisionManager;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.access.SecurityConfig;
-import org.springframework.security.authentication.*;
-import org.springframework.security.config.BeanIds;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.FilterInvocation;
-import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
-import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Collection;
-import java.util.Iterator;
+import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING_SUFFIX;
+import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING_SUFFIX;
 
 /**
  * @description: 安全配置类
@@ -66,6 +52,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * http安全配置
+     *
      * @param http
      * @throws Exception
      */
@@ -84,6 +71,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
                 .antMatchers("/tesseract-user/logout").permitAll()
+                //内部心跳和注册放行
+                .antMatchers("/tesseract-executor-detail" + HEARTBEAT_MAPPING_SUFFIX).permitAll()
+                .antMatchers("/tesseract-executor" + REGISTRY_MAPPING_SUFFIX).permitAll()
                 // 其它请求随意访问
                 .anyRequest().authenticated().and()
                 // 基于token，所以不需要session。无状态
@@ -115,6 +105,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * 密码生成策略.
      * 官方推荐使用BCrypt加密，并明确指出 sha 和 md5都是不安全的
+     *
      * @return
      */
     @Bean
