@@ -58,6 +58,7 @@ create table tesseract_executor
     create_time bigint       not null,
     group_name  varchar(30)  not null,
     group_id    int unsigned not null,
+    mail varchar(255) not null,
     unique (name)
 ) engine = InnoDB
   default charset = utf8;
@@ -70,6 +71,8 @@ create table tesseract_executor_detail
     socket      varchar(255) not null,
     create_time bigint       not null,
     update_time bigint       not null,
+    group_name  varchar(30)  not null,
+    group_id    int unsigned not null,
     unique (socket)
 ) engine = InnoDB
   default charset = utf8;
@@ -81,7 +84,7 @@ create table tesseract_lock
     id         int unsigned primary key auto_increment,
     group_name varchar(30) not null,
     name       varchar(30) not null,
-    index (group_name, name)
+    unique(group_name, name)
 ) engine = InnoDB
   default charset = utf8;
 
@@ -89,7 +92,7 @@ create table tesseract_user
 (
     id          int unsigned primary key auto_increment,
     name        varchar(30)  not null,
-    password    varchar(32)  not null,
+    password    varchar(255)  not null,
     status      tinyint      not null,
     create_time bigint       not null,
     update_time bigint       not null,
@@ -125,7 +128,9 @@ create table tesseract_log
     creator      varchar(255) not null,
     create_time  bigint       not null,
     end_time     bigint       not null,
-    index (create_time)
+    executor_detail_id int not null,
+    index (create_time),
+    index (executor_detail_id)
 ) engine = InnoDB
   default charset = utf8;
 
@@ -145,17 +150,17 @@ create table tesseract_group
 
 
 
-insert into tesseract_group(id, name, mail, thread_pool_num, creator, create_time, update_time)
-values (1, 'defaultGroup', 'xxxx@xx.mail', 10, 'admin', 1562512500000, 1562512500000);
-insert into tesseract_user(name, password, status, create_time, update_time, group_id, group_name)
-values ('admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000, 1, 'defaultGroup');
+insert into tesseract_group(id, name, mail, thread_pool_num, description, creator, create_time, update_time)
+values (1, 'defaultGroup', 'huangjun01@koolearn-inc.com', 10,'test', 'admin', 1562512500000, 1562512500000);
+insert into tesseract_user(id, name, password, status, create_time, update_time, group_name, group_id)
+values (1,'admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000, 1, 'defaultGroup');
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time
                              , group_id, group_name)
 values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
        , 1562512500000, 1562512500000, 1, 'defaultGroup');
-insert into tesseract_executor(name, creator, description, create_time, group_id, group_name)
-values ('testExecutor', 'admin', 'test', 1562512500000, 1, 'defaultGroup');
+insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
+values (1,'testExecutor', 'admin', 'test', 1562512500000, 1, 'defaultGroup','huangjun01@koolearn-inc.com');
 
 
 

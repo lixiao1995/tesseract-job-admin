@@ -203,6 +203,8 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
     }
 
     /**
+     * 将机器和执行器绑定
+     *
      * @param executor
      */
     private void bindExecutor(TesseractExecutor executor, String socket) {
@@ -217,6 +219,8 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
         }
         long currentTimeMillis = System.currentTimeMillis();
         executorDetail = new TesseractExecutorDetail();
+        executorDetail.setGroupId(executor.getGroupId());
+        executorDetail.setGroupName(executor.getGroupName());
         executorDetail.setExecutorId(executorId);
         executorDetail.setSocket(socket);
         executorDetail.setUpdateTime(currentTimeMillis);

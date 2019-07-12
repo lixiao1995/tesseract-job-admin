@@ -38,10 +38,6 @@ public class TesseractUserController {
     @RequestMapping("/login")
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
         String token = tesseractUserService.userLoginNew(userDO);
-//        roles: ['admin'],
-//        introduction: 'I am a super administrator',
-//        avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-//        name: 'Super Admin'
         HashMap<String, Object> hashMap = Maps.newHashMap();
         hashMap.put("roles", Arrays.asList("admin"));
         hashMap.put("introduction", "I am a super administrator");
@@ -66,8 +62,8 @@ public class TesseractUserController {
         // UserAuthVO user = UserContextHolder2.getUser();
         // TODO 所有使用当前用户信息的地方可以统一获取
         WebUserDetail webUserDetail = (WebUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println(">>>>> UserContextHolder中获取的用户信息: "+ JSON.toJSONString(webUserDetail));
-        IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage,pageSize,condition,startCreateTime,endCreateTime);
+        System.out.println(">>>>> UserContextHolder中获取的用户信息: " + JSON.toJSONString(webUserDetail));
+        IPage<TesseractUser> userIPage = tesseractUserService.listByPage(currentPage, pageSize, condition, startCreateTime, endCreateTime);
         UserVO userVO = new UserVO();
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(userIPage.getCurrent());
@@ -125,6 +121,7 @@ public class TesseractUserController {
 
     /**
      * 获取用户权限信息，首次从数据库获取，后期考虑Redis中获取
+     *
      * @param httpServletRequest
      * @return
      */

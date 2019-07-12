@@ -45,7 +45,7 @@ import static admin.constant.AdminConstant.*;
 public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMapper, TesseractTrigger> implements ITesseractTriggerService {
     @Autowired
     private ITesseractLockService lockService;
-    private Long missfreTime = 30 * 1000L;
+
     @Autowired
     private ITesseractExecutorService executorService;
 
@@ -93,8 +93,6 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception {
-        CronExpression cronExpression = new CronExpression(tesseractTrigger.getCron());
-        long currentTimeMillis = System.currentTimeMillis();
         Integer triggerId = tesseractTrigger.getId();
         TesseractExecutor executor;
         //更新
@@ -103,10 +101,10 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
             @NotBlank String oldCron = trigger.getCron();
             //重新计算下一次调度时间
             if (!tesseractTrigger.getCron().equals(oldCron)) {
-                tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
+                tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
             }
             //如果更新了执行器则更新组名
-            if (trigger.getExecutorId().equals(tesseractTrigger.getExecutorId())) {
+            if (!trigger.getExecutorId().equals(tesseractTrigger.getExecutorId())) {
                 executor = executorService.getById(tesseractTrigger.getExecutorId());
                 tesseractTrigger.setGroupId(executor.getGroupId());
                 tesseractTrigger.setGroupName(executor.getGroupName());
@@ -115,11 +113,12 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
             return;
         }
         //新增
+        long currentTimeMillis = System.currentTimeMillis();
         executor = executorService.getById(tesseractTrigger.getExecutorId());
         tesseractTrigger.setGroupId(executor.getGroupId());
         tesseractTrigger.setGroupName(executor.getGroupName());
         tesseractTrigger.setPrevTriggerTime(0L);
-        tesseractTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
+        tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
         tesseractTrigger.setCreateTime(currentTimeMillis);
         tesseractTrigger.setStatus(TRGGER_STATUS_STOPING);
         tesseractTrigger.setUpdateTime(currentTimeMillis);
@@ -127,16 +126,23 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     }
 
     @Override
-    public List<TesseractTrigger> listMissfire(Integer pageSize) {
+    @Transactional(rollbackFor = Exception.class)
+    public List<TesseractTrigger> listMissfireWithLock(Integer pageSize, Long time) {
+        lockService.lock(MISSFIRE_LOCK_NAME, MISSFIRE_LOCK_NAME);
         QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
-        triggerQueryWrapper.lambda().eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
-                .le(TesseractTrigger::getNextTriggerTime, System.currentTimeMillis() - missfreTime);
+        triggerQueryWrapper.lambda()
+                .eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
+                //下次触发时间小于等于当前时间减掉校验时间
+                .le(TesseractTrigger::getNextTriggerTime, time);
         Page<TesseractTrigger> triggerPage = new Page<>(1, pageSize);
         IPage<TesseractTrigger> page = page(triggerPage, triggerQueryWrapper);
-        return page.getRecords();
+        List<TesseractTrigger> triggerList = page.getRecords();
+        //更新触发器调度时间为当前时间
+        triggerList.parallelStream().forEach(trigger -> trigger.setNextTriggerTime(System.currentTimeMillis()));
+        return triggerList;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public TriggerVO listByPage(Integer currentPage, Integer pageSize, TesseractTrigger condition,
                                 Long startCreateTime,

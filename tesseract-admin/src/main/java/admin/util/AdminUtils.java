@@ -1,5 +1,6 @@
 package admin.util;
 
+import admin.core.scheduler.CronExpression;
 import admin.pojo.StatisticsLogDO;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
@@ -10,9 +11,9 @@ import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class AdminUtils {
@@ -67,5 +68,17 @@ public class AdminUtils {
             log.error("buildCondition 发生异常:{}", e.getMessage());
             throw new TesseractException("构建查询条件出错");
         }
+    }
+
+    /**
+     * 根据cron表达式计算以当前时间为准的下一次时间
+     *
+     * @param cron
+     * @return
+     * @throws Exception
+     */
+    public static Long caculateNextTime(String cron) throws Exception {
+        CronExpression cronExpression = new CronExpression(cron);
+        return cronExpression.getTimeAfter(new Date()).getTime();
     }
 }

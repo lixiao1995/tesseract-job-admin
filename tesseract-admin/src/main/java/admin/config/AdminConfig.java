@@ -13,6 +13,8 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feignService.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +37,8 @@ public class AdminConfig {
     private Encoder encoder;
     @Autowired
     private JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String from;
 
     /**
      * 启动器
@@ -70,24 +74,19 @@ public class AdminConfig {
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10
                 , 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100));
         AsyncEventBus asyncEventBus = new AsyncEventBus("mailEventBus", threadPoolExecutor);
-        asyncEventBus.register(new MailListener(mailSender));
+        asyncEventBus.register(new MailListener(mailSender, from));
         return asyncEventBus;
     }
 
-    /**
-     * freemarker
-     *
-     * @return
-     */
-    @Bean
-    public freemarker.template.Configuration freeMarkerConfiguration() {
+    @Bean("tesseractConfiguration")
+    public FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean() {
         FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean = new FreeMarkerConfigurationFactoryBean();
         freeMarkerConfigurationFactoryBean.setTemplateLoaderPath("classpath:mailTemplate");
-        return freeMarkerConfigurationFactoryBean.getObject();
+        return freeMarkerConfigurationFactoryBean;
     }
 
     @Bean
-    public TesseractMailTemplate tesseractMailTemplate(freemarker.template.Configuration configuration) {
+    public TesseractMailTemplate tesseractMailTemplate(@Qualifier("tesseractConfiguration") freemarker.template.Configuration configuration) throws Exception {
         return new TesseractMailTemplate(configuration);
     }
 
@@ -99,4 +98,5 @@ public class AdminConfig {
     public PaginationInterceptor paginationInterceptor() {
         return new PaginationInterceptor();
     }
+
 }

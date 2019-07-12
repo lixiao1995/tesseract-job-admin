@@ -1,15 +1,19 @@
 package admin.core.scheduler;
 
+import admin.core.mail.TesseractMailTemplate;
 import admin.core.scanner.ExecutorScanner;
+import admin.core.scanner.MissfireScanner;
 import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
 import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import admin.service.*;
 import com.google.common.collect.Maps;
+import com.google.common.eventbus.EventBus;
 import feignService.IAdminFeignService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.CollectionUtils;
@@ -21,8 +25,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Slf4j
 public class TesseractScheduleBoot {
-    private final static String DEFAULT_GROUP_NAME = "defaultGroup";
-    private final static Integer DEFAULT_GROUP_THREAD_NUN = 10;
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
@@ -46,6 +48,13 @@ public class TesseractScheduleBoot {
     @Autowired
     private ITesseractGroupService groupService;
 
+    @Autowired
+    private TesseractMailTemplate mailTemplate;
+
+    @Autowired
+    @Qualifier("mailEventBus")
+    private EventBus mailEventBus;
+
     private static TesseractScheduleBoot tesseractScheduleBoot;
 
     /**
@@ -61,6 +70,7 @@ public class TesseractScheduleBoot {
      * 暂时先共用同一扫描器
      */
     private ExecutorScanner executorScanner;
+    private MissfireScanner missfireScanner;
 
     /**
      * 单线程 不需要加锁
@@ -74,6 +84,10 @@ public class TesseractScheduleBoot {
         if (executorScanner != null) {
             executorScanner.stopThread();
         }
+
+        if (missfireScanner != null) {
+            missfireScanner.stopThread();
+        }
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -81,6 +95,9 @@ public class TesseractScheduleBoot {
         SCHEDULER_THREAD_MAP.values().forEach(schedulerThread -> schedulerThread.startThread());
         if (executorScanner != null) {
             executorScanner.startThread();
+        }
+        if (missfireScanner != null) {
+            missfireScanner.startThread();
         }
     }
 
@@ -97,7 +114,8 @@ public class TesseractScheduleBoot {
                 SCHEDULER_THREAD_MAP.put(groupName, createSchedulerThread(groupName, group.getThreadPoolNum()));
             });
             //创建扫描线程
-            executorScanner = new ExecutorScanner(executorDetailService);
+            executorScanner = new ExecutorScanner(tesseractLogService, groupService, mailTemplate, mailEventBus, executorDetailService);
+            missfireScanner = new MissfireScanner(mailTemplate, tesseractTriggerService, groupService, mailEventBus);
             executorScanner.setDaemon(true);
             return;
         }
@@ -135,6 +153,9 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setTesseractLogService(tesseractLogService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
+        tesseractTriggerDispatcher.setGroupService(groupService);
+        tesseractTriggerDispatcher.setMailEventBus(mailEventBus);
+        tesseractTriggerDispatcher.setMailTemplate(mailTemplate);
         return tesseractTriggerDispatcher;
     }
 

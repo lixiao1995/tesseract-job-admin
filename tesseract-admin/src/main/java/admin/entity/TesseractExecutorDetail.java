@@ -38,5 +38,11 @@ public class TesseractExecutorDetail implements Serializable {
 
     private Long updateTime;
 
+    /**
+     * 冗余存储方便分析
+     */
+    private String groupName;
+
+    private Integer groupId;
 
 }
