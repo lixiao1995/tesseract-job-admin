@@ -70,7 +70,7 @@ public class TesseractApplicationTests {
 
     @Test
     public void testMissFireThread() throws InterruptedException {
-        MissfireScanner missfireScanner = new MissfireScanner(mailTemplate, tesseractTriggerService, groupService, mailEventBus);
+        MissfireScanner missfireScanner = new MissfireScanner(tesseractTriggerService);
         missfireScanner.startThread();
         missfireScanner.join();
     }
