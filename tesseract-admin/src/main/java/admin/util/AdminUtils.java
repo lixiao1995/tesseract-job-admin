@@ -1,6 +1,8 @@
 package admin.util;
 
+import admin.entity.TesseractMenuResource;
 import admin.pojo.StatisticsLogDO;
+import admin.pojo.WebUserDetail;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,16 @@ import java.util.List;
 @Slf4j
 public class AdminUtils {
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /**
+     * 实体公共字段填充
+     */
+    public static final String COMMONFIELD_CREATETIME= "createTime";
+    public static final String COMMONFIELD_UPDATETIME= "updateTime";
+    public static final String COMMONFIELD_CREATEUSERID= "createUserId";
+    public static final String COMMONFIELD_CREATEUSERNAME= "createUserName";
+    public static final String COMMONFIELD_UPDATEUSERID= "updateUserId";
+    public static final String COMMONFIELD_UPDATEUSERNAME= "updateUserName";
 
     /**
      * 根据StatisticsLogDO，构建返回统计列表
@@ -68,4 +80,47 @@ public class AdminUtils {
         }
     }
 
+    /**
+     * 创建实体，设置公共属性
+     * @param obj
+     * @param currentTimeMillis
+     * @param user
+     */
+    public static void buildNewEntityCommonFields(Object obj, long currentTimeMillis, WebUserDetail user){
+        Integer userId = user.getId();
+        String userName = user.getName();
+        try {
+            Class<?> aClass = obj.getClass();
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_CREATETIME,currentTimeMillis);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATETIME,currentTimeMillis);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_CREATEUSERID,userId);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_CREATEUSERNAME,userName);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATEUSERID,userId);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATEUSERNAME,userName);
+        }catch (Exception e){
+            log.error("buildNewEntityCommonFields 发生异常:{}", e.getMessage());
+            throw new TesseractException("创建实体，设置公共属性出错");
+        }
+    }
+
+
+    /**
+     * 更新实体，设置公共属性
+     * @param obj
+     * @param currentTimeMillis
+     * @param user
+     */
+    public static void buildUpdateEntityCommonFields(Object obj, long currentTimeMillis,WebUserDetail user){
+        Integer userId = user.getId();
+        String userName = user.getName();
+        try {
+            Class<?> aClass = obj.getClass();
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATETIME,currentTimeMillis);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATEUSERID,userId);
+            ReflectionUtils.setBeanFieldValue(obj,aClass,COMMONFIELD_UPDATEUSERNAME,userName);
+        }catch (Exception e){
+            log.error("buildUpdateEntityCommonFields 发生异常:{}", e.getMessage());
+            throw new TesseractException("更新实体，设置公共属性出错");
+        }
+    }
 }
