@@ -9,7 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import tesseract.exception.TesseractException;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Date;
@@ -18,8 +21,8 @@ import java.util.List;
 
 @Slf4j
 public class AdminUtils {
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
     /**
      * 实体公共字段填充
      */
@@ -41,7 +44,7 @@ public class AdminUtils {
         LinkedHashMap<String, Integer> linkedHashMap = Maps.newLinkedHashMap();
         LocalDate startDate = LocalDate.now().minusDays(6);
         for (int i = 0; i < statisticsDays; i++) {
-            linkedHashMap.put(startDate.format(DATE_TIME_FORMATTER), 0);
+            linkedHashMap.put(startDate.format(DATE_FORMATTER), 0);
             startDate = startDate.plusDays(1);
         }
         statisticsLogDOList.forEach(statisticsLogDO -> {
@@ -136,5 +139,18 @@ public class AdminUtils {
     public static Long caculateNextTime(String cron) throws Exception {
         CronExpression cronExpression = new CronExpression(cron);
         return cronExpression.getTimeAfter(new Date()).getTime();
+    }
+
+    public static String epochMiliToString(Long epochMilli, DateTimeFormatter dateTimeFormatter) {
+        Instant instant = Instant.ofEpochMilli(epochMilli);
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zoneId);
+        String string;
+        if (dateTimeFormatter != null) {
+            string = localDateTime.format(dateTimeFormatter);
+        } else {
+            string = localDateTime.format(DATE_TIME_FORMATTER);
+        }
+        return string;
     }
 }

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static admin.constant.AdminConstant.*;
+import static admin.util.AdminUtils.epochMiliToString;
 import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 
@@ -276,6 +277,8 @@ public class TesseractTriggerDispatcher {
         private void sendMail(TesseractLog tesseractLog, TesseractGroup group) {
             HashMap<String, Object> model = Maps.newHashMap();
             model.put("log", tesseractLog);
+            model.put("createTime", epochMiliToString(tesseractLog.getCreateTime(), null));
+            model.put("endTime", epochMiliToString(tesseractLog.getEndTime(), null));
             String body = mailTemplate.buildMailBody(LOG_TEMPLATE_NAME, model);
             MailEvent mailEvent = new MailEvent();
             mailEvent.setBody(body);
