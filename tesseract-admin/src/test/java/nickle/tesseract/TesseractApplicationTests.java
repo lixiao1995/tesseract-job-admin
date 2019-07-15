@@ -65,7 +65,7 @@ public class TesseractApplicationTests {
 
     @Test
     public void testMailTemplate() throws Exception {
-        System.out.println(mailTemplate.getConfiguration().getTemplate("missfireTemplate.html"));
+        System.out.println(mailTemplate.getConfiguration().getTemplate("logTemplate.html"));
     }
 
     @Test

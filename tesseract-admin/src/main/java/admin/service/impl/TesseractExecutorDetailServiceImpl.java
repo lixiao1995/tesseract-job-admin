@@ -8,7 +8,6 @@ import admin.entity.TesseractLog;
 import admin.mapper.TesseractExecutorDetailMapper;
 import admin.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -28,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static admin.constant.AdminConstant.*;
+import static admin.constant.AdminConstant.EXECUTOR_LOCK_NAME;
+import static admin.constant.AdminConstant.LOG_FAIL;
 import static tesseract.core.constant.CommonConstant.EXECUTOR_DETAIL_NOT_FIND;
 
 /**
@@ -65,7 +65,6 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
         TesseractExecutorDetail executorDetail = getOne(detailQueryWrapper);
         if (executorDetail == null) {
             log.warn("机器:{}已失效", socket);
-            checkFiredTrigger(executorDetail);
             throw new TesseractException(EXECUTOR_DETAIL_NOT_FIND, "机器已失效");
         }
         executorDetail.setLoadFactor(caculateLoader(heartBeatRequest));
@@ -154,27 +153,4 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
 
     }
 
-    /**
-     * 检查fired表，如果有则报警并且更改日志状态
-     *
-     * @param executorDetail
-     */
-    private void checkFiredTrigger(TesseractExecutorDetail executorDetail) {
-        QueryWrapper<TesseractFiredTrigger> firedTriggerQueryWrapper = new QueryWrapper<>();
-        firedTriggerQueryWrapper.lambda().eq(TesseractFiredTrigger::getExecutorDetailId, executorDetail.getId());
-        List<TesseractFiredTrigger> firedTriggerList = firedTriggerService.list(firedTriggerQueryWrapper);
-        if (!CollectionUtils.isEmpty(firedTriggerList)) {
-            firedTriggerList.parallelStream().forEach(firedTrigger -> {
-                // TODO: 2019/7/8  需要报警处理
-                log.warn("滞留触发器列表:{}", firedTriggerList);
-                Long logId = firedTrigger.getLogId();
-                //更改日志状态
-                TesseractLog log = new TesseractLog();
-                log.setStatus(LOG_NO_CONFIRM);
-                UpdateWrapper<TesseractLog> logUpdateWrapper = new UpdateWrapper<>();
-                logUpdateWrapper.lambda().eq(TesseractLog::getId, logId);
-                logService.update(log, logUpdateWrapper);
-            });
-        }
-    }
 }
