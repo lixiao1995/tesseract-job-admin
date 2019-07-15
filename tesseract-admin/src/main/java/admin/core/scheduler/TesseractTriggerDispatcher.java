@@ -267,14 +267,15 @@ public class TesseractTriggerDispatcher {
         }
 
         private void sendMail(TesseractLog tesseractLog) {
-            sendMail(groupService.getById(tesseractLog.getGroupId()));
+            sendMail(tesseractLog, groupService.getById(tesseractLog.getGroupId()));
         }
 
         /**
          * 失败后发送报警邮件
          */
-        private void sendMail(TesseractGroup group) {
+        private void sendMail(TesseractLog tesseractLog, TesseractGroup group) {
             HashMap<String, Object> model = Maps.newHashMap();
+            model.put("log", tesseractLog);
             String body = mailTemplate.buildMailBody(LOG_TEMPLATE_NAME, model);
             MailEvent mailEvent = new MailEvent();
             mailEvent.setBody(body);
