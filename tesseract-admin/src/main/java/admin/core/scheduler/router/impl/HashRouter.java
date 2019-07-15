@@ -13,6 +13,6 @@ public class HashRouter implements IScheduleRouter {
     @Override
     public TesseractExecutorDetail routerExecutor(List<TesseractExecutorDetail> tesseractExecutorList) {
         int hashCode = tesseractExecutorList.hashCode();
-        return tesseractExecutorList.get((hashCode ^ (hashCode >>> 16)) % tesseractExecutorList.size());
+        return tesseractExecutorList.get(((hashCode ^ (hashCode >>> 16)) >>> 1) % tesseractExecutorList.size());
     }
 }
