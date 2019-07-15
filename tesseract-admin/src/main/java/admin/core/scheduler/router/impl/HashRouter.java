@@ -1,7 +1,6 @@
 package admin.core.scheduler.router.impl;
 
 import admin.core.scheduler.router.IScheduleRouter;
-import admin.entity.TesseractExecutor;
 import admin.entity.TesseractExecutorDetail;
 
 import java.util.List;
@@ -13,7 +12,7 @@ public class HashRouter implements IScheduleRouter {
 
     @Override
     public TesseractExecutorDetail routerExecutor(List<TesseractExecutorDetail> tesseractExecutorList) {
-
-        return tesseractExecutorList.get(tesseractExecutorList.hashCode() % tesseractExecutorList.size());
+        int hashCode = tesseractExecutorList.hashCode();
+        return tesseractExecutorList.get((hashCode ^ (hashCode >>> 16)) % tesseractExecutorList.size());
     }
 }
