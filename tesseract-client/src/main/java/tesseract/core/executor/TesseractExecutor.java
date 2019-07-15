@@ -105,7 +105,7 @@ public class TesseractExecutor {
             TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
             tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
             tesseractAdminJobNotify.setTriggerId(tesseractExecutorRequest.getTriggerId());
-            tesseractAdminJobNotify.setExecutorId(tesseractExecutorRequest.getExecutorId());
+            tesseractAdminJobNotify.setExecutorDetailId(tesseractExecutorRequest.getExecutorDetailId());
             TesseractExecutorResponse notifyResponse = null;
             try {
                 Class<?> aClass = Class.forName(className);

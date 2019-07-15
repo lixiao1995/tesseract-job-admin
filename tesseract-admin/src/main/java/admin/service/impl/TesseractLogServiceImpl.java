@@ -53,7 +53,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         Long logId = tesseractAdminJobNotify.getLogId();
         String exception = tesseractAdminJobNotify.getException();
         Integer triggerId = tesseractAdminJobNotify.getTriggerId();
-        @NotNull Integer executorId = tesseractAdminJobNotify.getExecutorId();
+        @NotNull Integer executorDetailId = tesseractAdminJobNotify.getExecutorDetailId();
         TesseractLog tesseractLog = this.getById(logId);
         if (tesseractLog == null) {
             log.error("获取日志为空:{}", tesseractAdminJobNotify);
@@ -67,7 +67,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             tesseractLog.setMsg("执行成功");
         }
         tesseractLog.setEndTime(System.currentTimeMillis());
-        firedTriggerService.removeFiredTriggerAndUpdateLog(triggerId, executorId, tesseractLog);
+        firedTriggerService.removeFiredTriggerAndUpdateLog(triggerId, executorDetailId, tesseractLog);
     }
 
     @Override

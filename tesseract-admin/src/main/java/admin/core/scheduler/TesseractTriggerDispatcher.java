@@ -219,16 +219,16 @@ public class TesseractTriggerDispatcher {
          *
          * @param logId
          * @param className
-         * @param executorId
+         * @param executorDetailId
          * @return
          */
-        private TesseractExecutorRequest buildRequest(Long logId, String className, Integer executorId) {
+        private TesseractExecutorRequest buildRequest(Long logId, String className, Integer executorDetailId) {
             TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
             executorRequest.setClassName(className);
             executorRequest.setShardingIndex(trigger.getShardingNum());
             executorRequest.setLogId(logId);
             executorRequest.setTriggerId(trigger.getId());
-            executorRequest.setExecutorId(executorId);
+            executorRequest.setExecutorDetailId(executorDetailId);
             return executorRequest;
         }
 
