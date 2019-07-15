@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -69,85 +70,139 @@ public class TesseractTriggerDispatcher {
             this.isOnce = isOnce;
         }
 
+
         @Override
         public void run() {
             try {
-                //构建日志
-                TesseractLog tesseractLog = new TesseractLog();
-                tesseractLog.setClassName("");
-                tesseractLog.setCreateTime(System.currentTimeMillis());
-                tesseractLog.setCreator("test");
-                tesseractLog.setGroupId(trigger.getGroupId());
-                tesseractLog.setGroupName(trigger.getGroupName());
-                tesseractLog.setTriggerName(trigger.getName());
-                tesseractLog.setEndTime(0L);
-                tesseractLog.setExecutorDetailId(0);
                 //获取job detail
-                QueryWrapper<TesseractJobDetail> jobQueryWrapper = new QueryWrapper<>();
-                jobQueryWrapper.lambda().eq(TesseractJobDetail::getTriggerId, trigger.getId());
-                TesseractJobDetail jobDetail = tesseractJobDetailService.getOne(jobQueryWrapper);
-                if (jobDetail == null) {
-                    tesseractLog.setStatus(LOG_FAIL);
-                    tesseractLog.setMsg("没有发现可运行job");
-                    tesseractLog.setSocket(NULL_SOCKET);
-                    tesseractLog.setEndTime(System.currentTimeMillis());
-                    log.info("tesseractLog:{}", tesseractLog);
-                    tesseractLogService.save(tesseractLog);
-                    TesseractGroup group = groupService.getById(tesseractLog.getGroupId());
-                    sendMail(tesseractLog, group);
+                List<TesseractJobDetail> jobList = getJobList();
+                if (CollectionUtils.isEmpty(jobList)) {
+                    doFail("没有发现可运行job");
                     return;
                 }
-                tesseractLog.setClassName(jobDetail.getClassName());
                 //获取执行器
                 TesseractExecutor executor = executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
-                    tesseractLog.setStatus(LOG_FAIL);
-                    tesseractLog.setMsg("没有找到可用执行器");
-                    tesseractLog.setSocket(NULL_SOCKET);
-                    tesseractLog.setEndTime(System.currentTimeMillis());
-                    tesseractLogService.save(tesseractLog);
-                    log.info("tesseractLog:{}", tesseractLog);
-                    TesseractGroup group = groupService.getById(tesseractLog.getGroupId());
-                    sendMail(tesseractLog, group);
+                    doFail("没有找到可用执行器");
                     return;
                 }
-                QueryWrapper<TesseractExecutorDetail> executorDetailQueryWrapper = new QueryWrapper<>();
-                List<TesseractExecutorDetail> executorDetailList = executorDetailService.list(executorDetailQueryWrapper);
+                //执行器下机器列表
+                List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
-                    tesseractLog.setStatus(LOG_FAIL);
-                    tesseractLog.setMsg("执行器下没有可用机器");
-                    tesseractLog.setSocket(NULL_SOCKET);
-                    tesseractLog.setEndTime(System.currentTimeMillis());
-                    tesseractLogService.save(tesseractLog);
-                    log.info("tesseractLog:{}", tesseractLog);
-                    TesseractGroup group = groupService.getById(tesseractLog.getGroupId());
-                    sendMail(tesseractLog, group);
+                    doFail("执行器下没有可用机器");
                     return;
                 }
-                //todo 广播
                 //路由发送执行
-                routerExecute(tesseractLog, executorDetailList, jobDetail);
+                routerExecute(jobList, executorDetailList);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         /**
-         * 根据路由策略，选择机器执行
-         *
-         * @param tesseractLog
+         * @param jobList
          * @param executorDetailList
-         * @param jobDetail
          */
-        private void routerExecute(TesseractLog tesseractLog, List<TesseractExecutorDetail> executorDetailList, TesseractJobDetail jobDetail) {
-            TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
-            //首先保存日志，获取到日志id，便于异步更新
+        private void routerExecute(List<TesseractJobDetail> jobList, List<TesseractExecutorDetail> executorDetailList) {
+            jobList.forEach(jobDetail -> {
+                //路由选择
+                @NotNull Integer strategy = trigger.getStrategy();
+                //广播
+                if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
+                    executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail));
+                } else {
+                    TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
+                    buildRequestAndSend(jobDetail, executorDetail);
+                }
+            });
+        }
+
+        /**
+         * 构建请求并发送
+         *
+         * @param jobDetail
+         * @param executorDetail
+         */
+        private void buildRequestAndSend(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail) {
+            TesseractLog tesseractLog = buildDefaultLog();
             tesseractLog.setSocket(executorDetail.getSocket());
             tesseractLog.setMsg("执行中");
+            //设置结束时间为0 表示未结束
+            tesseractLog.setEndTime(0L);
             tesseractLog.setStatus(AdminConstant.LOG_WAIT);
             tesseractLog.setExecutorDetailId(executorDetail.getId());
             tesseractLogService.save(tesseractLog);
-            //将触发器加入fired_trigger
+            //设置firedTrigger
+            firedTriggerService.save(buildFiredTrigger(jobDetail, executorDetail, tesseractLog.getId()));
+            //构建请求发送 todo 检查
+            doRequest(buildRequest(tesseractLog.getId(), jobDetail.getClassName(), executorDetail.getId()), tesseractLog, executorDetail);
+        }
+
+        /**
+         * 构建默认日志
+         *
+         * @return
+         */
+        private TesseractLog buildDefaultLog() {
+            TesseractLog tesseractLog = new TesseractLog();
+            tesseractLog.setClassName("");
+            tesseractLog.setCreateTime(System.currentTimeMillis());
+            tesseractLog.setCreator("test");
+            tesseractLog.setGroupId(trigger.getGroupId());
+            tesseractLog.setGroupName(trigger.getGroupName());
+            tesseractLog.setTriggerName(trigger.getName());
+            tesseractLog.setEndTime(System.currentTimeMillis());
+            tesseractLog.setExecutorDetailId(0);
+            tesseractLog.setStatus(LOG_FAIL);
+            tesseractLog.setSocket("");
+            return tesseractLog;
+        }
+
+        /**
+         * 获取当前触发器可执行的任务
+         *
+         * @return
+         */
+        private List<TesseractJobDetail> getJobList() {
+            QueryWrapper<TesseractJobDetail> jobQueryWrapper = new QueryWrapper<>();
+            jobQueryWrapper.lambda().eq(TesseractJobDetail::getTriggerId, trigger.getId());
+            List<TesseractJobDetail> list = tesseractJobDetailService.list(jobQueryWrapper);
+            return list;
+        }
+
+        /**
+         * 保存失败日志并产生报警邮件
+         *
+         * @param msg
+         */
+        private void doFail(String msg) {
+            TesseractLog tesseractLog = buildDefaultLog();
+            tesseractLog.setMsg(msg);
+            tesseractLogService.save(tesseractLog);
+            sendMail(tesseractLog);
+        }
+
+        /**
+         * 获取可执行的机器
+         *
+         * @param executorId
+         * @return
+         */
+        private List<TesseractExecutorDetail> getExecutorDetail(Integer executorId) {
+            QueryWrapper<TesseractExecutorDetail> executorDetailQueryWrapper = new QueryWrapper<>();
+            executorDetailQueryWrapper.lambda().eq(TesseractExecutorDetail::getExecutorId, executorId);
+            return executorDetailService.list(executorDetailQueryWrapper);
+        }
+
+        /**
+         * 构建正在执行的触发器
+         *
+         * @param jobDetail
+         * @param executorDetail
+         * @param logId
+         * @return
+         */
+        private TesseractFiredTrigger buildFiredTrigger(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Long logId) {
             TesseractFiredTrigger tesseractFiredTrigger = new TesseractFiredTrigger();
             tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
             tesseractFiredTrigger.setName(trigger.getName());
@@ -155,18 +210,38 @@ public class TesseractTriggerDispatcher {
             tesseractFiredTrigger.setClassName(jobDetail.getClassName());
             tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
             tesseractFiredTrigger.setSocket(executorDetail.getSocket());
-            tesseractFiredTrigger.setLogId(tesseractLog.getId());
-            firedTriggerService.save(tesseractFiredTrigger);
-            //构建请求
+            tesseractFiredTrigger.setLogId(logId);
+            return tesseractFiredTrigger;
+        }
+
+        /**
+         * 构建请求
+         *
+         * @param logId
+         * @param className
+         * @param executorId
+         * @return
+         */
+        private TesseractExecutorRequest buildRequest(Long logId, String className, Integer executorId) {
             TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
-            executorRequest.setClassName(jobDetail.getClassName());
+            executorRequest.setClassName(className);
             executorRequest.setShardingIndex(trigger.getShardingNum());
-            executorRequest.setLogId(tesseractLog.getId());
+            executorRequest.setLogId(logId);
             executorRequest.setTriggerId(trigger.getId());
-            executorRequest.setExecutorId(executorDetail.getExecutorId());
-            //发送调度请求
-            TesseractExecutorResponse response = TesseractExecutorResponse.FAIL;
+            executorRequest.setExecutorId(executorId);
+            return executorRequest;
+        }
+
+        /**
+         * 发送调度请求
+         *
+         * @param executorRequest
+         * @param tesseractLog
+         * @param executorDetail
+         */
+        private void doRequest(TesseractExecutorRequest executorRequest, TesseractLog tesseractLog, TesseractExecutorDetail executorDetail) {
             log.info("开始调度:{}", executorRequest);
+            TesseractExecutorResponse response;
             try {
                 response = feignService.sendToExecutor(new URI(HTTP_PREFIX + executorDetail.getSocket() + EXECUTE_MAPPING), executorRequest);
             } catch (URISyntaxException e) {
@@ -188,14 +263,17 @@ public class TesseractTriggerDispatcher {
             firedTriggerService.removeFiredTriggerAndUpdateLog(trigger.getId(), executorDetail.getId(), tesseractLog);
             log.info("tesseractLog:{}", tesseractLog);
             //发送邮件
-            TesseractGroup group = groupService.getById(tesseractLog.getGroupId());
-            sendMail(tesseractLog, group);
+            this.sendMail(tesseractLog);
+        }
+
+        private void sendMail(TesseractLog tesseractLog) {
+            sendMail(groupService.getById(tesseractLog.getGroupId()));
         }
 
         /**
          * 失败后发送报警邮件
          */
-        private void sendMail(TesseractLog tesseractLog, TesseractGroup group) {
+        private void sendMail(TesseractGroup group) {
             HashMap<String, Object> model = Maps.newHashMap();
             String body = mailTemplate.buildMailBody(LOG_TEMPLATE_NAME, model);
             MailEvent mailEvent = new MailEvent();
