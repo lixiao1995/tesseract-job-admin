@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
@@ -13,10 +14,14 @@ import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
 import tesseract.core.handler.JobHandler;
+import tesseract.exception.TesseractException;
 import tesseract.feignService.IClientFeignService;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -30,9 +35,9 @@ import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING;
 public class TesseractExecutor {
     @Autowired
     private IClientFeignService clientFeignService;
-    @Value("${tesseract-admin-address}")
+    @Value("${tesseract.admin.address}")
     private String adminServerAddress;
-    @Value("${tesseract-executor-localIp}")
+    @Value("${tesseract.executor.localIp:}")
     private String ip;
     @Value("${server.port}")
     private Integer port;
@@ -76,8 +81,8 @@ public class TesseractExecutor {
      */
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
-        heartbeatThread = new HeartbeatThread(clientFeignService, adminServerAddress, ip, port);
-        registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress, ip, port);
+        heartbeatThread = new HeartbeatThread(clientFeignService, adminServerAddress, getValidIP(), port);
+        registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress, getValidIP(), port);
         heartbeatThread.setDaemon(true);
         registryThread.setDaemon(true);
         heartbeatThread.setTesseractExecutor(this);
@@ -91,6 +96,37 @@ public class TesseractExecutor {
         registryThread.stopThread();
         heartbeatThread.stopThread();
     }
+
+    /**
+     * 默认取本地回环地址
+     *
+     * @return
+     */
+    private String getValidIP() {
+        if (!StringUtils.isEmpty(ip)) {
+            return this.ip;
+        }
+        Enumeration<NetworkInterface> netInterfaces;
+        try {
+            // 拿到所有网卡
+            netInterfaces = NetworkInterface.getNetworkInterfaces();
+            InetAddress ip;
+            // 遍历每个网卡，拿到ip
+            while (netInterfaces.hasMoreElements()) {
+                NetworkInterface ni = netInterfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    ip = addresses.nextElement();
+                    if (ip.isLoopbackAddress() && ip.getHostAddress().indexOf(':') == -1) {
+                        return ip.getHostAddress();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        throw new TesseractException("找不到网卡");
+    }
+
 
     @Data
     @AllArgsConstructor
