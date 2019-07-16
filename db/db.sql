@@ -3,34 +3,34 @@ use `tesseract`;
 
 create table tesseract_job_detail
 (
-    id          int unsigned primary key auto_increment,
-    trigger_id  int unsigned not null,
-    class_name  varchar(255) not null,
-    create_time bigint       not null,
-    creator     varchar(255) not null,
+    id          int unsigned primary key auto_increment COMMENT '主键，自增',
+    trigger_id  int unsigned not null COMMENT 'tesseract_trigger id',
+    class_name  varchar(255) not null COMMENT '要执行的任务的类名',
+    create_time bigint       not null COMMENT '创建时间戳',
+    creator     varchar(255) not null COMMENT '创建者',
     unique (trigger_id, class_name)
 ) engine = InnoDB
   default charset = utf8;
 
 create table tesseract_trigger
 (
-    id                int unsigned primary key auto_increment,
-    name              varchar(30)  not null,
-    next_trigger_time bigint       not null,
-    prev_trigger_time bigint       not null,
-    cron              varchar(30)  not null,
-    strategy          tinyint      not null,
-    sharding_num      tinyint      not null,
-    retry_count       tinyint      not null,
-    status            tinyint      not null,
-    creator           varchar(255) not null,
-    description       text         not null,
-    executor_id       int unsigned not null,
-    executor_name     varchar(30)  not null,
-    create_time       bigint       not null,
-    update_time       bigint       not null,
-    group_name        varchar(30)  not null,
-    group_id          int unsigned not null,
+    id                int unsigned primary key auto_increment COMMENT '主键，自增',
+    name              varchar(30)  not null COMMENT '触发器名字',
+    next_trigger_time bigint       not null COMMENT '下一次触发时间戳',
+    prev_trigger_time bigint       not null COMMENT '上一次触发时间戳',
+    cron              varchar(30)  not null COMMENT 'cron表达式',
+    strategy          tinyint      not null COMMENT '调度策略。0:hash离散,1:轮训,2:均衡负载,3:广播式',
+    sharding_num      tinyint      not null COMMENT '分片数量',
+    retry_count       tinyint      not null COMMENT '重试次数',
+    status            tinyint      not null COMMENT '状态，0停用/1启用',
+    creator           varchar(255) not null COMMENT '创建者',
+    description       text         not null COMMENT '描述',
+    executor_id       int unsigned not null COMMENT '关联执行器id',
+    executor_name     varchar(30)  not null COMMENT '冗余执行器名称',
+    create_time       bigint       not null COMMENT '创建时间',
+    update_time       bigint       not null COMMENT '更新时间',
+    group_name        varchar(30)  not null COMMENT '组名称',
+    group_id          int unsigned not null COMMENT '关联组',
     index (status),
     unique (name)
 ) engine = InnoDB
@@ -38,41 +38,41 @@ create table tesseract_trigger
 
 create table tesseract_fired_trigger
 (
-    id                 int unsigned primary key auto_increment,
-    triggerId          int unsigned not null,
-    class_name         varchar(255) not null,
-    name               varchar(30)  not null,
-    socket             varchar(255) not null,
-    executor_detail_id int unsigned not null,
-    create_time        bigint       not null,
-    log_id             int unsigned not null
+    id                 int unsigned primary key auto_increment COMMENT '主键，自增',
+    triggerId          int unsigned not null COMMENT '关联触发器id',
+    class_name         varchar(255) not null COMMENT '类名',
+    name               varchar(30)  not null COMMENT '名称',
+    socket             varchar(255) not null COMMENT 'ip:端口',
+    executor_detail_id int unsigned not null COMMENT '执行器详情id',
+    create_time        bigint       not null COMMENT '创建时间',
+    log_id             int unsigned not null COMMENT '关联日志id'
 ) engine = InnoDB
   default charset = utf8;
 
 create table tesseract_executor
 (
-    id          int unsigned primary key auto_increment,
-    name        varchar(30)  not null,
-    creator     varchar(255) not null,
-    description text         not null,
-    create_time bigint       not null,
-    group_name  varchar(30)  not null,
-    group_id    int unsigned not null,
-    mail varchar(255) not null,
+    id          int unsigned primary key auto_increment  COMMENT '主键，自增',
+    name        varchar(30)  not null COMMENT '执行器名称',
+    creator     varchar(255) not null COMMENT '创建者',
+    description text         not null COMMENT '描述',
+    create_time bigint       not null COMMENT '创建时间',
+    group_name  varchar(30)  not null COMMENT '所属组名称',
+    group_id    int unsigned not null COMMENT '所属组id',
+    mail varchar(255) not null COMMENT '冗余邮箱',
     unique (name)
 ) engine = InnoDB
   default charset = utf8;
 
 create table tesseract_executor_detail
 (
-    id          int unsigned primary key auto_increment,
-    executor_id int unsigned not null,
-    load_factor      double(10,2) not null,
-    socket      varchar(255) not null,
-    create_time bigint       not null,
-    update_time bigint       not null,
-    group_name  varchar(30)  not null,
-    group_id    int unsigned not null,
+    id          int unsigned primary key auto_increment COMMENT '主键，自增',
+    executor_id int unsigned not null COMMENT '关联执行器',
+    load_factor      double(10,2) not null COMMENT '负载权限',
+    socket      varchar(255) not null COMMENT 'ip:端口',
+    create_time bigint       not null COMMENT '创建时间',
+    update_time bigint       not null COMMENT '更新时间',
+    group_name  varchar(30)  not null COMMENT '组名称',
+    group_id    int unsigned not null COMMENT '关联组id',
     unique (socket)
 ) engine = InnoDB
   default charset = utf8;
@@ -81,23 +81,23 @@ create table tesseract_executor_detail
 
 create table tesseract_lock
 (
-    id         int unsigned primary key auto_increment,
-    group_name varchar(30) not null,
-    name       varchar(30) not null,
+    id         int unsigned primary key auto_increment  COMMENT '主键，自增',
+    group_name varchar(30) not null COMMENT '组名称',
+    name       varchar(30) not null  COMMENT '名称',
     unique(group_name, name)
 ) engine = InnoDB
   default charset = utf8;
 
 create table tesseract_user
 (
-    id          int unsigned primary key auto_increment,
-    name        varchar(30)  not null,
-    password    varchar(255)  not null,
-    status      tinyint      not null,
-    create_time bigint       not null,
-    update_time bigint       not null,
-    group_name  varchar(30)  not null,
-    group_id    int unsigned not null,
+    id          int unsigned primary key auto_increment COMMENT '主键，自增',
+    name        varchar(30)  not null COMMENT '用户名称',
+    password    varchar(255)  not null COMMENT '用户密码加密',
+    status      tinyint      not null COMMENT '用户状态',
+    create_time bigint       not null COMMENT '创建时间',
+    update_time bigint       not null COMMENT '更新时间',
+    group_name  varchar(30)  not null COMMENT '关联组名称',
+    group_id    int unsigned not null COMMENT '关联组id',
     unique(name)
 ) engine = InnoDB
   default charset = utf8;
@@ -117,18 +117,18 @@ create table tesseract_token
 
 create table tesseract_log
 (
-    id           bigint unsigned primary key auto_increment,
-    trigger_name varchar(30)  not null,
-    class_name   varchar(255) not null,
-    group_name   varchar(30)  not null,
-    group_id     int unsigned not null,
-    socket       varchar(255) not null,
-    status       tinyint      not null,
-    msg          text         not null,
-    creator      varchar(255) not null,
-    create_time  bigint       not null,
-    end_time     bigint       not null,
-    executor_detail_id int not null,
+    id           bigint unsigned primary key auto_increment COMMENT '主键，自增',
+    trigger_name varchar(30)  not null COMMENT '触发器名称',
+    class_name   varchar(255) not null COMMENT 'job类名',
+    group_name   varchar(30)  not null COMMENT '组名称',
+    group_id     int unsigned not null COMMENT '关联组id',
+    socket       varchar(255) not null COMMENT 'ip:端口',
+    status       tinyint      not null COMMENT '状态 0=失败；1=成功；2=等待；3=未确认',
+    msg          text         not null COMMENT '状态信息',
+    creator      varchar(255) not null COMMENT '创建者',
+    create_time  bigint       not null COMMENT '创建时间',
+    end_time     bigint       not null COMMENT '结束时间',
+    executor_detail_id int not null COMMENT '关联执行器',
     index (create_time),
     index (executor_detail_id)
 ) engine = InnoDB
@@ -137,14 +137,14 @@ create table tesseract_log
 
 create table tesseract_group
 (
-    id              int unsigned primary key auto_increment,
-    name            varchar(30)  not null,
-    mail            varchar(255) not null,
-    thread_pool_num int          not null,
-    description     varchar(255) not null default '',
-    creator         varchar(255) not null,
-    create_time     bigint       not null,
-    update_time     bigint       not null
+    id              int unsigned primary key auto_increment COMMENT '主键，自增',
+    name            varchar(30)  not null COMMENT '名称',
+    mail            varchar(255) not null COMMENT '邮箱',
+    thread_pool_num int          not null COMMENT '线程池大小',
+    description     varchar(255) not null default '' COMMENT '描述',
+    creator         varchar(255) not null COMMENT '创建者',
+    create_time     bigint       not null COMMENT '创建时间',
+    update_time     bigint       not null COMMENT '更新时间'
 ) engine = InnoDB
   default charset = utf8;
 
