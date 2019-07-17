@@ -26,7 +26,7 @@ CREATE TABLE `tesseract_menu_resource`  (
   `name` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '菜单名称',
   `parent_id` int(11) NOT NULL DEFAULT 0 COMMENT '父级菜单ID',
   `redirect` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '默认转发路由',
-  `path` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '菜单路由地址',
+  `path` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '菜单路由地址',
   `url_pattern` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '路径匹配模式,保留字段',
   `icon` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '菜单的图标',
   `level` tinyint(255) NULL DEFAULT NULL COMMENT '菜单级别，1-一级菜单',
@@ -61,9 +61,12 @@ INSERT INTO `tesseract_menu_resource` VALUES (13, '用户', 0, '/user/index', 'u
 INSERT INTO `tesseract_menu_resource` VALUES (14, '用户列表', 13, NULL, 'index', '', 'documentation', 2, '', 1, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
 INSERT INTO `tesseract_menu_resource` VALUES (15, '日志', 0, '/log/index', 'log', '', 'example', 1, '', 4, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
 INSERT INTO `tesseract_menu_resource` VALUES (16, '日志列表', 15, NULL, 'index', '', 'documentation', 2, '', 1, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
+
 INSERT INTO `tesseract_menu_resource` VALUES (17, '执行器', 0, '/executor/index', 'executor', '', 'example', 1, '', 3, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
 INSERT INTO `tesseract_menu_resource` VALUES (18, '执行器列表', 17, NULL, 'index', '', 'documentation', 2, '', 1, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
 
+INSERT INTO `tesseract_menu_resource` VALUES (19, '权限管理', 0, NULL, '/permission-new/menuResource/index', '', 'documentation', 2, '', 1, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
+INSERT INTO `tesseract_menu_resource` VALUES (20, '菜单管理', 19, NULL, 'index', '', 'documentation', 2, '', 1, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0, 1);
 
 DROP TABLE IF EXISTS `tesseract_role`;
 CREATE TABLE `tesseract_role`  (
@@ -117,6 +120,8 @@ INSERT INTO `tesseract_role_resources` VALUES (16, 1, 15, 0, NULL);
 INSERT INTO `tesseract_role_resources` VALUES (17, 1, 16, 15, NULL);
 INSERT INTO `tesseract_role_resources` VALUES (18, 1, 17, 0, NULL);
 INSERT INTO `tesseract_role_resources` VALUES (19, 1, 18, 17, NULL);
+INSERT INTO `tesseract_role_resources` VALUES (20, 1, 19, 0, NULL);
+INSERT INTO `tesseract_role_resources` VALUES (21, 1, 20, 19, NULL);
 
 DROP TABLE IF EXISTS `tesseract_user_role`;
 CREATE TABLE `tesseract_user_role`  (
