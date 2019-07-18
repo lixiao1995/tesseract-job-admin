@@ -131,6 +131,8 @@ create table tesseract_log
     create_time        bigint       not null COMMENT '创建时间',
     end_time           bigint       not null COMMENT '结束时间',
     executor_detail_id int          not null COMMENT '关联执行器',
+    strategy           varchar(30)  not null,
+    sharding_index     tinyint      not null,
     index (create_time),
     index (executor_detail_id)
 ) engine = InnoDB

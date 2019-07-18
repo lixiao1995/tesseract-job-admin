@@ -34,7 +34,19 @@ public class AdminConstant {
     public static final Integer SCHEDULER_STRATEGY_HASH = 0;
     public static final Integer SCHEDULER_STRATEGY_POLLING = 1;
     public static final Integer SCHEDULER_STRATEGY_LOADFACTOR = 2;
-    public static final Integer SCHEDULER_STRATEGY_SHARDING = 3;
+    public static final Integer SCHEDULER_STRATEGY_BROADCAST = 3;
+    public static final Integer SCHEDULER_STRATEGY_SHARDING = 4;
+
+    public static final Map<Integer, String> SCHEDULER_NAME_MAP = new HashMap<Integer, String>() {
+        {
+            put(SCHEDULER_STRATEGY_HASH, "hash");
+            put(SCHEDULER_STRATEGY_POLLING, "轮询");
+            put(SCHEDULER_STRATEGY_LOADFACTOR, "负载均衡");
+            put(SCHEDULER_STRATEGY_BROADCAST, "广播");
+            put(SCHEDULER_STRATEGY_SHARDING, "分片");
+        }
+    };
+
     public static final Map<Integer, IScheduleRouter> SCHEDULE_ROUTER_MAP = new HashMap<Integer, IScheduleRouter>() {
         {
             put(SCHEDULER_STRATEGY_HASH, new HashRouter());
