@@ -38,6 +38,7 @@ public class TesseractLogController {
 
     @RequestMapping(NOTIFY_MAPPING_SUFFIX)
     private TesseractExecutorResponse notify(@Validated @RequestBody TesseractAdminJobNotify tesseractAdminJobNotify) {
+        //客户端日志回调
         logService.notify(tesseractAdminJobNotify);
         return TesseractExecutorResponse.SUCCESS;
     }

@@ -1,5 +1,6 @@
 package admin.service.impl;
 
+import admin.core.event.RetryEvent;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.StatisticsLogDO;
@@ -15,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -44,6 +46,10 @@ import static admin.constant.AdminConstant.LOG_SUCCESS;
 public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, TesseractLog> implements ITesseractLogService {
     @Autowired
     private ITesseractFiredTriggerService firedTriggerService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
     private int statisticsDays = 7;
     private Map<String, Integer> dataMap = Maps.newHashMap();
 
@@ -60,14 +66,26 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             throw new TesseractException("获取日志为空" + tesseractAdminJobNotify);
         }
         if (!StringUtils.isEmpty(exception)) {
+            // 执行失败的情况下
+            // 判断失败类型，如果是执行失败
+            // 查询失败过几次，失败次数小于重试次数，进行重试，
+            // 需要考虑问题，
+            // 1、并发导致重试次数大于设置的重试次数，并且job会多次执行
+            // 2、
+            // 1、马上重试；2、放入队列，等待重试
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setMsg(exception);
+            retry(tesseractAdminJobNotify);
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
             tesseractLog.setMsg("执行成功");
         }
         tesseractLog.setEndTime(System.currentTimeMillis());
         firedTriggerService.removeFiredTriggerAndUpdateLog(triggerId, executorDetailId, tesseractLog);
+    }
+
+    private void retry(TesseractAdminJobNotify tesseractAdminJobNotify) {
+        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
     }
 
     @Override
