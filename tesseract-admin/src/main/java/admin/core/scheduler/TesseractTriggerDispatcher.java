@@ -76,8 +76,8 @@ public class TesseractTriggerDispatcher {
         public void run() {
             try {
                 //获取job detail
-                List<TesseractJobDetail> jobList = getJobList();
-                if (CollectionUtils.isEmpty(jobList)) {
+                TesseractJobDetail jobDetail = getJobDetail();
+                if (jobDetail == null) {
                     doFail("没有发现可运行job");
                     return;
                 }
@@ -94,41 +94,39 @@ public class TesseractTriggerDispatcher {
                     return;
                 }
                 //路由发送执行
-                routerExecute(jobList, executorDetailList);
+                routerExecute(jobDetail, executorDetailList);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         /**
-         * @param jobList            任务列表
+         * @param jobDetail          触发器对应任务
          * @param executorDetailList 机器列表
          */
-        private void routerExecute(List<TesseractJobDetail> jobList, List<TesseractExecutorDetail> executorDetailList) {
-            jobList.parallelStream().forEach(jobDetail -> {
-                //路由选择
-                @NotNull Integer strategy = trigger.getStrategy();
-                //广播
-                if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
-                    executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail, null));
-                } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
-                    //分片
-                    @NotNull Integer shardingNum = trigger.getShardingNum();
-                    int size = executorDetailList.size();
-                    int count = 0;
-                    for (int i = 0; i < shardingNum; i++) {
-                        if (i < size) {
-                            count = 0;
-                        }
-                        buildRequestAndSend(jobDetail, executorDetailList.get(count), count++);
+        private void routerExecute(TesseractJobDetail jobDetail, List<TesseractExecutorDetail> executorDetailList) {
+            //路由选择
+            @NotNull Integer strategy = trigger.getStrategy();
+            //广播
+            if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
+                executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail, null));
+            } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
+                //分片
+                @NotNull Integer shardingNum = trigger.getShardingNum();
+                int size = executorDetailList.size();
+                int count = 0;
+                for (int i = 0; i < shardingNum; i++) {
+                    if (i < size) {
+                        count = 0;
                     }
-
-                } else {
-                    //正常调用
-                    TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
-                    buildRequestAndSend(jobDetail, executorDetail, null);
+                    buildRequestAndSend(jobDetail, executorDetailList.get(count), count++);
                 }
-            });
+
+            } else {
+                //正常调用
+                TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
+                buildRequestAndSend(jobDetail, executorDetail, null);
+            }
         }
 
         /**
@@ -180,14 +178,14 @@ public class TesseractTriggerDispatcher {
 
         /**
          * 获取当前触发器可执行的任务
+         * 一个触发器只能对应一个任务!!!!!!!!!!!
          *
          * @return
          */
-        private List<TesseractJobDetail> getJobList() {
+        private TesseractJobDetail getJobDetail() {
             QueryWrapper<TesseractJobDetail> jobQueryWrapper = new QueryWrapper<>();
             jobQueryWrapper.lambda().eq(TesseractJobDetail::getTriggerId, trigger.getId());
-            List<TesseractJobDetail> list = tesseractJobDetailService.list(jobQueryWrapper);
-            return list;
+            return tesseractJobDetailService.getOne(jobQueryWrapper);
         }
 
         /**
