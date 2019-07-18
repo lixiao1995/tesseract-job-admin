@@ -3,7 +3,7 @@ package admin.service.impl;
 import admin.core.event.MailEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.entity.TesseractExecutorDetail;
-import admin.entity.TesseractFiredTrigger;
+import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractExecutorDetailMapper;
 import admin.service.*;
@@ -43,7 +43,7 @@ import static tesseract.core.constant.CommonConstant.EXECUTOR_DETAIL_NOT_FIND;
 @Slf4j
 public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExecutorDetailMapper, TesseractExecutorDetail> implements ITesseractExecutorDetailService {
     @Autowired
-    private ITesseractFiredTriggerService firedTriggerService;
+    private ITesseractFiredJobService firedJobService;
     @Autowired
     private ITesseractLogService logService;
     @Autowired
@@ -106,10 +106,10 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
             });
             //删除detail表中数据
             this.removeByIds(detailIdList);
-            //移出fired trigger
-            QueryWrapper<TesseractFiredTrigger> firedTriggerQueryWrapper = new QueryWrapper<>();
-            firedTriggerQueryWrapper.lambda().in(TesseractFiredTrigger::getExecutorDetailId, detailIdList);
-            firedTriggerService.remove(firedTriggerQueryWrapper);
+            //移出fired job
+            QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
+            firedJobQueryWrapper.lambda().in(TesseractFiredJob::getExecutorDetailId, detailIdList);
+            firedJobService.remove(firedJobQueryWrapper);
             //修改日志状态
             modifyLogStatus(detailIdList);
             //发送报警邮件

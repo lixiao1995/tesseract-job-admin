@@ -39,7 +39,7 @@ public class TesseractTriggerDispatcher {
     private ITesseractGroupService groupService;
     private ITesseractExecutorDetailService executorDetailService;
     private ITesseractExecutorService executorService;
-    private ITesseractFiredTriggerService firedTriggerService;
+    private ITesseractFiredJobService firedJobService;
     private IAdminFeignService feignService;
     private ISchedulerThreadPool threadPool;
     private TesseractMailTemplate mailTemplate;
@@ -134,9 +134,9 @@ public class TesseractTriggerDispatcher {
             tesseractLog.setExecutorDetailId(executorDetail.getId());
             tesseractLogService.save(tesseractLog);
             //设置firedTrigger
-            firedTriggerService.save(buildFiredTrigger(jobDetail, executorDetail, tesseractLog.getId()));
+            firedJobService.save(buildFiredJob(jobDetail, executorDetail, tesseractLog.getId()));
             //构建请求发送 todo 检查
-            doRequest(buildRequest(tesseractLog.getId(), jobDetail.getClassName(), executorDetail.getId()), tesseractLog, executorDetail);
+            doRequest(buildRequest(tesseractLog.getId(), jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId()), tesseractLog, executorDetail);
         }
 
         /**
@@ -196,22 +196,23 @@ public class TesseractTriggerDispatcher {
         }
 
         /**
-         * 构建正在执行的触发器
+         * 构建正在执行的任务bean
          *
          * @param jobDetail
          * @param executorDetail
          * @param logId
          * @return
          */
-        private TesseractFiredTrigger buildFiredTrigger(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Long logId) {
-            TesseractFiredTrigger tesseractFiredTrigger = new TesseractFiredTrigger();
+        private TesseractFiredJob buildFiredJob(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Long logId) {
+            TesseractFiredJob tesseractFiredTrigger = new TesseractFiredJob();
             tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
-            tesseractFiredTrigger.setName(trigger.getName());
+            tesseractFiredTrigger.setTriggerName(trigger.getName());
             tesseractFiredTrigger.setTriggerId(trigger.getId());
+            tesseractFiredTrigger.setJobId(jobDetail.getId());
             tesseractFiredTrigger.setClassName(jobDetail.getClassName());
-            tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
             tesseractFiredTrigger.setSocket(executorDetail.getSocket());
             tesseractFiredTrigger.setLogId(logId);
+            tesseractFiredTrigger.setRetryCount(0);
             return tesseractFiredTrigger;
         }
 
@@ -223,8 +224,9 @@ public class TesseractTriggerDispatcher {
          * @param executorDetailId
          * @return
          */
-        private TesseractExecutorRequest buildRequest(Long logId, String className, Integer executorDetailId) {
+        private TesseractExecutorRequest buildRequest(Long logId, Integer jobId, String className, Integer executorDetailId) {
             TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
+            executorRequest.setJobId(jobId);
             executorRequest.setClassName(className);
             executorRequest.setShardingIndex(trigger.getShardingNum());
             executorRequest.setLogId(logId);
@@ -260,8 +262,13 @@ public class TesseractTriggerDispatcher {
             if (body != null) {
                 tesseractLog.setMsg(body.toString());
             }
-            //移出执行表并修改日志状态
-            firedTriggerService.removeFiredTriggerAndUpdateLog(trigger.getId(), executorDetail.getId(), tesseractLog);
+            //移出执行表
+            QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
+            firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getTriggerId, trigger.getId());
+            firedJobService.remove(firedJobQueryWrapper);
+            //修改日志状态
+            tesseractLog.setStatus(LOG_FAIL);
+            tesseractLogService.updateById(tesseractLog);
             log.info("tesseractLog:{}", tesseractLog);
             //发送邮件
             this.sendMail(tesseractLog);
