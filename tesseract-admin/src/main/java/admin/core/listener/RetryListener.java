@@ -1,8 +1,10 @@
 package admin.core.listener;
 
 import admin.core.event.RetryEvent;
+import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
 import admin.entity.TesseractTrigger;
+import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -37,6 +39,9 @@ public class RetryListener {
     private ITesseractTriggerService tesseractTriggerService;
 
     @Autowired
+    private ITesseractFiredJobService tesseractFiredJobService;
+
+    @Autowired
     private ITesseractLogService tesseractLogService;
 
 
@@ -44,6 +49,7 @@ public class RetryListener {
     public void onApplicationEvent(RetryEvent event) {
 
         TesseractAdminJobNotify jobNotify = (TesseractAdminJobNotify) event.getSource();
+//        jobNotify.get
         // 重试策略
         // 是否会记录同一个任务执行过几次
         Integer triggerId = jobNotify.getTriggerId();
@@ -51,7 +57,9 @@ public class RetryListener {
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
         Integer retryCount = tesseractTrigger.getRetryCount();
         Assert.isNull(retryCount, "retryCount can not be null");
-
+        QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq()
+        tesseractFiredJobService.getOne()
 //        if (retryCount > count) {
             //开始执行
 //            feignService.sendToExecutor()
