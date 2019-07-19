@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import tesseract.core.dto.TesseractAdminJobNotify;
 
+import javax.validation.constraints.NotNull;
+
 
 /**
  * @projectName: tesseract-job-admin
@@ -49,21 +51,24 @@ public class RetryListener {
     public void onApplicationEvent(RetryEvent event) {
 
         TesseractAdminJobNotify jobNotify = (TesseractAdminJobNotify) event.getSource();
-//        jobNotify.get
         // 重试策略
         // 是否会记录同一个任务执行过几次
+        Long logId = jobNotify.getLogId();
+        Assert.isNull(logId, "logId can not be null");
         Integer triggerId = jobNotify.getTriggerId();
         Assert.isNull(triggerId, "triggerId can not be null");
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
         Integer retryCount = tesseractTrigger.getRetryCount();
         Assert.isNull(retryCount, "retryCount can not be null");
         QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq()
-        tesseractFiredJobService.getOne()
-//        if (retryCount > count) {
+        queryWrapper.lambda().eq(TesseractFiredJob::getLogId, logId)
+                .eq(TesseractFiredJob::getJobId, triggerId);
+        TesseractFiredJob firedJob = tesseractFiredJobService.getOne(queryWrapper);
+
+        if (retryCount > firedJob.getRetryCount()) {
             //开始执行
 //            feignService.sendToExecutor()
-//        }
+        }
 
 
     }
