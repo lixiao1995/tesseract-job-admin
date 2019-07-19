@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import feignService.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import tesseract.core.dto.TesseractAdminJobNotify;
@@ -50,13 +51,11 @@ public class RetryListener {
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
         Integer retryCount = tesseractTrigger.getRetryCount();
         Assert.isNull(retryCount, "retryCount can not be null");
-        QueryWrapper<TesseractLog> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(TesseractLog::getTriggerName, tesseractTrigger.getName());
-        int count = tesseractLogService.count(queryWrapper);
-        if (retryCount > count) {
+
+//        if (retryCount > count) {
             //开始执行
 //            feignService.sendToExecutor()
-        }
+//        }
 
 
     }

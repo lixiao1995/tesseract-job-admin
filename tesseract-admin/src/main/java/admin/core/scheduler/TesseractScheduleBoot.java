@@ -40,7 +40,7 @@ public class TesseractScheduleBoot {
     private ITesseractExecutorService executorService;
 
     @Autowired
-    private ITesseractFiredTriggerService firedTriggerService;
+    private ITesseractFiredJobService firedJobService;
 
     @Autowired
     private IAdminFeignService feignService;
@@ -150,7 +150,7 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setExecutorDetailService(executorDetailService);
         tesseractTriggerDispatcher.setExecutorService(executorService);
         tesseractTriggerDispatcher.setFeignService(feignService);
-        tesseractTriggerDispatcher.setFiredTriggerService(firedTriggerService);
+        tesseractTriggerDispatcher.setFiredJobService(firedJobService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setTesseractLogService(tesseractLogService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);

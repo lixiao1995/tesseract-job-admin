@@ -1,10 +1,11 @@
 package admin.service.impl;
 
 import admin.core.event.RetryEvent;
+import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.StatisticsLogDO;
-import admin.service.ITesseractFiredTriggerService;
+import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractLogService;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,7 +24,6 @@ import org.springframework.util.StringUtils;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.exception.TesseractException;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -44,22 +44,21 @@ import static admin.constant.AdminConstant.LOG_SUCCESS;
 @Slf4j
 @Service
 public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, TesseractLog> implements ITesseractLogService {
-    @Autowired
-    private ITesseractFiredTriggerService firedTriggerService;
 
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private ITesseractFiredJobService firedJobService;
+
     private int statisticsDays = 7;
-    private Map<String, Integer> dataMap = Maps.newHashMap();
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void notify(TesseractAdminJobNotify tesseractAdminJobNotify) {
         Long logId = tesseractAdminJobNotify.getLogId();
         String exception = tesseractAdminJobNotify.getException();
-        Integer triggerId = tesseractAdminJobNotify.getTriggerId();
-        @NotNull Integer executorDetailId = tesseractAdminJobNotify.getExecutorDetailId();
+        Integer jobId = tesseractAdminJobNotify.getJobId();
         TesseractLog tesseractLog = this.getById(logId);
         if (tesseractLog == null) {
             log.error("获取日志为空:{}", tesseractAdminJobNotify);
@@ -81,7 +80,12 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             tesseractLog.setMsg("执行成功");
         }
         tesseractLog.setEndTime(System.currentTimeMillis());
-        firedTriggerService.removeFiredTriggerAndUpdateLog(triggerId, executorDetailId, tesseractLog);
+        //移除fired job
+        QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
+        firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getJobId, jobId);
+        firedJobService.remove(firedJobQueryWrapper);
+        //更新日志状态
+        this.updateById(tesseractLog);
     }
 
     private void retry(TesseractAdminJobNotify tesseractAdminJobNotify) {

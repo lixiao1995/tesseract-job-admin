@@ -49,4 +49,8 @@ public class TesseractLog implements Serializable {
     private Integer groupId;
 
     private Integer executorDetailId;
+
+    private String strategy;
+
+    private Integer shardingIndex;
 }

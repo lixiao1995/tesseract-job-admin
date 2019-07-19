@@ -37,7 +37,7 @@ public class TesseractApplicationTests {
     private ITesseractExecutorService executorService;
 
     @Autowired
-    private ITesseractFiredTriggerService firedTriggerService;
+    private ITesseractFiredJobService firedJobService;
 
     @Autowired
     private IAdminFeignService feignService;

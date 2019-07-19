@@ -39,7 +39,7 @@ public class TesseractTriggerDispatcher {
     private ITesseractGroupService groupService;
     private ITesseractExecutorDetailService executorDetailService;
     private ITesseractExecutorService executorService;
-    private ITesseractFiredTriggerService firedTriggerService;
+    private ITesseractFiredJobService firedJobService;
     private IAdminFeignService feignService;
     private ISchedulerThreadPool threadPool;
     private TesseractMailTemplate mailTemplate;
@@ -76,8 +76,8 @@ public class TesseractTriggerDispatcher {
         public void run() {
             try {
                 //获取job detail
-                List<TesseractJobDetail> jobList = getJobList();
-                if (CollectionUtils.isEmpty(jobList)) {
+                TesseractJobDetail jobDetail = getJobDetail();
+                if (jobDetail == null) {
                     doFail("没有发现可运行job");
                     return;
                 }
@@ -94,28 +94,39 @@ public class TesseractTriggerDispatcher {
                     return;
                 }
                 //路由发送执行
-                routerExecute(jobList, executorDetailList);
+                routerExecute(jobDetail, executorDetailList);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         /**
-         * @param jobList
-         * @param executorDetailList
+         * @param jobDetail          触发器对应任务
+         * @param executorDetailList 机器列表
          */
-        private void routerExecute(List<TesseractJobDetail> jobList, List<TesseractExecutorDetail> executorDetailList) {
-            jobList.forEach(jobDetail -> {
-                //路由选择
-                @NotNull Integer strategy = trigger.getStrategy();
-                //广播
-                if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
-                    executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail));
-                } else {
-                    TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
-                    buildRequestAndSend(jobDetail, executorDetail);
+        private void routerExecute(TesseractJobDetail jobDetail, List<TesseractExecutorDetail> executorDetailList) {
+            //路由选择
+            @NotNull Integer strategy = trigger.getStrategy();
+            //广播
+            if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
+                executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail, null));
+            } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
+                //分片
+                @NotNull Integer shardingNum = trigger.getShardingNum();
+                int size = executorDetailList.size();
+                int count = 0;
+                for (int i = 0; i < shardingNum; i++) {
+                    if (i < size) {
+                        count = 0;
+                    }
+                    buildRequestAndSend(jobDetail, executorDetailList.get(count), count++);
                 }
-            });
+
+            } else {
+                //正常调用
+                TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
+                buildRequestAndSend(jobDetail, executorDetail, null);
+            }
         }
 
         /**
@@ -124,8 +135,8 @@ public class TesseractTriggerDispatcher {
          * @param jobDetail
          * @param executorDetail
          */
-        private void buildRequestAndSend(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail) {
-            TesseractLog tesseractLog = buildDefaultLog();
+        private void buildRequestAndSend(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Integer shardingIndex) {
+            TesseractLog tesseractLog = buildDefaultLog(shardingIndex);
             tesseractLog.setSocket(executorDetail.getSocket());
             tesseractLog.setMsg("执行中");
             //设置结束时间为0 表示未结束
@@ -134,9 +145,9 @@ public class TesseractTriggerDispatcher {
             tesseractLog.setExecutorDetailId(executorDetail.getId());
             tesseractLogService.save(tesseractLog);
             //设置firedTrigger
-            firedTriggerService.save(buildFiredTrigger(jobDetail, executorDetail, tesseractLog.getId()));
-            //构建请求发送 todo 检查
-            doRequest(buildRequest(tesseractLog.getId(), jobDetail.getClassName(), executorDetail.getId()), tesseractLog, executorDetail);
+            firedJobService.save(buildFiredJob(jobDetail, executorDetail, tesseractLog.getId()));
+            //构建请求发送
+            doRequest(buildRequest(tesseractLog.getId(), jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex), tesseractLog, executorDetail);
         }
 
         /**
@@ -144,7 +155,7 @@ public class TesseractTriggerDispatcher {
          *
          * @return
          */
-        private TesseractLog buildDefaultLog() {
+        private TesseractLog buildDefaultLog(Integer shardingIndex) {
             TesseractLog tesseractLog = new TesseractLog();
             tesseractLog.setClassName("");
             tesseractLog.setCreateTime(System.currentTimeMillis());
@@ -156,19 +167,25 @@ public class TesseractTriggerDispatcher {
             tesseractLog.setExecutorDetailId(0);
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setSocket("");
+            tesseractLog.setStrategy(SCHEDULER_NAME_MAP.getOrDefault(trigger.getStrategy(), "未知调度<不应该出现>"));
+            if (shardingIndex == null) {
+                tesseractLog.setShardingIndex(-1);
+            } else {
+                tesseractLog.setShardingIndex(shardingIndex);
+            }
             return tesseractLog;
         }
 
         /**
          * 获取当前触发器可执行的任务
+         * 一个触发器只能对应一个任务!!!!!!!!!!!
          *
          * @return
          */
-        private List<TesseractJobDetail> getJobList() {
+        private TesseractJobDetail getJobDetail() {
             QueryWrapper<TesseractJobDetail> jobQueryWrapper = new QueryWrapper<>();
             jobQueryWrapper.lambda().eq(TesseractJobDetail::getTriggerId, trigger.getId());
-            List<TesseractJobDetail> list = tesseractJobDetailService.list(jobQueryWrapper);
-            return list;
+            return tesseractJobDetailService.getOne(jobQueryWrapper);
         }
 
         /**
@@ -177,7 +194,7 @@ public class TesseractTriggerDispatcher {
          * @param msg
          */
         private void doFail(String msg) {
-            TesseractLog tesseractLog = buildDefaultLog();
+            TesseractLog tesseractLog = buildDefaultLog(null);
             tesseractLog.setMsg(msg);
             tesseractLogService.save(tesseractLog);
             sendMail(tesseractLog);
@@ -196,22 +213,23 @@ public class TesseractTriggerDispatcher {
         }
 
         /**
-         * 构建正在执行的触发器
+         * 构建正在执行的任务bean
          *
          * @param jobDetail
          * @param executorDetail
          * @param logId
          * @return
          */
-        private TesseractFiredTrigger buildFiredTrigger(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Long logId) {
-            TesseractFiredTrigger tesseractFiredTrigger = new TesseractFiredTrigger();
+        private TesseractFiredJob buildFiredJob(TesseractJobDetail jobDetail, TesseractExecutorDetail executorDetail, Long logId) {
+            TesseractFiredJob tesseractFiredTrigger = new TesseractFiredJob();
             tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
-            tesseractFiredTrigger.setName(trigger.getName());
+            tesseractFiredTrigger.setTriggerName(trigger.getName());
             tesseractFiredTrigger.setTriggerId(trigger.getId());
+            tesseractFiredTrigger.setJobId(jobDetail.getId());
             tesseractFiredTrigger.setClassName(jobDetail.getClassName());
-            tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
             tesseractFiredTrigger.setSocket(executorDetail.getSocket());
             tesseractFiredTrigger.setLogId(logId);
+            tesseractFiredTrigger.setRetryCount(0);
             return tesseractFiredTrigger;
         }
 
@@ -223,12 +241,14 @@ public class TesseractTriggerDispatcher {
          * @param executorDetailId
          * @return
          */
-        private TesseractExecutorRequest buildRequest(Long logId, String className, Integer executorDetailId) {
+        private TesseractExecutorRequest buildRequest(Long logId, Integer jobId, String className, Integer executorDetailId, Integer shardingIndex) {
             TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
+            executorRequest.setJobId(jobId);
             executorRequest.setClassName(className);
             executorRequest.setShardingIndex(trigger.getShardingNum());
             executorRequest.setLogId(logId);
             executorRequest.setTriggerId(trigger.getId());
+            executorRequest.setShardingIndex(shardingIndex);
             executorRequest.setExecutorDetailId(executorDetailId);
             return executorRequest;
         }
@@ -260,8 +280,13 @@ public class TesseractTriggerDispatcher {
             if (body != null) {
                 tesseractLog.setMsg(body.toString());
             }
-            //移出执行表并修改日志状态
-            firedTriggerService.removeFiredTriggerAndUpdateLog(trigger.getId(), executorDetail.getId(), tesseractLog);
+            //移出执行表
+            QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
+            firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getTriggerId, trigger.getId());
+            firedJobService.remove(firedJobQueryWrapper);
+            //修改日志状态
+            tesseractLog.setStatus(LOG_FAIL);
+            tesseractLogService.updateById(tesseractLog);
             log.info("tesseractLog:{}", tesseractLog);
             //发送邮件
             this.sendMail(tesseractLog);

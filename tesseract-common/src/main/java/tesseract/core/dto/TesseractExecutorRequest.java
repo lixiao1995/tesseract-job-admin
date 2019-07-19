@@ -18,5 +18,9 @@ public class TesseractExecutorRequest {
     private Integer triggerId;
 
     @NotNull
+    private Integer jobId;
+
+
+    @NotNull
     private Integer executorDetailId;
 }
