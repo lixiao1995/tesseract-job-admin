@@ -34,27 +34,12 @@ public class TesseractScheduleBoot {
 
     @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
-    @Autowired
-    private ITesseractLogService tesseractLogService;
 
     @Autowired
     private ITesseractExecutorService executorService;
 
     @Autowired
-    private ITesseractFiredJobService firedJobService;
-
-    @Autowired
-    private IAdminFeignService feignService;
-
-    @Autowired
     private ITesseractGroupService groupService;
-
-    @Autowired
-    private TesseractMailTemplate mailTemplate;
-
-    @Autowired
-    @Qualifier("mailEventBus")
-    private EventBus mailEventBus;
 
     @Autowired
     private SendToExecuteComponent sendToExecuteComponent;
