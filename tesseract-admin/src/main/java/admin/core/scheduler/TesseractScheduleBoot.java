@@ -1,5 +1,6 @@
 package admin.core.scheduler;
 
+import admin.core.component.SendToExecuteComponent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scanner.ExecutorScanner;
 import admin.core.scanner.MissfireScanner;
@@ -54,6 +55,9 @@ public class TesseractScheduleBoot {
     @Autowired
     @Qualifier("mailEventBus")
     private EventBus mailEventBus;
+
+    @Autowired
+    private SendToExecuteComponent sendToExecuteComponent;
 
     private static TesseractScheduleBoot tesseractScheduleBoot;
 
@@ -149,17 +153,11 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setGroupName(groupName);
         tesseractTriggerDispatcher.setExecutorDetailService(executorDetailService);
         tesseractTriggerDispatcher.setExecutorService(executorService);
-        tesseractTriggerDispatcher.setFeignService(feignService);
-        tesseractTriggerDispatcher.setFiredJobService(firedJobService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
-        tesseractTriggerDispatcher.setTesseractLogService(tesseractLogService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setGroupService(groupService);
-        tesseractTriggerDispatcher.setMailEventBus(mailEventBus);
-        tesseractTriggerDispatcher.setMailTemplate(mailTemplate);
+        tesseractTriggerDispatcher.setSendToExecute(sendToExecuteComponent.createSendToExecute());
         return tesseractTriggerDispatcher;
     }
-
 
     /**
      *
