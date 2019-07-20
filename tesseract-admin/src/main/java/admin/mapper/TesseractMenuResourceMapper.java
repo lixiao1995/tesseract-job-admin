@@ -16,5 +16,5 @@ import java.util.List;
  */
 public interface TesseractMenuResourceMapper extends BaseMapper<TesseractMenuResource> {
 
-    List<TesseractMenuResource> selectMenusByUserId(@Param("roleIds") List<Integer> roleIds);
+    List<TesseractMenuResource> selectMenusByRole(@Param("roleIds") List<Integer> roleIds);
 }

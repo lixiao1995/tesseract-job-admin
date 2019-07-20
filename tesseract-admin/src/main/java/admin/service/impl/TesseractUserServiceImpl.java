@@ -1,17 +1,18 @@
 package admin.service.impl;
 
-import admin.entity.TesseractMenuResource;
-import admin.entity.TesseractRole;
-import admin.entity.TesseractToken;
-import admin.entity.TesseractUser;
+import admin.entity.*;
 import admin.mapper.TesseractMenuResourceMapper;
 import admin.mapper.TesseractRoleMapper;
 import admin.mapper.TesseractUserMapper;
 import admin.pojo.StatisticsLogDO;
+import admin.pojo.TesseractUserDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
+import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
+import admin.service.ITesseractMenuBtnService;
 import admin.service.ITesseractTokenService;
+import admin.service.ITesseractUserRoleService;
 import admin.service.ITesseractUserService;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,8 +20,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -39,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static admin.constant.AdminConstant.USER_INVALID;
 import static admin.constant.AdminConstant.USER_VALID;
@@ -52,6 +58,7 @@ import static admin.constant.AdminConstant.USER_VALID;
  * @since 2019-07-03
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 @Slf4j
 public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, TesseractUser> implements ITesseractUserService {
     private static final String TOKEN_FORMATTER = "tessseract-%s-%s";
@@ -67,11 +74,15 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Autowired
     private UserDetailsService webUserDetailsService;
     @Autowired
+    private ITesseractUserRoleService userRoleService;
+    @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     private TesseractRoleMapper tesseractRoleMapper;
     @Autowired
     private TesseractMenuResourceMapper tesseractMenuResourceMapper;
+    @Autowired
+    private ITesseractMenuBtnService menuBtnService;
 
     @Deprecated
     @Override
@@ -199,12 +210,31 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
-    public void saveOrUpdateUser(TesseractUser tesseractUser) {
+    public void saveOrUpdateUser(TesseractUserDO tesseractUserDO) {
         long currentTimeMillis = System.currentTimeMillis();
-        Integer id = tesseractUser.getId();
-        if (id != null) {
+        TesseractUser tesseractUser = new TesseractUser();
+        List<Integer> roleIdList = tesseractUserDO.getRoleIdList();
+//        BeanCopier beanCopier = BeanCopier.create(TesseractUserDO.class, TesseractUser.class, false);
+//        beanCopier.copy(tesseractUserDO, tesseractUser, null);
+        BeanUtils.copyProperties(tesseractUserDO, tesseractUser);
+        Integer userId = tesseractUser.getId();
+        if (userId != null) {
             tesseractUser.setUpdateTime(currentTimeMillis);
             updateById(tesseractUser);
+            //删除原有角色管理表并重建
+            QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
+            userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
+            userRoleService.remove(userRoleQueryWrapper);
+            //如果角色id不为空则重建
+            if (!CollectionUtils.isEmpty(roleIdList)) {
+                List<TesseractUserRole> userRoleList = roleIdList.stream().map(roleId -> {
+                    TesseractUserRole tesseractUserRole = new TesseractUserRole();
+                    tesseractUserRole.setRoleId(roleId);
+                    tesseractUserRole.setUserId(userId);
+                    return tesseractUserRole;
+                }).collect(Collectors.toList());
+                userRoleService.saveBatch(userRoleList);
+            }
             return;
         }
         tesseractUser.setStatus(USER_VALID);
@@ -212,6 +242,16 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         tesseractUser.setPassword(defaultPasswordMD5);
         tesseractUser.setCreateTime(currentTimeMillis);
         this.save(tesseractUser);
+        //保存用户角色关联表
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            List<TesseractUserRole> userRoleList = roleIdList.stream().map(roleId -> {
+                TesseractUserRole tesseractUserRole = new TesseractUserRole();
+                tesseractUserRole.setRoleId(roleId);
+                tesseractUserRole.setUserId(tesseractUser.getId());
+                return tesseractUserRole;
+            }).collect(Collectors.toList());
+            userRoleService.saveBatch(userRoleList);
+        }
     }
 
     @Override
@@ -267,6 +307,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user == null) {
             throw new TesseractException("用户不存在");
         }
+        //删除用户和角色关联表
+        QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
+        userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
+        userRoleService.remove(userRoleQueryWrapper);
+        //删除用户
         removeById(userId);
     }
 
@@ -303,17 +348,17 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         List<String> btnList = new ArrayList<>();
         // 角色不为空进行查询
         if (!CollectionUtils.isEmpty(roleIds)) {
-            List<TesseractMenuResource> tesseractMenuResources = tesseractMenuResourceMapper.selectMenusByUserId(roleIds);
-            tesseractMenuResources.stream().forEach(menu -> {
-                if (menu == null) {
-                    return;
-                }
-                menuList.add(menu);
-                String btnCodes = menu.getBtnAuthCodes();
-                if (!StringUtils.isEmpty(btnCodes)) {
-                    btnList.addAll(Arrays.asList(btnCodes.split(",")));
-                }
-            });
+            menuList = tesseractMenuResourceMapper.selectMenusByRole(roleIds);
+        }
+        if (!CollectionUtils.isEmpty(menuList)) {
+            List<Integer> menuIdList = menuList.stream().map(TesseractMenuResource::getId).collect(Collectors.toList());
+            //根据菜单获取按钮权限
+            List<TesseractBtnResource> list = menuBtnService.listBtnByMenuIdList(menuIdList);
+            btnList = list.stream().map(btnResource -> {
+                String btnName = btnResource.getBtnName();
+                String menuPath = btnResource.getMenuPath();
+                return menuPath + "/" + btnName;
+            }).collect(Collectors.toList());
         }
         userAuthVO.setMenuList(menuList);
         userAuthVO.setBtnList(btnList);

@@ -65,4 +65,10 @@ public class AdminConstant {
      */
     public static final String TOKEN = "X-Token";
     public static final String ANONYMOUS_TAG = "anonymousUser";
+
+    /**
+     * 菜单管理
+     */
+    public static final Integer MENU_NO_CACHE = 0;
+    public static final Integer MENU_CACHE = 1;
 }

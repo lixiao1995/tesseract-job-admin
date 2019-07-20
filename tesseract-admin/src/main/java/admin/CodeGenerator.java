@@ -28,7 +28,7 @@ public class CodeGenerator {
         gc.setBaseColumnList(true);
         gc.setBaseResultMap(true);
         //谨慎操作哈，这玩意儿会覆盖已创建的文件
-        gc.setFileOverride(true);
+        //gc.setFileOverride(true);
         mpg.setGlobalConfig(gc);
 
         // 数据源配置
@@ -114,7 +114,7 @@ public class CodeGenerator {
 //                "tesseract_user"
 //        );
         strategy.setInclude(
-                "tesseract_fired_job"
+                "tesseract_menu_btn"
 //                "tesseract_menu_resource",
 //                "tesseract_role",
 //                "tesseract_role_resources",
