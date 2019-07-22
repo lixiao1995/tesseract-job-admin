@@ -9,11 +9,9 @@
         <result column="parent_id" property="parentId"/>
         <result column="path" property="path"/>
         <result column="redirect" property="redirect"/>
-        <result column="url_pattern" property="urlPattern"/>
         <result column="meta_icon" property="metaIcon"/>
         <result column="meta_title" property="metaTitle"/>
-        <result column="meta_no_cache" property="metaNoCache"/>
-        <result column="level" property="level"/>
+        <result column="meta_cache" property="metaNoCache"/>
         <result column="menu_desc" property="menuDesc"/>
         <result column="menu_order" property="menuOrder"/>
         <result column="create_user_id" property="createUserId"/>
@@ -24,15 +22,14 @@
         <result column="status" property="status"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
-        <result column="always_show_flag" property="alwaysShowFlag"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, `name`, parent_id, redirect, path, url_pattern, `level`, meta_icon, meta_title
-                                     , meta_no_cache, menu_desc
+        id, `name`, parent_id, redirect, path, meta_icon, meta_title
+                                     , meta_cache, menu_desc
                                      , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag
+                                     , status, create_time, update_time, del_flag
     </sql>
 
 

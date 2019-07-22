@@ -50,9 +50,6 @@ public class TesseractMenuResource implements Serializable {
     private String redirect;
 
 
-    @ApiModelProperty(value = "路径匹配模式,保留字段")
-    private String urlPattern;
-
     @ApiModelProperty(value = "菜单的图标")
     private String metaIcon;
 
@@ -60,11 +57,7 @@ public class TesseractMenuResource implements Serializable {
     private String metaTitle;
 
     @ApiModelProperty(value = "是否缓存")
-    private String metaNoCache;
-
-
-    @ApiModelProperty(value = "菜单级别，1-一级菜单")
-    private Integer level;
+    private Integer metaCache;
 
     @ApiModelProperty(value = "菜单描述")
     private String menuDesc;
@@ -96,9 +89,5 @@ public class TesseractMenuResource implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Long updateTime;
-
-    @ApiModelProperty(value = "是否一直显示，即使没有子菜单")
-    @TableField(value = "always_show_flag")
-    private Integer alwaysShowFlag;
 
 }

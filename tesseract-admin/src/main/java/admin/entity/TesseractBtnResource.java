@@ -34,15 +34,6 @@ public class TesseractBtnResource implements Serializable {
     @ApiModelProperty(value = "按钮名称")
     private String btnName;
 
-    @ApiModelProperty(value = "所属菜单ID")
-    private Integer menuId;
-
-    @ApiModelProperty(value = "所属菜单名")
-    private String menuName;
-
-    @ApiModelProperty(value = "所属菜单路径")
-    private String menuPath;
-
     @ApiModelProperty(value = "创建人ID")
     private Integer createUserId;
 

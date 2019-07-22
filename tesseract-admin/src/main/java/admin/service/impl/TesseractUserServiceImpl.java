@@ -8,12 +8,8 @@ import admin.pojo.StatisticsLogDO;
 import admin.pojo.TesseractUserDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
-import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
-import admin.service.ITesseractMenuBtnService;
-import admin.service.ITesseractTokenService;
-import admin.service.ITesseractUserRoleService;
-import admin.service.ITesseractUserService;
+import admin.service.*;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -21,10 +17,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -82,7 +79,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Autowired
     private TesseractMenuResourceMapper tesseractMenuResourceMapper;
     @Autowired
-    private ITesseractMenuBtnService menuBtnService;
+    private ITesseractRoleBtnService roleBtnService;
+    @Autowired
+    private ITesseractBtnResourceService btnResourceService;
+    @Autowired
+    private ITesseractMenuResourceService menuResourceService;
 
     @Deprecated
     @Override
@@ -350,15 +351,33 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (!CollectionUtils.isEmpty(roleIds)) {
             menuList = tesseractMenuResourceMapper.selectMenusByRole(roleIds);
         }
-        if (!CollectionUtils.isEmpty(menuList)) {
-            List<Integer> menuIdList = menuList.stream().map(TesseractMenuResource::getId).collect(Collectors.toList());
-            //根据菜单获取按钮权限
-            List<TesseractBtnResource> list = menuBtnService.listBtnByMenuIdList(menuIdList);
-            btnList = list.stream().map(btnResource -> {
-                String btnName = btnResource.getBtnName();
-                String menuPath = btnResource.getMenuPath();
-                return menuPath + "/" + btnName;
-            }).collect(Collectors.toList());
+        //根据角色获取按钮
+        if (!CollectionUtils.isEmpty(tesseractRoles)) {
+            //获取角色按钮关联表
+            List<Integer> roleIdList = tesseractRoles.stream().map(TesseractRole::getId).collect(Collectors.toList());
+            QueryWrapper<TesseractRoleBtn> roleBtnQueryWrapper = new QueryWrapper<>();
+            roleBtnQueryWrapper.lambda().in(TesseractRoleBtn::getRoleId, roleIdList);
+            List<TesseractRoleBtn> roleBtnList = roleBtnService.list(roleBtnQueryWrapper);
+
+            Collection<TesseractBtnResource> btnResourceList = Lists.newArrayList();
+
+            List<Integer> btnResourceIdList = Lists.newArrayList();
+            roleBtnList.forEach(roleBtn -> {
+                btnResourceIdList.add(roleBtn.getBtnId());
+            });
+            //获取按钮
+            if (!CollectionUtils.isEmpty(btnResourceIdList)) {
+                btnResourceList = btnResourceService.listByIds(btnResourceIdList);
+            }
+            HashMap<Integer, TesseractMenuResource> menuMap = Maps.newHashMap();
+            HashMap<Integer, TesseractBtnResource> btnMap = Maps.newHashMap();
+            menuList.forEach(menuResource -> menuMap.put(menuResource.getId(), menuResource));
+            btnResourceList.forEach(btnResource -> btnMap.put(btnResource.getId(), btnResource));
+            for (TesseractRoleBtn tesseractRoleBtn : roleBtnList) {
+                Integer btnId = tesseractRoleBtn.getBtnId();
+                Integer menuId = tesseractRoleBtn.getMenuId();
+                btnList.add(menuMap.get(menuId).getPath() + "/" + btnMap.get(btnId).getBtnName());
+            }
         }
         userAuthVO.setMenuList(menuList);
         userAuthVO.setBtnList(btnList);

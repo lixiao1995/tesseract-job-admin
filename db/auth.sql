@@ -37,13 +37,10 @@ CREATE TABLE `tesseract_menu_resource`
     `parent_name`      varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '菜单的名字',
     `redirect`         varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL     DEFAULT NULL COMMENT '默认转发路由',
     `path`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '菜单路由地址',
-    `url_pattern`      varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL DEFAULT '' COMMENT '路径匹配模式,保留字段',
-    `level`            tinyint(255)                                            NULL     DEFAULT NULL COMMENT '菜单级别，1-一级菜单',
 
     `meta_icon`        varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '菜单的图标',
     `meta_title`       varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '路由标题',
-    `meta_no_cache`    tinyint                                                 NOT NULL COMMENT '是否缓存',
-
+    `meta_cache`       tinyint                                                 NOT NULL COMMENT '是否缓存',
 
     `menu_desc`        varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL DEFAULT '' COMMENT '菜单描述',
     `menu_order`       mediumint(9)                                            NULL     DEFAULT NULL COMMENT '菜单顺序',
@@ -55,7 +52,6 @@ CREATE TABLE `tesseract_menu_resource`
     `create_time`      bigint(20)                                              NULL     DEFAULT NULL COMMENT '创建时间',
     `update_time`      bigint(20)                                              NULL     DEFAULT NULL COMMENT '更新时间',
     `del_flag`         tinyint(4)                                              NULL     DEFAULT NULL COMMENT '是否删除，0-未删除，1-删除',
-    `always_show_flag` tinyint(4)                                              NULL     DEFAULT NULL COMMENT '是否一直显示，即使没有子菜单',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 19
@@ -64,57 +60,15 @@ CREATE TABLE `tesseract_menu_resource`
   ROW_FORMAT = Dynamic;
 
 
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
+INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, meta_icon
                                      , meta_title
-                                     , meta_no_cache, menu_desc
+                                     , meta_cache, menu_desc
                                      , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (1, 'dashboard', 0, '', '', '/dashboard/index', '', 1, 'documentation', '控制板', 1, '', 1, 1, 'admin', 1, 'admin',
+                                     , status, create_time, update_time, del_flag)
+VALUES (1, 'dashboard', 0, '', '', '/dashboard/index', '', 'documentation', 0, '控制板', 1, 1, 'admin', 1, 'admin',
         0, NULL,
-        NULL, 0, 0);
+        NULL, 0);
 
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
-                                     , meta_title
-                                     , meta_no_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (2, 'executor', 0, '', '', '/executor/index', '', 1, 'documentation', '执行器列表', 1, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0, 0);
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
-                                     , meta_title
-                                     , meta_no_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (3, 'user', 0, '', '', '/user/index', '', 1, 'documentation', '用户列表', 1, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0, 0);
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
-                                     , meta_title
-                                     , meta_no_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (6, 'trigger', 0, '', '', '/trigger/index', '', 1, 'documentation', '触发器列表', 1, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0, 0);
-
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
-                                     , meta_title
-                                     , meta_no_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (4, 'log', 0, '', '', '/log/index', '', 1, 'documentation', '日志列表', 1, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0, 0);
-
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, url_pattern, level, meta_icon
-                                     , meta_title
-                                     , meta_no_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag, always_show_flag)
-VALUES (5, 'group', 0, '', '', '/group/index', '', 1, 'documentation', '组列表', 1, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0, 0);
 
 
 DROP TABLE IF EXISTS `tesseract_role`;
@@ -161,12 +115,13 @@ CREATE TABLE `tesseract_role_resources`
   COLLATE = utf8_general_ci
   ROW_FORMAT = Dynamic;
 
-DROP TABLE IF EXISTS `tesseract_menu_btn`;
-CREATE TABLE `tesseract_menu_btn`
+DROP TABLE IF EXISTS `tesseract_role_btn`;
+CREATE TABLE `tesseract_role_btn`
 (
     `id`      int(11) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
-    `menu_id` int(11) NOT NULL COMMENT '菜单ID',
+    `role_id` int(11) NOT NULL COMMENT '角色ID',
     `btn_id`  int(11) NOT NULL COMMENT '按钮ID',
+    `menu_id` int(11) NOT NULL COMMENT '菜单ID',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 20
@@ -174,20 +129,6 @@ CREATE TABLE `tesseract_menu_btn`
   COLLATE = utf8_general_ci
   ROW_FORMAT = Dynamic;
 
-
-
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (1, 1, 1);
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (2, 1, 2);
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (3, 1, 3);
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (4, 1, 4);
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (5, 1, 5);
-INSERT INTO `tesseract_role_resources`(id, role_id, menu_id)
-VALUES (6, 1, 6);
 
 
 DROP TABLE IF EXISTS `tesseract_user_role`;

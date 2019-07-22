@@ -1,13 +1,13 @@
 package admin.service.impl;
 
-import admin.entity.TesseractMenuBtn;
+import admin.entity.TesseractRoleBtn;
 import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRoleResources;
 import admin.mapper.TesseractMenuResourceMapper;
 import admin.security.SecurityUserDetail;
 import admin.security.SecurityUserContextHolder;
 import admin.service.ITesseractBtnResourceService;
-import admin.service.ITesseractMenuBtnService;
+import admin.service.ITesseractRoleBtnService;
 import admin.service.ITesseractMenuResourceService;
 import admin.service.ITesseractRoleResourcesService;
 import admin.util.AdminUtils;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tesseract.exception.TesseractException;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuR
     @Autowired
     private ITesseractRoleResourcesService roleResourcesService;
     @Autowired
-    private ITesseractMenuBtnService menuBtnService;
+    private ITesseractRoleBtnService menuBtnService;
     @Autowired
     private ITesseractBtnResourceService btnResourceService;
 
@@ -65,6 +66,13 @@ public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuR
     @Override
     public void saveOrUpdateMenu(TesseractMenuResource tesseractMenuResource) {
         long currentTimeMillis = System.currentTimeMillis();
+        if (tesseractMenuResource.getParentId() == null) {
+            tesseractMenuResource.setParentId(0);
+            tesseractMenuResource.setParentName("");
+        }
+        if (!new Integer(0).equals(tesseractMenuResource.getParentId()) && StringUtils.isEmpty(tesseractMenuResource.getParentName())) {
+            throw new TesseractException("父菜单名字为空");
+        }
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         Integer id = tesseractMenuResource.getId();
         if (id != null) {
@@ -79,22 +87,20 @@ public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuR
 
     @Override
     public void deleteMenu(Integer menuId) {
-        //检查是否有角色拥有菜单
+        //删除角色菜单关联表
         QueryWrapper<TesseractRoleResources> roleResourcesQueryWrapper = new QueryWrapper<>();
         roleResourcesQueryWrapper.lambda().eq(TesseractRoleResources::getMenuId, menuId);
-        List<TesseractRoleResources> roleResourcesList = roleResourcesService.list(roleResourcesQueryWrapper);
-        if (!CollectionUtils.isEmpty(roleResourcesList)) {
-            throw new TesseractException("此菜单还有角色使用，请接触绑定后删除");
-        }
+        roleResourcesService.remove(roleResourcesQueryWrapper);
         //删除菜单
         removeById(menuId);
         //删除菜单按钮关联
-        QueryWrapper<TesseractMenuBtn> menuBtnQueryWrapper = new QueryWrapper<>();
-        menuBtnQueryWrapper.lambda().eq(TesseractMenuBtn::getMenuId, menuId);
-        List<TesseractMenuBtn> btnList = menuBtnService.list(menuBtnQueryWrapper);
-        List<Integer> btnIdList = btnList.stream().map(TesseractMenuBtn::getBtnId).collect(Collectors.toList());
-        menuBtnService.remove(menuBtnQueryWrapper);
-        //删除菜单按钮
-        btnResourceService.removeByIds(btnIdList);
+        QueryWrapper<TesseractRoleBtn> menuBtnQueryWrapper = new QueryWrapper<>();
+        menuBtnQueryWrapper.lambda().eq(TesseractRoleBtn::getMenuId, menuId);
+        List<TesseractRoleBtn> btnList = menuBtnService.list(menuBtnQueryWrapper);
+        if (!CollectionUtils.isEmpty(btnList)) {
+            List<Integer> btnIdList = btnList.stream().map(TesseractRoleBtn::getBtnId).collect(Collectors.toList());
+            menuBtnService.remove(menuBtnQueryWrapper);
+            btnResourceService.removeByIds(btnIdList);
+        }
     }
 }

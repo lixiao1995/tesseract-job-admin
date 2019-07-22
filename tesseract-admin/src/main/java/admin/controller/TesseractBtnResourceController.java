@@ -79,4 +79,10 @@ public class TesseractBtnResourceController {
         btnResourceService.deleteBtn(btnId);
         return CommonResponseVO.SUCCESS;
     }
+
+    @RequestMapping("/btnListByMenuIdAndRoleId")
+    public CommonResponseVO btnListByMenuIdAndRoleId(@NotNull Integer roleId, @NotNull Integer menuId) {
+        return CommonResponseVO.success(btnResourceService.btnListByMenuIdAndRoleId(roleId, menuId));
+    }
+
 }

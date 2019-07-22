@@ -5,9 +5,12 @@ import admin.entity.TesseractRole;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author nickle
@@ -21,4 +24,6 @@ public interface ITesseractBtnResourceService extends IService<TesseractBtnResou
     void saveOrUpdateBtn(TesseractBtnResource btnResource);
 
     void deleteBtn(Integer btnId);
+
+    Collection<TesseractBtnResource> btnListByMenuIdAndRoleId(Integer roleId, Integer menuId);
 }

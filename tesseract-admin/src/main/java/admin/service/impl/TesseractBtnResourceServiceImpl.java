@@ -1,14 +1,13 @@
 package admin.service.impl;
 
 import admin.entity.TesseractBtnResource;
-import admin.entity.TesseractBtnResource;
-import admin.entity.TesseractMenuBtn;
+import admin.entity.TesseractRoleBtn;
 import admin.entity.TesseractMenuResource;
 import admin.mapper.TesseractBtnResourceMapper;
 import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
 import admin.service.ITesseractBtnResourceService;
-import admin.service.ITesseractMenuBtnService;
+import admin.service.ITesseractRoleBtnService;
 import admin.service.ITesseractMenuResourceService;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,10 +15,16 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -33,7 +38,7 @@ import tesseract.exception.TesseractException;
 @Transactional(rollbackFor = Exception.class)
 public class TesseractBtnResourceServiceImpl extends ServiceImpl<TesseractBtnResourceMapper, TesseractBtnResource> implements ITesseractBtnResourceService {
     @Autowired
-    private ITesseractMenuBtnService menuBtnService;
+    private ITesseractRoleBtnService roleBtnService;
     @Autowired
     private ITesseractMenuResourceService menuResourceService;
 
@@ -63,48 +68,36 @@ public class TesseractBtnResourceServiceImpl extends ServiceImpl<TesseractBtnRes
         //更新
         if (id != null) {
             TesseractBtnResource tesseractBtnResource = getById(id);
-            Integer newMenuId = btnResource.getMenuId();
             if (tesseractBtnResource == null) {
                 throw new TesseractException("按钮不存在");
             }
-            AdminUtils.buildUpdateEntityCommonFields(btnResource, currentTimeMillis, user);
-            Integer menuId = tesseractBtnResource.getMenuId();
-            //如果没有改变菜单则不需要更改
-            if (menuId.equals(newMenuId)) {
-                this.updateById(btnResource);
-                return;
-            }
-            //更改菜单
-            TesseractMenuResource menuResource = menuResourceService.getById(newMenuId);
-            btnResource.setMenuName(menuResource.getMetaTitle());
-            btnResource.setMenuPath(menuResource.getPath());
             this.updateById(btnResource);
-            //维护中间表
-            TesseractMenuBtn tesseractMenuBtn = new TesseractMenuBtn();
-            tesseractMenuBtn.setBtnId(id);
-            tesseractMenuBtn.setMenuId(menuResource.getId());
-            menuBtnService.save(tesseractMenuBtn);
             return;
         }
         AdminUtils.buildNewEntityCommonFields(btnResource, currentTimeMillis, user);
-        TesseractMenuResource menuResource = menuResourceService.getById(btnResource.getMenuId());
-        btnResource.setMenuName(menuResource.getMetaTitle());
-        btnResource.setMenuPath(menuResource.getPath());
         this.save(btnResource);
-        //维护中间表
-        TesseractMenuBtn tesseractMenuBtn = new TesseractMenuBtn();
-        tesseractMenuBtn.setBtnId(btnResource.getId());
-        tesseractMenuBtn.setMenuId(menuResource.getId());
-        menuBtnService.save(tesseractMenuBtn);
     }
 
     @Override
     public void deleteBtn(Integer btnId) {
-        //删除菜单按钮关联表
-        QueryWrapper<TesseractMenuBtn> menuBtnQueryWrapper = new QueryWrapper<>();
-        menuBtnQueryWrapper.lambda().eq(TesseractMenuBtn::getBtnId, btnId);
-        menuBtnService.remove(menuBtnQueryWrapper);
+        //删除角色按钮关联表
+        QueryWrapper<TesseractRoleBtn> menuBtnQueryWrapper = new QueryWrapper<>();
+        menuBtnQueryWrapper.lambda().eq(TesseractRoleBtn::getBtnId, btnId);
+        roleBtnService.remove(menuBtnQueryWrapper);
         //删除按钮
         removeById(btnId);
+    }
+
+    @Override
+    public Collection<TesseractBtnResource> btnListByMenuIdAndRoleId(Integer roleId, Integer menuId) {
+        QueryWrapper<TesseractRoleBtn> btnResourceQueryWrapper = new QueryWrapper<>();
+        btnResourceQueryWrapper.lambda().eq(TesseractRoleBtn::getRoleId, roleId).eq(TesseractRoleBtn::getMenuId, menuId);
+        List<TesseractRoleBtn> roleBtnList = roleBtnService.list(btnResourceQueryWrapper);
+        List<Integer> btnIdList = roleBtnList.stream().map(TesseractRoleBtn::getBtnId).collect(Collectors.toList());
+        Collection<TesseractBtnResource> tesseractBtnResources = Lists.newArrayList();
+        if (!CollectionUtils.isEmpty(btnIdList)) {
+            tesseractBtnResources = listByIds(btnIdList);
+        }
+        return tesseractBtnResources;
     }
 }
