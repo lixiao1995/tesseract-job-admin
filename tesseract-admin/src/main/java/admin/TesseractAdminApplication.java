@@ -11,7 +11,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class TesseractAdminApplication {
 
     public static void main(String[] args) {
-        if (1 == 1)
             SpringApplication.run(TesseractAdminApplication.class, args);
     }
 
