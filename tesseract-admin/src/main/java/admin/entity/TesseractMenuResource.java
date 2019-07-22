@@ -3,7 +3,9 @@ package admin.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,7 +14,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author nickle
@@ -21,7 +23,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="TesseractMenuResource对象", description="")
+@ApiModel(value = "TesseractMenuResource对象", description = "")
 public class TesseractMenuResource implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -32,9 +34,14 @@ public class TesseractMenuResource implements Serializable {
 
     @ApiModelProperty(value = "菜单名称")
     private String name;
-
+    /**
+     * parent=0为根结点
+     */
     @ApiModelProperty(value = "父级菜单ID")
     private Integer parentId;
+
+    @ApiModelProperty(value = "父级菜单名字")
+    private String parentName;
 
     @ApiModelProperty(value = "菜单路由地址")
     private String path;
@@ -43,14 +50,14 @@ public class TesseractMenuResource implements Serializable {
     private String redirect;
 
 
-    @ApiModelProperty(value = "路径匹配模式,保留字段")
-    private String urlPattern;
-
     @ApiModelProperty(value = "菜单的图标")
-    private String icon;
+    private String metaIcon;
 
-    @ApiModelProperty(value = "菜单级别，1-一级菜单")
-    private Integer level;
+    @ApiModelProperty(value = "路由标题")
+    private String metaTitle;
+
+    @ApiModelProperty(value = "是否缓存")
+    private Integer metaCache;
 
     @ApiModelProperty(value = "菜单描述")
     private String menuDesc;
@@ -82,15 +89,5 @@ public class TesseractMenuResource implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Long updateTime;
-
-    @ApiModelProperty(value = "是否一直显示，即使没有子菜单")
-    @TableField(value = "always_show_flag")
-    private Integer alwaysShowFlag;
-
-    /**
-     * 菜单关联按钮的权限code,逗号分隔
-     */
-    @TableField(exist = false)
-    private String btnAuthCodes;
 
 }

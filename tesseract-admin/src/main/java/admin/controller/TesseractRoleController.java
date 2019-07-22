@@ -3,16 +3,13 @@ package admin.controller;
 
 import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.MenuVO;
-import admin.pojo.PageVO;
-import admin.pojo.RoleVO;
+import admin.pojo.*;
 import admin.service.ITesseractMenuResourceService;
 import admin.service.ITesseractRoleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -21,10 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author nickle
@@ -39,6 +37,7 @@ public class TesseractRoleController {
 
     /**
      * 角色列表
+     *
      * @param currentPage
      * @param pageSize
      * @param condition
@@ -48,12 +47,12 @@ public class TesseractRoleController {
      * @author: 李明
      * @date: 2019/7/12 15:35
      */
-    @PostMapping("/roleList")
+    @RequestMapping("/roleList")
     public CommonResponseVO roleList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractRole condition,
                                      Long startCreateTime,
                                      Long endCreateTime) {
-        IPage<TesseractRole> roleIPage = tesseractRoleService.listByPage(currentPage,pageSize,condition,startCreateTime,endCreateTime);
+        IPage<TesseractRole> roleIPage = tesseractRoleService.listByPage(currentPage, pageSize, condition, startCreateTime, endCreateTime);
         RoleVO roleVO = new RoleVO();
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(roleIPage.getCurrent());
@@ -64,18 +63,31 @@ public class TesseractRoleController {
         return CommonResponseVO.success(roleVO);
     }
 
+    @RequestMapping("/allRole")
+    public CommonResponseVO allRole() {
+        return CommonResponseVO.success(tesseractRoleService.list());
+    }
 
-    @PostMapping("/addRole")
-    public CommonResponseVO addRole(@Validated @RequestBody TesseractRole tesseractRole) throws Exception {
-        tesseractRoleService.saveOrUpdateRole(tesseractRole);
+    @RequestMapping("/saveOrUpdateRole")
+    public CommonResponseVO addRole(@Validated @RequestBody TesseractRoleDO tesseractRoleDO) throws Exception {
+        tesseractRoleService.saveOrUpdateRole(tesseractRoleDO);
         return CommonResponseVO.SUCCESS;
     }
 
-
-    @PostMapping("/editRole")
-    public CommonResponseVO editRole(@Validated @RequestBody TesseractRole tesseractRole) throws Exception {
-        tesseractRoleService.saveOrUpdateRole(tesseractRole);
+    @RequestMapping("/deleteRole")
+    public CommonResponseVO deleteRole(@NotNull Integer roleId) throws Exception {
+        tesseractRoleService.deleteRole(roleId);
         return CommonResponseVO.SUCCESS;
     }
 
+    @RequestMapping("/getRoleMenu")
+    public CommonResponseVO getRoleMenu(@NotNull Integer roleId) throws Exception {
+        List<Integer> menuIdList = tesseractRoleService.getRoleMenuIdList(roleId);
+        return CommonResponseVO.success(menuIdList);
+    }
+
+    @RequestMapping("/getRoleByUserId")
+    public CommonResponseVO getRoleByUserId(@NotNull Integer userId) throws Exception {
+        return CommonResponseVO.success(tesseractRoleService.getRoleByUserId(userId));
+    }
 }

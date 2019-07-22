@@ -2,12 +2,15 @@ package admin.service;
 
 import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
+import admin.pojo.TesseractRoleDO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author nickle
@@ -17,6 +20,11 @@ public interface ITesseractRoleService extends IService<TesseractRole> {
 
     IPage<TesseractRole> listByPage(Integer currentPage, Integer pageSize, TesseractRole condition, Long startCreateTime, Long endCreateTime);
 
-    void saveOrUpdateRole(TesseractRole tesseractRole);
+    void saveOrUpdateRole(TesseractRoleDO tesseractRoleDO);
 
+    void deleteRole(Integer roleId);
+
+    List<Integer> getRoleMenuIdList(Integer roleId);
+
+    List<TesseractRole> getRoleByUserId(Integer userId);
 }

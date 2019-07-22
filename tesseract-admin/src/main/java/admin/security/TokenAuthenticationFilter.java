@@ -1,4 +1,5 @@
 package admin.security;
+
 import admin.config.WebSecurityConfig;
 import admin.constant.AdminConstant;
 import admin.entity.TesseractUser;
@@ -39,7 +40,7 @@ import java.util.List;
  * @date: 2019/7/9 18:07
  */
 @Component
-public class TokenAuthenticationFilter  extends OncePerRequestFilter {
+public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
 
     @Autowired
@@ -48,13 +49,12 @@ public class TokenAuthenticationFilter  extends OncePerRequestFilter {
     private UserDetailsService webUserDetailsService;
 
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = request.getHeader(AdminConstant.TOKEN);
         String servletPath = request.getServletPath();
-        try{
+        try {
             if (!StringUtils.isEmpty(token)) {
                 // final String authToken = authHeader.substring(tokenHead.length()); // The part after "Bearer "
                 // if (authToken != null && redisTemplate.hasKey(authToken)) {
@@ -74,7 +74,7 @@ public class TokenAuthenticationFilter  extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
-        }finally {
+        } finally {
             filterChain.doFilter(request, response);
         }
     }

@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author nickle
@@ -20,6 +20,5 @@ public interface TesseractRoleMapper extends BaseMapper<TesseractRole> {
 
 
 
-    List<String> selectRoleCodesByUserId(@Param("userId") Integer userId);
-
+    List<TesseractRole> listRoleByUserId(@Param("userId") Integer userId);
 }

@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author nickle
@@ -37,8 +37,10 @@ public class TesseractMenuResourceController {
 
     @Autowired
     private ITesseractMenuResourceService tesseractMenuResourceService;
+
     /**
      * 菜单列表
+     *
      * @param currentPage
      * @param pageSize
      * @param condition
@@ -49,12 +51,12 @@ public class TesseractMenuResourceController {
      * @date: 2019/7/12
      */
     @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
-    @PostMapping("/menuList")
+    @RequestMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
                                      Long startCreateTime,
                                      Long endCreateTime) {
-        IPage<TesseractMenuResource> userIPage = tesseractMenuResourceService.listByPage(currentPage,pageSize,condition,startCreateTime,endCreateTime);
+        IPage<TesseractMenuResource> userIPage = tesseractMenuResourceService.listByPage(currentPage, pageSize, condition, startCreateTime, endCreateTime);
         MenuVO menuVO = new MenuVO();
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(userIPage.getCurrent());
@@ -65,18 +67,22 @@ public class TesseractMenuResourceController {
         return CommonResponseVO.success(menuVO);
     }
 
+    @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+    @RequestMapping("/allMenu")
+    public CommonResponseVO allMenu() {
+        return CommonResponseVO.success(tesseractMenuResourceService.list());
+    }
 
-    @PreAuthorize("hasPermission('addMenu', 'admin') and hasRole('admin')")
-    @PostMapping("/addMenu")
-    public CommonResponseVO addMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
+
+    @RequestMapping("/saveOrUpdateMenu")
+    public CommonResponseVO saveOrUpdateMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
         tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
 
-
-    @PostMapping("/editMenu")
-    public CommonResponseVO editMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
-        tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
+    @RequestMapping("/deleteMenu")
+    public CommonResponseVO deleteMenu(@NotNull Integer menuId) throws Exception {
+        tesseractMenuResourceService.deleteMenu(menuId);
         return CommonResponseVO.SUCCESS;
     }
 }

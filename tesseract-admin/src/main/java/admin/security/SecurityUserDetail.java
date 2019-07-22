@@ -1,5 +1,6 @@
 package admin.security;
 
+import admin.entity.TesseractRole;
 import admin.entity.TesseractUser;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +24,7 @@ public class SecurityUserDetail extends TesseractUser implements UserDetails {
     /**
      * 角色
      */
-    private List<String> roleList;
+    private List<TesseractRole> roleList;
 
     /**
      * 获取权限信息
@@ -39,7 +40,7 @@ public class SecurityUserDetail extends TesseractUser implements UserDetails {
             return null;
         }
         return roleList.stream().map(
-                s -> new SimpleGrantedAuthority(s)
+                s -> new SimpleGrantedAuthority(s.getRoleName())
         ).collect(Collectors.toSet());
     }
 
