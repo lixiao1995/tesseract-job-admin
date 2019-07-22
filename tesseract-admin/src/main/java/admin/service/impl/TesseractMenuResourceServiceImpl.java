@@ -93,14 +93,5 @@ public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuR
         roleResourcesService.remove(roleResourcesQueryWrapper);
         //删除菜单
         removeById(menuId);
-        //删除菜单按钮关联
-        QueryWrapper<TesseractRoleBtn> menuBtnQueryWrapper = new QueryWrapper<>();
-        menuBtnQueryWrapper.lambda().eq(TesseractRoleBtn::getMenuId, menuId);
-        List<TesseractRoleBtn> btnList = menuBtnService.list(menuBtnQueryWrapper);
-        if (!CollectionUtils.isEmpty(btnList)) {
-            List<Integer> btnIdList = btnList.stream().map(TesseractRoleBtn::getBtnId).collect(Collectors.toList());
-            menuBtnService.remove(menuBtnQueryWrapper);
-            btnResourceService.removeByIds(btnIdList);
-        }
     }
 }

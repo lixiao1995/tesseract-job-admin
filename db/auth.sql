@@ -20,14 +20,6 @@ CREATE TABLE `tesseract_btn_resource`
   COLLATE = utf8_general_ci
   ROW_FORMAT = Dynamic;
 
-INSERT INTO `tesseract_btn_resource`( id, btn_name, menu_id, menu_name, menu_path, create_user_id, create_user_name
-                                    , update_user_id
-                                    , update_user_name, status, create_time, update_time)
-VALUES (1, 'add', 1, '添加', '/permission/add', 2, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `tesseract_btn_resource`
-VALUES (2, 'edit', 1, '编辑', '/permission/edit', 2, NULL, NULL, NULL, NULL, NULL, NULL);
-
-
 DROP TABLE IF EXISTS `tesseract_menu_resource`;
 CREATE TABLE `tesseract_menu_resource`
 (
@@ -60,17 +52,6 @@ CREATE TABLE `tesseract_menu_resource`
   ROW_FORMAT = Dynamic;
 
 
-INSERT INTO `tesseract_menu_resource`( id, name, parent_id, parent_name, redirect, path, meta_icon
-                                     , meta_title
-                                     , meta_cache, menu_desc
-                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
-                                     , status, create_time, update_time, del_flag)
-VALUES (1, 'dashboard', 0, '', '', '/dashboard/index', '', 'documentation', 0, '控制板', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0);
-
-
-
 DROP TABLE IF EXISTS `tesseract_role`;
 CREATE TABLE `tesseract_role`
 (
@@ -93,13 +74,6 @@ CREATE TABLE `tesseract_role`
   COLLATE = utf8_general_ci
   ROW_FORMAT = Dynamic;
 
-
-INSERT INTO `tesseract_role`(id, role_name, role_desc, create_user_id, create_user_name, update_user_id,
-                             update_user_name, del_flag, status, create_time, update_time)
-VALUES (1, 'admin', '超级管理员', 1, 'admin', 1, 'admin', 0, 0, NULL, NULL);
-INSERT INTO `tesseract_role`(id, role_name, role_desc, create_user_id, create_user_name, update_user_id,
-                             update_user_name, del_flag, status, create_time, update_time)
-VALUES (2, 'manager', '经理', 1, 'admin', 1, 'admin', 0, 0, NULL, NULL);
 
 
 DROP TABLE IF EXISTS `tesseract_role_resources`;
@@ -144,7 +118,134 @@ CREATE TABLE `tesseract_user_role`
   COLLATE = utf8_general_ci
   ROW_FORMAT = Dynamic;
 
-
+# 用户角色关联表
 INSERT INTO `tesseract_user_role`
 VALUES (1, 1, 1);
+
+# 角色
+INSERT INTO `tesseract_role`(id, role_name, role_desc, create_user_id, create_user_name, update_user_id,
+                             update_user_name, del_flag, status, create_time, update_time)
+VALUES (1, 'admin', '超级管理员', 1, 'admin', 1, 'admin', 0, 0, NULL, NULL);
+
+# 菜单
+INSERT INTO `tesseract_menu_resource`
+VALUES (1, 'dashboard', 0, '', '', '/dashboard/index', 'documentation', '控制板', 0, '', 1, 1, 'admin', 1, 'admin',
+        0, NULL, 1563606315098, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (2, 'executor', 0, '', '', '/executor/index', 'documentation', '执行器列表', 0, '', 1, 1, 'admin', 1, 'admin',
+        0, NULL, NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (3, 'log', 0, '', '', '/log/index', 'documentation', '日志列表', 0, '', 1, 1, 'admin', 1, 'admin', 0, NULL,
+        NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (4, 'group', 0, '', '', '/group/index', 'documentation', '组列表', 0, '', 1, 1, 'admin', 1, 'admin', 0, NULL,
+        NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (5, 'trigger', 0, '', '', '/trigger/index', 'documentation', '触发器列表', 0, '', 1, 1, 'admin', 1, 'admin', 0,
+        NULL, NULL, 0);
+
+INSERT INTO `tesseract_menu_resource`
+VALUES (6, 'permission', 0, '', '', '/permission-new', 'lock', '权限管理', 0, '', 1, 1, 'admin', 1, 'admin', 0,
+        NULL, NULL, 0);
+
+INSERT INTO `tesseract_menu_resource`
+VALUES (7, 'menu', 6, '权限管理', '', '/permission-new/menuResource/index', 'lock', '菜单管理', 0, '', 1, 1, 'admin', 1,
+        'admin', 0,
+        NULL, NULL, 0);
+
+INSERT INTO `tesseract_menu_resource`
+VALUES (8, 'role', 6, '权限管理', '', '/permission-new/role/index', 'lock', '角色管理', 0, '', 1, 1, 'admin', 1, 'admin', 0,
+        NULL, NULL, 0);
+
+INSERT INTO `tesseract_menu_resource`
+VALUES (9, 'btn', 6, '权限管理', '', '/permission-new/btn/index', 'lock', '按钮管理', 0, '', 1, 1, 'admin', 1, 'admin', 0,
+        NULL, NULL, 0);
+
+INSERT INTO `tesseract_menu_resource`
+VALUES (10, 'user', 6, '权限管理', '', '/permission-new/user/index', 'documentation', '用户管理', 0, '', 1, 1, 'admin', 1,
+        'admin', 0,
+        NULL, NULL, 0);
+
+# 角色菜单
+INSERT INTO `tesseract_role_resources`
+VALUES (1, 1, 1);
+INSERT INTO `tesseract_role_resources`
+VALUES (2, 1, 2);
+INSERT INTO `tesseract_role_resources`
+VALUES (3, 1, 3);
+INSERT INTO `tesseract_role_resources`
+VALUES (4, 1, 4);
+INSERT INTO `tesseract_role_resources`
+VALUES (5, 1, 5);
+INSERT INTO `tesseract_role_resources`
+VALUES (6, 1, 6);
+INSERT INTO `tesseract_role_resources`
+VALUES (7, 1, 7);
+INSERT INTO `tesseract_role_resources`
+VALUES (8, 1, 8);
+INSERT INTO `tesseract_role_resources`
+VALUES (9, 1, 9);
+INSERT INTO `tesseract_role_resources`
+VALUES (10, 1, 10);
+
+# 按钮
+INSERT INTO `tesseract_btn_resource` VALUES (1, 'add', 2, '执行器列表', '/executor/index', 1, 'admin', 1, 'admin', NULL, 1563608954787, 1563608954787);
+INSERT INTO `tesseract_btn_resource` VALUES (2, 'edit', 2, '执行器列表', '/executor/index', 1, 'admin', 1, 'admin', NULL, 1563609045332, 1563609045332);
+INSERT INTO `tesseract_btn_resource` VALUES (3, 'delete', 2, '执行器列表', '/executor/index', 1, 'admin', 1, 'admin', NULL, 1563609177143, 1563609177143);
+INSERT INTO `tesseract_btn_resource` VALUES (4, 'select', 6, '触发器列表', '/trigger/index', 1, 'admin', 1, 'admin', NULL, 1563609314272, 1563609314272);
+
+# 角色按钮
+
+INSERT INTO `tesseract_role_btn` VALUES (1, 1, 1, 1);
+INSERT INTO `tesseract_role_btn` VALUES (2, 1, 2, 1);
+INSERT INTO `tesseract_role_btn` VALUES (3, 1, 3, 1);
+INSERT INTO `tesseract_role_btn` VALUES (4, 1, 4, 1);
+
+INSERT INTO `tesseract_role_btn` VALUES (5, 1, 1, 2);
+INSERT INTO `tesseract_role_btn` VALUES (6, 1, 2, 2);
+INSERT INTO `tesseract_role_btn` VALUES (7, 1, 3, 2);
+INSERT INTO `tesseract_role_btn` VALUES (8, 1, 4, 2);
+
+INSERT INTO `tesseract_role_btn` VALUES (9,  1, 1, 3);
+INSERT INTO `tesseract_role_btn` VALUES (10, 1, 2, 3);
+INSERT INTO `tesseract_role_btn` VALUES (11, 1, 3, 3);
+INSERT INTO `tesseract_role_btn` VALUES (12, 1, 4, 3);
+
+INSERT INTO `tesseract_role_btn` VALUES (13, 1, 1, 4);
+INSERT INTO `tesseract_role_btn` VALUES (14, 1, 2, 4);
+INSERT INTO `tesseract_role_btn` VALUES (15, 1, 3, 4);
+INSERT INTO `tesseract_role_btn` VALUES (16, 1, 4, 4);
+
+
+INSERT INTO `tesseract_role_btn` VALUES (17, 1, 1, 5);
+INSERT INTO `tesseract_role_btn` VALUES (18, 1, 2, 5);
+INSERT INTO `tesseract_role_btn` VALUES (19, 1, 3, 5);
+INSERT INTO `tesseract_role_btn` VALUES (20, 1, 4, 5);
+
+INSERT INTO `tesseract_role_btn` VALUES (21, 1, 1, 6);
+INSERT INTO `tesseract_role_btn` VALUES (22, 1, 2, 6);
+INSERT INTO `tesseract_role_btn` VALUES (23, 1, 3, 6);
+INSERT INTO `tesseract_role_btn` VALUES (24, 1, 4, 6);
+
+INSERT INTO `tesseract_role_btn` VALUES (25, 1, 1, 7);
+INSERT INTO `tesseract_role_btn` VALUES (26, 1, 2, 7);
+INSERT INTO `tesseract_role_btn` VALUES (27, 1, 3, 7);
+INSERT INTO `tesseract_role_btn` VALUES (28, 1, 4, 7);
+
+
+INSERT INTO `tesseract_role_btn` VALUES (29, 1, 1, 8);
+INSERT INTO `tesseract_role_btn` VALUES (30, 1, 2, 8);
+INSERT INTO `tesseract_role_btn` VALUES (31, 1, 3, 8);
+INSERT INTO `tesseract_role_btn` VALUES (32, 1, 4, 8);
+
+INSERT INTO `tesseract_role_btn` VALUES (33, 1, 1, 9);
+INSERT INTO `tesseract_role_btn` VALUES (34, 1, 2, 9);
+INSERT INTO `tesseract_role_btn` VALUES (35, 1, 3, 9);
+INSERT INTO `tesseract_role_btn` VALUES (36, 1, 4, 9);
+
+
+INSERT INTO `tesseract_role_btn` VALUES (37, 1, 1, 10);
+INSERT INTO `tesseract_role_btn` VALUES (38, 1, 2, 10);
+INSERT INTO `tesseract_role_btn` VALUES (39, 1, 3, 10);
+INSERT INTO `tesseract_role_btn` VALUES (40, 1, 4, 10);
 
