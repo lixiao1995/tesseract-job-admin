@@ -65,15 +65,9 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             throw new TesseractException("获取日志为空" + tesseractAdminJobNotify);
         }
         if (!StringUtils.isEmpty(exception)) {
-            // 执行失败的情况下
-            // 判断失败类型，如果是执行失败
-            // 查询失败过几次，失败次数小于重试次数，进行重试，
-            // 需要考虑问题，
-            // 1、并发导致重试次数大于设置的重试次数，并且job会多次执行
-            // 2、
-            // 1、马上重试；2、放入队列，等待重试
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setMsg(exception);
+            //执行失败重试
             retry(tesseractAdminJobNotify);
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
@@ -88,6 +82,10 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         this.updateById(tesseractLog);
     }
 
+    /**
+     * 失败重试
+     * @param tesseractAdminJobNotify
+     */
     private void retry(TesseractAdminJobNotify tesseractAdminJobNotify) {
         applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
     }

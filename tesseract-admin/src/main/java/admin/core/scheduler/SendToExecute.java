@@ -170,6 +170,7 @@ public class SendToExecute {
         tesseractFiredTrigger.setJobId(jobDetail.getId());
         tesseractFiredTrigger.setClassName(jobDetail.getClassName());
         tesseractFiredTrigger.setSocket(executorDetail.getSocket());
+        tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
         tesseractFiredTrigger.setLogId(logId);
         tesseractFiredTrigger.setRetryCount(0);
         return tesseractFiredTrigger;
