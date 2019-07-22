@@ -170,14 +170,15 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
 
     @Override
     public List<TesseractRole> getRoleByUserId(Integer userId) {
+        List<TesseractRole> roleList = Lists.newArrayList();
         QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
         userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
         List<Integer> roleIdList = userRoleService.list(userRoleQueryWrapper).stream().map(TesseractUserRole::getRoleId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(roleIdList)) {
-            return null;
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            QueryWrapper<TesseractRole> roleQueryWrapper = new QueryWrapper<>();
+            roleQueryWrapper.lambda().in(TesseractRole::getId, roleIdList);
+            roleList = roleService.list(roleQueryWrapper);
         }
-        QueryWrapper<TesseractRole> roleQueryWrapper = new QueryWrapper<>();
-        roleQueryWrapper.lambda().in(TesseractRole::getId, roleIdList);
-        return roleService.list(roleQueryWrapper);
+        return roleList;
     }
 }

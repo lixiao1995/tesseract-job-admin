@@ -37,12 +37,12 @@
         SELECT
         m.*
         FROM
-        tesseract_role_resources AS rr
+        tesseract_role_resources AS trr
         LEFT JOIN tesseract_menu_resource AS m
-        ON rr.menu_id = m.id
+        ON trr.menu_id = m.id
         <where>
             <if test="roleIds != null and roleIds.size() > 0">
-                rr.role_id IN
+                trr.role_id IN
                 <foreach collection="roleIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>

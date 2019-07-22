@@ -1,7 +1,10 @@
 package admin.service;
 
+import admin.entity.TesseractRole;
 import admin.entity.TesseractUserRole;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>

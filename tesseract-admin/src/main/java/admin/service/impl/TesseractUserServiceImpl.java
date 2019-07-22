@@ -75,11 +75,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private TesseractRoleMapper tesseractRoleMapper;
-    @Autowired
     private TesseractMenuResourceMapper tesseractMenuResourceMapper;
     @Autowired
     private ITesseractRoleBtnService roleBtnService;
+    @Autowired
+    private ITesseractRoleService roleService;
     @Autowired
     private ITesseractBtnResourceService btnResourceService;
     @Autowired
@@ -335,7 +335,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         // 获取用户信息
         TesseractUser tesseractUser = this.getById(userId);
         userAuthVO.setName(tesseractUser.getName());
-        List<TesseractRole> tesseractRoles = tesseractRoleMapper.selectRolesByUserId(userId);
+        List<TesseractRole> tesseractRoles = roleService.getRoleByUserId(userId);
         List<Integer> roleIds = new ArrayList<>(tesseractRoles.size());
         List<String> roleNames = new ArrayList<>(tesseractRoles.size());
         tesseractRoles.stream().forEach(role -> {
