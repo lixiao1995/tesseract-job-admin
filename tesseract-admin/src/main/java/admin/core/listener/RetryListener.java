@@ -16,12 +16,18 @@ import admin.service.ITesseractJobDetailService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import feignService.IAdminFeignService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import tesseract.core.dto.TesseractAdminJobNotify;
@@ -42,26 +48,21 @@ import java.util.Optional;
  * @updateRemark: 修改内容
  * @version: 1.0
  */
-@Component
+@Data
+@AllArgsConstructor
+@Slf4j
 public class RetryListener {
 
-    @Autowired
     private ITesseractTriggerService tesseractTriggerService;
-
-    @Autowired
     private ITesseractFiredJobService tesseractFiredJobService;
-    @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
-    @Autowired
     private ITesseractExecutorDetailService tesseractExecutorDetailService;
-
-    @Autowired
     private SendToExecuteComponent sendToExecuteComponent;
 
-    @EventListener
-    public void onApplicationEvent(RetryEvent event) {
-
-        TesseractAdminJobNotify jobNotify = (TesseractAdminJobNotify) event.getSource();
+    @Subscribe
+    @AllowConcurrentEvents
+    public void retry(RetryEvent event) {
+        TesseractAdminJobNotify jobNotify = event.getJobNotify();
         // 重试策略
         @NotNull Integer triggerId = jobNotify.getTriggerId();
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);

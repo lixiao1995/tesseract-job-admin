@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -50,6 +51,9 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
 
     @Autowired
     private ITesseractFiredJobService firedJobService;
+
+    @Autowired
+    private EventBus retryEventBus;
 
     private int statisticsDays = 7;
 
@@ -87,7 +91,10 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
      * @param tesseractAdminJobNotify
      */
     private void retry(TesseractAdminJobNotify tesseractAdminJobNotify) {
-        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
+        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify);
+        retryEventBus.post(retryEvent);
+//        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
+
     }
 
     @Override

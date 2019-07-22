@@ -1,9 +1,9 @@
 package admin.core.event;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import tesseract.core.dto.TesseractAdminJobNotify;
 
 /**
  * @projectName: tesseract-job-admin
@@ -16,11 +16,9 @@ import org.springframework.stereotype.Component;
  * @updateRemark: 修改内容
  * @version: 1.0
  */
-public class RetryEvent  extends ApplicationEvent {
-
-    private static final long serialVersionUID = 1L;
-
-    public RetryEvent(Object source) {
-        super(source);
-    }
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RetryEvent {
+    private TesseractAdminJobNotify jobNotify;
 }

@@ -1,11 +1,18 @@
 package admin.config;
 
+import admin.core.component.SendToExecuteComponent;
 import admin.core.listener.MailListener;
+import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.TesseractScheduleBoot;
+import admin.service.ITesseractExecutorDetailService;
+import admin.service.ITesseractFiredJobService;
+import admin.service.ITesseractJobDetailService;
+import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import feign.Feign;
 import feign.Request;
 import feign.Target;
@@ -23,7 +30,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +48,16 @@ public class AdminConfig {
     private JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String from;
+    @Autowired
+    private ITesseractTriggerService tesseractTriggerService;
+    @Autowired
+    private ITesseractFiredJobService tesseractFiredJobService;
+    @Autowired
+    private ITesseractJobDetailService tesseractJobDetailService;
+    @Autowired
+    private ITesseractExecutorDetailService tesseractExecutorDetailService;
+    @Autowired
+    private SendToExecuteComponent sendToExecuteComponent;
 
     /**
      * 启动器
@@ -71,10 +90,38 @@ public class AdminConfig {
      */
     @Bean
     public EventBus mailEventBus() {
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10
-                , 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100));
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("mailEventBus-pool-%d").build();
+        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(5, 10,
+                60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+
+//        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10
+//                , 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100));
         AsyncEventBus asyncEventBus = new AsyncEventBus("mailEventBus", threadPoolExecutor);
         asyncEventBus.register(new MailListener(mailSender, from));
+        return asyncEventBus;
+    }
+    /**
+     * eventBus
+     *
+     * @return
+     */
+    @Bean
+    public EventBus retryEventBus() {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("retryEventBus-pool-%d").build();
+        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(5, 10,
+                60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+        AsyncEventBus asyncEventBus = new AsyncEventBus("retryEventBus", threadPoolExecutor);
+        asyncEventBus.register(
+                new RetryListener(
+                        tesseractTriggerService,
+                        tesseractFiredJobService,
+                        tesseractJobDetailService,
+                        tesseractExecutorDetailService,
+                        sendToExecuteComponent));
         return asyncEventBus;
     }
 
