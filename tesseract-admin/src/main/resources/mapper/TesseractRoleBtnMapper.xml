@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="admin.mapper.TesseractRoleBtnMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="admin.entity.TesseractRoleBtn">
+        <id column="id" property="id"/>
+        <result column="role_id" property="roleId"/>
+        <result column="btn_id" property="btnId"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, role_id, btn_id
+    </sql>
+    <select id="listBtnByRoleIdList" resultType="admin.entity.TesseractBtnResource">
+        SELECT
+        tbr.*
+        FROM
+        tesseract_role_btn AS trb
+        LEFT JOIN tesseract_btn_resource AS tbr
+        ON trb.btn_id = tbr.id
+        <where>
+            <if test="roleIdList != null and roleIdList.size() > 0">
+                trb.role_id IN
+                <foreach collection="roleIdList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

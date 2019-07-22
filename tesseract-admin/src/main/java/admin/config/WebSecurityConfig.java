@@ -79,6 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-executor-detail" + HEARTBEAT_MAPPING_SUFFIX).permitAll()
                 .antMatchers("/tesseract-executor" + REGISTRY_MAPPING_SUFFIX).permitAll()
                 .antMatchers("/tesseract-log" + NOTIFY_MAPPING_SUFFIX).permitAll()
+                .antMatchers("/tesseract-menu").permitAll()
                 // 其它请求随意访问
                 .anyRequest().authenticated().and()
                 // 基于token，所以不需要session。无状态

@@ -22,6 +22,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     /**
      * 普通的targetDomainObject判断
+     *
      * @param authentication
      * @param targetDomainObject
      * @param permission
@@ -32,24 +33,25 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         boolean accessable = false;
         log.info("进行PermissionEvaluator校验...");
         // 自定义匹配规则
-        if(authentication.getPrincipal().toString().compareToIgnoreCase(AdminConstant.ANONYMOUS_TAG) != 0){
-            // 操作资源对象 - 对应角色
-            String privilege = targetDomainObject + "-" + permission;
-            // 遍历当前用户的授权信息
-            for(GrantedAuthority authority : authentication.getAuthorities()){
-                // 满足一项即有权访问
-                if(privilege.equalsIgnoreCase(authority.getAuthority())){
-                    accessable = true;
-                    break;
-                }
-            }
-            return accessable;
-        }
-        return accessable;
+//        if (authentication.getPrincipal().toString().compareToIgnoreCase(AdminConstant.ANONYMOUS_TAG) != 0) {
+//            // 操作资源对象 - 对应角色
+//            String privilege = targetDomainObject + "-" + permission;
+//            // 遍历当前用户的授权信息
+//            for (GrantedAuthority authority : authentication.getAuthorities()) {
+//                // 满足一项即有权访问
+//                if (privilege.equalsIgnoreCase(authority.getAuthority())) {
+//                    accessable = true;
+//                    break;
+//                }
+//            }
+//            return accessable;
+//        }
+        return true;
     }
 
     /**
      * 用于ACL的访问控制
+     *
      * @param authentication
      * @param serializable
      * @param s
@@ -58,6 +60,6 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
      */
     @Override
     public boolean hasPermission(Authentication authentication, Serializable serializable, String s, Object o) {
-        return false;
+        return true;
     }
 }

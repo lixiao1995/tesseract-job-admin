@@ -76,8 +76,8 @@ public class TesseractUserController {
     }
 
     @RequestMapping("/addUser")
-    public CommonResponseVO addUser(@Validated @RequestBody TesseractUser tesseractUser) throws Exception {
-        tesseractUserService.saveOrUpdateUser(tesseractUser);
+    public CommonResponseVO addUser(@Validated @RequestBody TesseractUserDO tesseractUserDO) throws Exception {
+        tesseractUserService.saveOrUpdateUser(tesseractUserDO);
         return CommonResponseVO.SUCCESS;
     }
 

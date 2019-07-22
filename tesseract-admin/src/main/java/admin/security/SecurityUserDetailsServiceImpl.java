@@ -1,5 +1,6 @@
 package admin.security;
 
+import admin.entity.TesseractRole;
 import admin.entity.TesseractUser;
 import admin.mapper.TesseractRoleMapper;
 import admin.mapper.TesseractUserMapper;
@@ -14,7 +15,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * @description:  security 登录
+ * @description: security 登录
  * @author: LeoLee
  * @company: ***
  * @version:
@@ -30,6 +31,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
 
     /**
      * 根据用户名登录
+     *
      * @param username
      * @return
      * @throws UsernameNotFoundException
@@ -44,7 +46,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("用户登录，用户信息查询失败");
         }
         Integer userId = tesseractUser.getId();
-        List<String> roleList = tesseractRoleMapper.selectRoleCodesByUserId(userId);
+        List<TesseractRole> roleList = tesseractRoleMapper.listRoleByUserId(userId);
 
         // TODO 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
         SecurityUserDetail webUserDetail = new SecurityUserDetail();

@@ -1,6 +1,7 @@
 package admin.service;
 
 import admin.entity.TesseractUser;
+import admin.pojo.TesseractUserDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,7 +26,7 @@ public interface ITesseractUserService extends IService<TesseractUser> {
 
     IPage<TesseractUser> listByPage(Integer currentPage, Integer pageSize, TesseractUser condition, Long startCreateTime, Long endCreateTime);
 
-    void saveOrUpdateUser(TesseractUser tesseractUser);
+    void saveOrUpdateUser(TesseractUserDO tesseractUserDO);
 
     void validUser(Integer userId);
 
@@ -34,8 +35,10 @@ public interface ITesseractUserService extends IService<TesseractUser> {
     Collection<Integer> statisticsUser();
 
     void deleteUser(Integer userId);
+
     /**
      * 根据Token获取用户权限信息
+     *
      * @param token
      * @return: admin.pojo.UserAuthVO
      * @author: LeoLee

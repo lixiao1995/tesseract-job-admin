@@ -4,46 +4,46 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="admin.entity.TesseractMenuResource">
-        <id column="id" property="id" />
-        <result column="name" property="name" />
-        <result column="parent_id" property="parentId" />
-        <result column="path" property="path" />
-        <result column="redirect" property="redirect" />
-        <result column="url_pattern" property="urlPattern" />
-        <result column="icon" property="icon" />
-        <result column="level" property="level" />
-        <result column="menu_desc" property="menuDesc" />
-        <result column="menu_order" property="menuOrder" />
-        <result column="create_user_id" property="createUserId" />
-        <result column="create_user_name" property="createUserName" />
-        <result column="update_user_id" property="updateUserId" />
-        <result column="update_user_name" property="updateUserName" />
-        <result column="del_flag" property="delFlag" />
-        <result column="status" property="status" />
-        <result column="create_time" property="createTime" />
-        <result column="update_time" property="updateTime" />
-        <result column="always_show_flag" property="alwaysShowFlag" />
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="path" property="path"/>
+        <result column="redirect" property="redirect"/>
+        <result column="meta_icon" property="metaIcon"/>
+        <result column="meta_title" property="metaTitle"/>
+        <result column="meta_cache" property="metaNoCache"/>
+        <result column="menu_desc" property="menuDesc"/>
+        <result column="menu_order" property="menuOrder"/>
+        <result column="create_user_id" property="createUserId"/>
+        <result column="create_user_name" property="createUserName"/>
+        <result column="update_user_id" property="updateUserId"/>
+        <result column="update_user_name" property="updateUserName"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, name, parent_id, path, redirect,url_pattern, icon, level, menu_desc, menu_order, create_user_id, create_user_name, update_user_id, update_user_name, del_flag, status, create_time, update_time,always_show_flag
+        id, `name`, parent_id, redirect, path, meta_icon, meta_title
+                                     , meta_cache, menu_desc
+                                     , menu_order, create_user_id, create_user_name, update_user_id, update_user_name
+                                     , status, create_time, update_time, del_flag
     </sql>
 
 
-    <select id="selectMenusByUserId" resultType="admin.entity.TesseractMenuResource">
+    <select id="selectMenusByRole" resultType="admin.entity.TesseractMenuResource">
         SELECT
-            m.*,
-            GROUP_CONCAT(b.btn_auth_code) as btnAuthCodes
+        m.*
         FROM
-        tesseract_role_resources  AS rr
-        LEFT JOIN tesseract_menu_resource AS m ON rr.menu_id = m.id
-        LEFT JOIN tesseract_btn_resource AS b ON rr.btn_id = b.id
-
+        tesseract_role_resources AS rr
+        LEFT JOIN tesseract_menu_resource AS m
+        ON rr.menu_id = m.id
         <where>
             <if test="roleIds != null and roleIds.size() > 0">
                 rr.role_id IN
-                <foreach collection="roleIds" index="index" item="item"  open="(" separator="," close=")">
+                <foreach collection="roleIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>

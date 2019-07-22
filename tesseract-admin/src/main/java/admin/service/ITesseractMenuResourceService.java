@@ -18,4 +18,5 @@ public interface ITesseractMenuResourceService extends IService<TesseractMenuRes
 
     void saveOrUpdateMenu(TesseractMenuResource tesseractMenuResource);
 
+    void deleteMenu(Integer menuId);
 }
