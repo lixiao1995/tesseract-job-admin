@@ -48,16 +48,7 @@ public class AdminConfig {
     private JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String from;
-    @Autowired
-    private ITesseractTriggerService tesseractTriggerService;
-    @Autowired
-    private ITesseractFiredJobService tesseractFiredJobService;
-    @Autowired
-    private ITesseractJobDetailService tesseractJobDetailService;
-    @Autowired
-    private ITesseractExecutorDetailService tesseractExecutorDetailService;
-    @Autowired
-    private SendToExecuteComponent sendToExecuteComponent;
+
 
     /**
      * 启动器
@@ -116,12 +107,7 @@ public class AdminConfig {
                 new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
         AsyncEventBus asyncEventBus = new AsyncEventBus("retryEventBus", threadPoolExecutor);
         asyncEventBus.register(
-                new RetryListener(
-                        tesseractTriggerService,
-                        tesseractFiredJobService,
-                        tesseractJobDetailService,
-                        tesseractExecutorDetailService,
-                        sendToExecuteComponent));
+                new RetryListener());
         return asyncEventBus;
     }
 

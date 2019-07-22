@@ -49,14 +49,18 @@ import java.util.Optional;
  * @version: 1.0
  */
 @Data
-@AllArgsConstructor
 @Slf4j
 public class RetryListener {
 
+    @Autowired
     private ITesseractTriggerService tesseractTriggerService;
+    @Autowired
     private ITesseractFiredJobService tesseractFiredJobService;
+    @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
+    @Autowired
     private ITesseractExecutorDetailService tesseractExecutorDetailService;
+    @Autowired
     private SendToExecuteComponent sendToExecuteComponent;
 
     @Subscribe
