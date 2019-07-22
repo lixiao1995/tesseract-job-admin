@@ -28,6 +28,7 @@ import tesseract.core.dto.TesseractAdminJobNotify;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -79,16 +80,23 @@ public class RetryListener {
         List<TesseractExecutorDetail> executorDetailList = tesseractExecutorDetailService.list(executorDetailAueryWrapper);
         if (retryCount > firedJob.getRetryCount()) {
             //开始执行
-            executorDetailList.remove(executorDetail);
-            sendToExecute.routerExecute(jobDetail,executorDetailList,tesseractTrigger);
+            //更换机器重试任务
+            Optional<TesseractExecutorDetail> detailOptional = executorDetailList.stream().filter(tesseractExecutorDetail -> {
+                boolean socketSame = tesseractExecutorDetail.getSocket().equals(executorDetail.getSocket());
+                boolean executorIdSame = tesseractExecutorDetail.getExecutorId().equals(executorDetail.getExecutorId());
+                return socketSame && executorIdSame;
+            }).findFirst();
+            TesseractExecutorDetail tesseractExecutorDetail = detailOptional.get();
+            if (executorDetailList.size() > 1) {
+                executorDetailList.remove(tesseractExecutorDetail);
+            }
+            sendToExecute.routerExecute(jobDetail, executorDetailList, tesseractTrigger);
 
-        }else {
+        } else {
             //发邮件
-            sendToExecute.doFail("job超过重试次数",tesseractTrigger);
+            sendToExecute.doFail("job超过重试次数", tesseractTrigger);
         }
     }
-
-
 
 
 }
