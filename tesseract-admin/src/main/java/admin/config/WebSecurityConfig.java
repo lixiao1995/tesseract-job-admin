@@ -70,8 +70,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                  注解例子: @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
                  #condition 为 资源唯一标志
                  */
-                .antMatchers("/tesseract-user/userList").hasAuthority("admin")
-                .antMatchers("/tesseract-user/getUserAuthInfo").hasAnyAuthority("admin")
+                .antMatchers("/tesseract-user/userList").permitAll()
+                .antMatchers("/tesseract-user/getUserAuthInfo").permitAll()
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
                 .antMatchers("/tesseract-user/logout").permitAll()

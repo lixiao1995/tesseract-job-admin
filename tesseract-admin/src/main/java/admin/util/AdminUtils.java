@@ -1,13 +1,18 @@
 package admin.util;
 
 import admin.core.scheduler.CronExpression;
+import admin.entity.TesseractExecutor;
+import admin.entity.TesseractRole;
 import admin.pojo.StatisticsLogDO;
+import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +23,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
 
 @Slf4j
 public class AdminUtils {
@@ -67,6 +76,12 @@ public class AdminUtils {
                 field.setAccessible(true);
                 Object value = field.get(obj);
                 String name = field.getName();
+                //通用设置group_id
+                if ("groupId".equals(name)) {
+                    checkRoleAndCallback(groupId -> {
+                        queryWrapper.eq("group_id", groupId);
+                    });
+                }
                 if (!"serialVersionUID".equals(name) && value != null) {
                     //添加进查询条件
                     //String 采用like处理
@@ -81,6 +96,28 @@ public class AdminUtils {
         } catch (Exception e) {
             log.error("buildCondition 发生异常:{}", e.getMessage());
             throw new TesseractException("构建查询条件出错");
+        }
+    }
+
+    /**
+     * 检测当前角色是否是超级管理员，如果是则回调
+     *
+     * @param consumer
+     */
+    public static void checkRoleAndCallback(Consumer<Integer> consumer) {
+        SecurityUserDetail user = SecurityUserContextHolder.getUser();
+        List<String> roleNameList = user.getRoleList().stream().map(TesseractRole::getRoleName).collect(Collectors.toList());
+        //每个用户必须有属于的组和角色
+        if (CollectionUtils.isEmpty(roleNameList)) {
+            throw new TesseractException("当前用户没有角色，请先设置角色");
+        }
+        @NotNull Integer groupId = user.getGroupId();
+        if (groupId == null) {
+            throw new TesseractException("当前用户没有组，请先设置组");
+        }
+        //如果是不是超级管理员，则回调
+        if (!roleNameList.contains(SUPER_ADMIN_NAME)) {
+            consumer.accept(groupId);
         }
     }
 

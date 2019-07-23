@@ -130,51 +130,34 @@ VALUES (1, 'admin', '超级管理员', 1, 'admin', 1, 'admin', 0, 0, NULL, NULL)
 # 菜单
 INSERT INTO `tesseract_menu_resource`
 VALUES (1, 'dashboard', 0, '', '', '/dashboard/index', '/dashboard/index', 'documentation', '控制板', 0, '', 1, 1, 'admin',
-        1, 'admin',
-        0, NULL, 1563606315098, 0);
+        1, 'admin', 0, NULL, 1563606315098, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (2, 'executor', 0, '', '', '/executor/index', '/executor/index', 'documentation', '执行器列表', 0, '', 1, 1, 'admin',
-        1, 'admin',
-        0, NULL, NULL, 0);
+VALUES (2, 'executor', 0, '', '', '/executor/index', '/executor/index', 'documentation', '执行器列表', 0, '', 2, 1, 'admin',
+        1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (3, 'log', 0, '', '', '/log/index', '/log/index', 'documentation', '日志列表', 0, '', 1, 1, 'admin', 1, 'admin', 0,
-        NULL,
-        NULL, 0);
-INSERT INTO `tesseract_menu_resource`
-VALUES (4, 'group', 0, '', '', '/group/index', '/group/index', 'documentation', '组列表', 0, '', 1, 1, 'admin', 1, 'admin',
-        0, NULL,
-        NULL, 0);
-INSERT INTO `tesseract_menu_resource`
-VALUES (5, 'trigger', 0, '', '', '/trigger/index', '/trigger/index', 'documentation', '触发器列表', 0, '', 1, 1, 'admin', 1,
-        'admin', 0,
+VALUES (3, 'log', 0, '', '', '/log/index', '/log/index', 'documentation', '日志列表', 0, '', 3, 1, 'admin', 1, 'admin', 0,
         NULL, NULL, 0);
-
 INSERT INTO `tesseract_menu_resource`
-VALUES (6, 'permission', 0, '', '', '/permission-new', '/permission-new', 'lock', '权限管理', 0, '', 1, 1, 'admin', 1,
-        'admin', 0,
-        NULL, NULL, 0);
-
+VALUES (4, 'group', 6, '权限管理', '', '/permission-new/group/index', '/permission-new/group/index', 'documentation',
+        '用户组管理', 0, '', 6, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (5, 'trigger', 0, '', '', '/trigger/index', '/trigger/index', 'documentation', '触发器列表', 0, '', 4, 1, 'admin', 1,
+        'admin', 0, NULL, NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (6, 'permission', 0, '', '', '/permission-new', '/permission-new', 'lock', '权限管理', 0, '', 5, 1, 'admin', 1,
+        'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
 VALUES (7, 'menu', 6, '权限管理', '', '/permission-new/menuResource/index', '/permission-new/menuResource/index', 'lock',
-        '菜单管理', 0, '', 1, 1, 'admin', 1,
-        'admin', 0,
-        NULL, NULL, 0);
-
+        '菜单管理', 0, '', 7, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (8, 'role', 6, '权限管理', '', '/permission-new/role/index', '/permission-new/role/index', 'lock', '角色管理', 0, '', 1,
-        1, 'admin', 1, 'admin', 0,
-        NULL, NULL, 0);
-
+VALUES (8, 'role', 6, '权限管理', '', '/permission-new/role/index', '/permission-new/role/index', 'lock', '角色管理', 0, '', 8,
+        1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (9, 'btn', 6, '权限管理', '', '/permission-new/btn/index', '/permission-new/btn/index', 'lock', '按钮管理', 0, '', 1, 1,
-        'admin', 1, 'admin', 0,
-        NULL, NULL, 0);
-
+VALUES (9, 'btn', 6, '权限管理', '', '/permission-new/btn/index', '/permission-new/btn/index', 'lock', '按钮管理', 0, '', 9, 1,
+        'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
 VALUES (10, 'user', 6, '权限管理', '', '/permission-new/user/index', '/permission-new/user/index', 'documentation', '用户管理',
-        0, '', 1, 1, 'admin', 1,
-        'admin', 0,
-        NULL, NULL, 0);
+        0, '', 10, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 
 # 角色菜单
 INSERT INTO `tesseract_role_resources`

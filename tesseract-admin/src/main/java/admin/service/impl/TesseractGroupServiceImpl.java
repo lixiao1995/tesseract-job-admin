@@ -1,11 +1,10 @@
 package admin.service.impl;
 
 import admin.core.scheduler.TesseractScheduleBoot;
-import admin.entity.TesseractExecutor;
-import admin.entity.TesseractGroup;
-import admin.entity.TesseractTrigger;
-import admin.entity.TesseractUser;
+import admin.entity.*;
 import admin.mapper.TesseractGroupMapper;
+import admin.security.SecurityUserContextHolder;
+import admin.security.SecurityUserDetail;
 import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractTriggerService;
@@ -22,7 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
+import static admin.util.AdminUtils.checkRoleAndCallback;
 
 /**
  * <p>
@@ -104,7 +108,7 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
             return;
         }
         //新增操作
-        tesseractGroup.setCreator("admin");
+        tesseractGroup.setCreator(SecurityUserContextHolder.getUser().getUsername());
         tesseractGroup.setCreateTime(currentTimeMillis);
         tesseractGroup.setUpdateTime(currentTimeMillis);
         this.save(tesseractGroup);
@@ -125,9 +129,16 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
         if (endCreateTime != null) {
             lambda.le(TesseractGroup::getCreateTime, endCreateTime);
         }
-
+        checkRoleAndCallback(groupId -> lambda.eq(TesseractGroup::getId, groupId));
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
         return page(page, queryWrapper);
+    }
+
+    @Override
+    public List<TesseractGroup> allGroup() {
+        QueryWrapper<TesseractGroup> groupQueryWrapper = new QueryWrapper<>();
+        checkRoleAndCallback(groupId -> groupQueryWrapper.lambda().eq(TesseractGroup::getId, groupId));
+        return this.list(groupQueryWrapper);
     }
 }

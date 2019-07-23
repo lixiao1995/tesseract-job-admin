@@ -1,7 +1,5 @@
 package admin.pojo;
 
-import admin.controller.TesseractUserRoleController;
-import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
 import lombok.Data;
 

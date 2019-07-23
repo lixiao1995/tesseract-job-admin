@@ -4,6 +4,8 @@ import admin.entity.TesseractGroup;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -18,4 +20,6 @@ public interface ITesseractGroupService extends IService<TesseractGroup> {
     void saveOrUpdateGroup(TesseractGroup tesseractGroup);
 
     IPage<TesseractGroup> listByPage(Integer currentPage, Integer pageSize, TesseractGroup condition, Long startCreateTime, Long endCreateTime);
+
+    List<TesseractGroup> allGroup();
 }

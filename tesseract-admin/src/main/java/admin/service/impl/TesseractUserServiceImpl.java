@@ -28,6 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -66,7 +67,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Autowired
     private ITesseractTokenService tokenService;
     private String defaultPassword = "666666";
-    private String defaultPasswordMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
+    private volatile String defaultPasswordCode;
     private int statisticsDays = 7;
     @Autowired
     private UserDetailsService webUserDetailsService;
@@ -240,7 +241,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         }
         tesseractUser.setStatus(USER_VALID);
         tesseractUser.setUpdateTime(currentTimeMillis);
-        tesseractUser.setPassword(defaultPasswordMD5);
+        tesseractUser.setPassword(getDefaultPasswordCode());
         tesseractUser.setCreateTime(currentTimeMillis);
         this.save(tesseractUser);
         //保存用户角色关联表
@@ -255,13 +256,25 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         }
     }
 
+    private String getDefaultPasswordCode() {
+        if (defaultPasswordCode == null) {
+            synchronized (this) {
+                if (defaultPasswordCode == null) {
+                    BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                    defaultPasswordCode = bCryptPasswordEncoder.encode(this.defaultPassword);
+                }
+            }
+        }
+        return defaultPasswordCode;
+    }
+
     @Override
     public void passwordRevert(Integer userId) {
         TesseractUser user = getById(userId);
         if (user == null) {
             throw new TesseractException("用户为空");
         }
-        user.setPassword(defaultPasswordMD5);
+        user.setPassword(getDefaultPasswordCode());
         user.setUpdateTime(System.currentTimeMillis());
         updateById(user);
     }
