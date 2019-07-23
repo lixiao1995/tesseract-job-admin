@@ -50,7 +50,7 @@ public class TesseractMenuResourceController {
      * @author: LeoLee
      * @date: 2019/7/12
      */
-    @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+    //@PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
     @RequestMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
@@ -67,7 +67,7 @@ public class TesseractMenuResourceController {
         return CommonResponseVO.success(menuVO);
     }
 
-    @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+    //@PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
     @RequestMapping("/allMenu")
     public CommonResponseVO allMenu() {
         return CommonResponseVO.success(tesseractMenuResourceService.list());

@@ -54,6 +54,8 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         webUserDetail.setPassword(tesseractUser.getPassword());
         webUserDetail.setName(tesseractUser.getName());
         webUserDetail.setRoleList(roleList);
+        webUserDetail.setGroupId(tesseractUser.getGroupId());
+        webUserDetail.setGroupName(tesseractUser.getGroupName());
         return webUserDetail;
     }
 }

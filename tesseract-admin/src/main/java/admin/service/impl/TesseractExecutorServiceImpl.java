@@ -1,13 +1,12 @@
 package admin.service.impl;
 
-import admin.entity.TesseractExecutor;
-import admin.entity.TesseractExecutorDetail;
-import admin.entity.TesseractJobDetail;
-import admin.entity.TesseractTrigger;
+import admin.entity.*;
 import admin.mapper.TesseractExecutorMapper;
 import admin.pojo.ExecutorVO;
 import admin.pojo.PageVO;
 import admin.pojo.TesseractExecutorVO;
+import admin.security.SecurityUserContextHolder;
+import admin.security.SecurityUserDetail;
 import admin.service.ITesseractExecutorDetailService;
 import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractJobDetailService;
@@ -33,6 +32,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
 
 /**
  * <p>
@@ -133,7 +135,7 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
         }
         //新增操作
         tesseractExecutor.setCreateTime(System.currentTimeMillis());
-        tesseractExecutor.setCreator("admin");
+        tesseractExecutor.setCreator(SecurityUserContextHolder.getUser().getUsername());
         save(tesseractExecutor);
     }
 

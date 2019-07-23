@@ -10,5 +10,9 @@ public class TesseractRoleDO {
     private Integer roleId;
     @NotBlank
     private String roleName;
+
+    @NotBlank
+    private String roleDesc;
+
     private List<TesseractMenuDO> menuInfo;
 }

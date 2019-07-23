@@ -46,6 +46,9 @@ public class TesseractMenuResource implements Serializable {
     @ApiModelProperty(value = "菜单路由地址")
     private String path;
 
+    @ApiModelProperty(value = "菜单资源全路径")
+    private String fullPath;
+
     @ApiModelProperty(value = "默认转发路由")
     private String redirect;
 

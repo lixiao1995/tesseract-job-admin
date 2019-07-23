@@ -14,6 +14,7 @@ public class AdminConstant {
      */
     public static final Integer USER_VALID = 1;
     public static final Integer USER_INVALID = 0;
+    public static final String SUPER_ADMIN_NAME = "super_admin";
     /**
      * 日志相关
      */

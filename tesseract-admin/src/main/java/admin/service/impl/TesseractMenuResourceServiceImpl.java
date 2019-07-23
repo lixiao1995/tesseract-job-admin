@@ -39,16 +39,13 @@ import java.util.stream.Collectors;
 public class TesseractMenuResourceServiceImpl extends ServiceImpl<TesseractMenuResourceMapper, TesseractMenuResource> implements ITesseractMenuResourceService {
     @Autowired
     private ITesseractRoleResourcesService roleResourcesService;
-    @Autowired
-    private ITesseractRoleBtnService menuBtnService;
-    @Autowired
-    private ITesseractBtnResourceService btnResourceService;
+
 
     @Override
     public IPage<TesseractMenuResource> listByPage(Integer currentPage, Integer pageSize, TesseractMenuResource condition, Long startCreateTime, Long endCreateTime) {
 
-        Page<TesseractMenuResource> page = new Page<>(currentPage, pageSize);
         QueryWrapper<TesseractMenuResource> queryWrapper = new QueryWrapper<>();
+        Page<TesseractMenuResource> page = new Page<>(currentPage, pageSize);
         LambdaQueryWrapper<TesseractMenuResource> lambda = queryWrapper.lambda();
         //日期
         if (startCreateTime != null) {
