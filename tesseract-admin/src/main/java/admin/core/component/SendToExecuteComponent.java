@@ -1,5 +1,6 @@
 package admin.core.component;
 
+import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.SendToExecute;
 import admin.service.ITesseractFiredJobService;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 /**
  * @projectName: tesseract-job-admin
  * @className: SendToExecuteComponent
- * @description: 创建
+ * @description: 创建任务执行DTO
  * @author: liangxuekai
  * @createDate: 2019-07-20 14:24
  * @updateUser: liangxuekai
@@ -46,14 +47,20 @@ public class SendToExecuteComponent {
     @Autowired
     private ITesseractGroupService groupService;
 
+    @Autowired
+    private SendMailComponent sendMailComponent;
+
+
     public SendToExecute createSendToExecute() {
-        SendToExecute sendToExecute = new SendToExecute();
-        sendToExecute.setFiredJobService(firedJobService);
-        sendToExecute.setMailEventBus(mailEventBus);
-        sendToExecute.setMailTemplate(mailTemplate);
-        sendToExecute.setTesseractLogService(tesseractLogService);
-        sendToExecute.setFeignService(feignService);
-        sendToExecute.setGroupService(groupService);
+        SendToExecute sendToExecute = SendToExecute.builder()
+                .feignService(feignService)
+                .firedJobService(firedJobService)
+                .groupService(groupService)
+                .mailEventBus(mailEventBus)
+                .mailTemplate(mailTemplate)
+                .sendMailComponent(sendMailComponent)
+                .tesseractLogService(tesseractLogService)
+                .build();
         return sendToExecute;
     }
 

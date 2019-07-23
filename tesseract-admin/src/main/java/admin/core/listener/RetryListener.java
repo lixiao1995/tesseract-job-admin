@@ -15,16 +15,20 @@ import admin.service.ITesseractGroupService;
 import admin.service.ITesseractJobDetailService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import feignService.IAdminFeignService;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
@@ -50,28 +54,28 @@ import java.util.Optional;
  */
 @Data
 @Slf4j
+@AllArgsConstructor
+@NoArgsConstructor
 public class RetryListener {
 
-    @Autowired
     private ITesseractTriggerService tesseractTriggerService;
-    @Autowired
     private ITesseractFiredJobService tesseractFiredJobService;
-    @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
-    @Autowired
     private ITesseractExecutorDetailService tesseractExecutorDetailService;
-    @Autowired
     private SendToExecuteComponent sendToExecuteComponent;
+    private ITesseractLogService tesseractLogService;
 
     @Subscribe
     @AllowConcurrentEvents
     public void retry(RetryEvent event) {
+        log.info("监听到重试事件请求,参数为:{}", JSON.toJSONString(event.getJobNotify()));
         TesseractAdminJobNotify jobNotify = event.getJobNotify();
         // 重试策略
         @NotNull Integer triggerId = jobNotify.getTriggerId();
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
         @NotNull Integer retryCount = tesseractTrigger.getRetryCount();
         @NotNull Long logId = jobNotify.getLogId();
+        TesseractLog tesseractLog = tesseractLogService.getById(logId);
         QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TesseractFiredJob::getLogId, logId)
                 .eq(TesseractFiredJob::getJobId, triggerId);
@@ -95,8 +99,7 @@ public class RetryListener {
             if (executorDetailList.size() > 1) {
                 executorDetailList.remove(tesseractExecutorDetail);
             }
-            sendToExecute.routerExecute(jobDetail, executorDetailList, tesseractTrigger);
-
+            sendToExecute.routerExecute(jobDetail, executorDetailList, tesseractTrigger, tesseractLog);
         } else {
             //发邮件
             sendToExecute.doFail("job超过重试次数", tesseractTrigger);

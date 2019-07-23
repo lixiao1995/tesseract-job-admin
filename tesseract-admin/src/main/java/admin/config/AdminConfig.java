@@ -8,6 +8,7 @@ import admin.core.scheduler.TesseractScheduleBoot;
 import admin.service.ITesseractExecutorDetailService;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractJobDetailService;
+import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
@@ -24,10 +25,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 import java.util.concurrent.ExecutorService;
@@ -46,9 +49,11 @@ public class AdminConfig {
     private Encoder encoder;
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    ApplicationContext applicationContext;
+
     @Value("${spring.mail.username}")
     private String from;
-
 
     /**
      * 启动器
@@ -93,6 +98,7 @@ public class AdminConfig {
         asyncEventBus.register(new MailListener(mailSender, from));
         return asyncEventBus;
     }
+
     /**
      * eventBus
      *
@@ -106,8 +112,20 @@ public class AdminConfig {
                 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
         AsyncEventBus asyncEventBus = new AsyncEventBus("retryEventBus", threadPoolExecutor);
+        ITesseractTriggerService tesseractTriggerService = applicationContext.getBean(ITesseractTriggerService.class);
+        ITesseractFiredJobService tesseractFiredJobService = applicationContext.getBean(ITesseractFiredJobService.class);
+        ITesseractJobDetailService tesseractJobDetailService = applicationContext.getBean(ITesseractJobDetailService.class);
+        ITesseractExecutorDetailService tesseractExecutorDetailService = applicationContext.getBean(ITesseractExecutorDetailService.class);
+        SendToExecuteComponent sendToExecuteComponent = applicationContext.getBean(SendToExecuteComponent.class);
+        ITesseractLogService tesseractLogService = applicationContext.getBean(ITesseractLogService.class);
         asyncEventBus.register(
-                new RetryListener());
+                new RetryListener(
+                        tesseractTriggerService,
+                        tesseractFiredJobService,
+                        tesseractJobDetailService,
+                        tesseractExecutorDetailService,
+                        sendToExecuteComponent,
+                        tesseractLogService));
         return asyncEventBus;
     }
 

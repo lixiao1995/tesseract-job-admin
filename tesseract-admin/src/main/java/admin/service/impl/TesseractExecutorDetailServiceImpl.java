@@ -1,5 +1,6 @@
 package admin.service.impl;
 
+import admin.core.component.SendMailComponent;
 import admin.core.event.MailEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.entity.TesseractExecutorDetail;
@@ -49,13 +50,7 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
     @Autowired
     private ITesseractLockService lockService;
     @Autowired
-    private ITesseractGroupService groupService;
-    @Autowired
-    private TesseractMailTemplate mailTemplate;
-    @Autowired
-    private EventBus mailEventBus;
-    private static final String EXECUTOR_TEMPLATE_NAME = "executorTemplate.html";
-    private static final String EXECUTOR_SUBJECT = "Tesseract-job 执行器报警邮件";
+    private SendMailComponent sendMailComponent;
 
     @Override
     public void heartBeat(TesseractHeartbeatRequest heartBeatRequest) {
@@ -113,7 +108,8 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
             //修改日志状态
             modifyLogStatus(detailIdList);
             //发送报警邮件
-            sendMail(hashMap);
+//            sendMail(hashMap);
+            sendMailComponent.executorDetailListExceptionSendMail(hashMap);
 
         }
         return flag;
@@ -129,28 +125,6 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
         log.setStatus(LOG_FAIL);
         log.setMsg("机器失去心跳");
         logService.update(log, logQueryWrapper);
-    }
-
-
-    /**
-     * 发送报警邮件
-     *
-     * @param executorDetailMap key：group id value：组下的detail
-     */
-    private void sendMail(Map<Integer, List<TesseractExecutorDetail>> executorDetailMap) {
-        Set<Map.Entry<Integer, List<TesseractExecutorDetail>>> entries = executorDetailMap.entrySet();
-        entries.parallelStream().forEach(entry -> {
-            Integer groupId = entry.getKey();
-            List<TesseractExecutorDetail> executorDetailList = entry.getValue();
-            HashMap<String, Object> model = Maps.newHashMap();
-            model.put("executorDetailList", executorDetailList);
-            MailEvent mailEvent = new MailEvent();
-            mailEvent.setBody(mailTemplate.buildMailBody(EXECUTOR_TEMPLATE_NAME, model));
-            mailEvent.setSubject(EXECUTOR_SUBJECT);
-            mailEvent.setTo(groupService.getById(groupId).getMail());
-            mailEventBus.post(mailEvent);
-        });
-
     }
 
 }

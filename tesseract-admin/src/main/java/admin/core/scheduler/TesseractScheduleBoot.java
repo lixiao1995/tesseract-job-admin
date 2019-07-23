@@ -44,6 +44,10 @@ public class TesseractScheduleBoot {
     @Autowired
     private SendToExecuteComponent sendToExecuteComponent;
 
+    @Autowired
+    @Qualifier("retryEventBus")
+    EventBus retryEventBus;
+
     private static TesseractScheduleBoot tesseractScheduleBoot;
 
     /**
@@ -141,6 +145,7 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
         tesseractTriggerDispatcher.setSendToExecute(sendToExecuteComponent.createSendToExecute());
+        tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
         return tesseractTriggerDispatcher;
     }
 

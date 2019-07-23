@@ -4,6 +4,7 @@ import admin.core.scheduler.pool.ISchedulerThreadPool;
 import admin.entity.*;
 import admin.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.eventbus.EventBus;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -20,6 +21,7 @@ public class TesseractTriggerDispatcher {
     private ITesseractExecutorService executorService;
     private ISchedulerThreadPool threadPool;
     private SendToExecute sendToExecute;
+    private EventBus retryEventBus;
 
 
     public ISchedulerThreadPool getThreadPool() {
