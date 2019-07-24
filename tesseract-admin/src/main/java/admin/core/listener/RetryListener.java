@@ -102,7 +102,7 @@ public class RetryListener {
             sendToExecute.routerExecute(jobDetail, executorDetailList, tesseractTrigger, tesseractLog);
         } else {
             //发邮件
-            sendToExecute.doFail("job超过重试次数", tesseractTrigger);
+            sendToExecute.doFail(tesseractLog);
         }
     }
 

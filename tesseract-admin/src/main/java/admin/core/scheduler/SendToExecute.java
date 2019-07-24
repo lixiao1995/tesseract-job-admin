@@ -15,6 +15,7 @@ import admin.entity.TesseractTrigger;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
+import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
@@ -73,6 +74,8 @@ public class SendToExecute {
     private SendMailComponent sendMailComponent;
 
     private EventBus retryEventBus;
+
+    private ITesseractTriggerService tesseractTriggerService;
 
 
     public void routerExecute(TesseractJobDetail jobDetail, List<TesseractExecutorDetail> executorDetailList, TesseractTrigger trigger) {
@@ -248,8 +251,7 @@ public class SendToExecute {
             tesseractLog.setMsg(body.toString());
         }
 
-        //移出执行表
-        //判断是否超过重试次数，如果超过重试次数则溢出，如果没超过，则+1
+        //判断是否超过重试次数，如果超过重试次数则移出执行表，如果没超过，则+1
         QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
         firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());
         TesseractFiredJob tesseractFiredJob = firedJobService.getOne(firedJobQueryWrapper);
@@ -268,18 +270,21 @@ public class SendToExecute {
             firedJobService.remove(firedJobQueryWrapper);
         }
 
-
-        //修改日志状态
-        tesseractLog.setStatus(LOG_FAIL);
-        tesseractLogService.updateById(tesseractLog);
-        log.info("tesseractLog:{}", tesseractLog);
-        //发送邮件
-        sendMailComponent.logSendMail(tesseractLog);
+//        //修改日志状态
+//        tesseractLog.setStatus(LOG_FAIL);
+//        tesseractLogService.updateById(tesseractLog);
+//        log.info("tesseractLog:{}", tesseractLog);
+//        //发送邮件
+//        sendMailComponent.logSendMail(tesseractLog);
+        doFail(tesseractLog);
     }
 
 
     /**
      * 保存失败日志并产生报警邮件
+     * 1、更改日志状态
+     * 2、发送邮件
+     * 3、更改firedJob
      *
      * @param msg
      */
@@ -288,6 +293,29 @@ public class SendToExecute {
         tesseractLog.setMsg(msg);
         tesseractLogService.save(tesseractLog);
         sendMailComponent.logSendMail(tesseractLog);
+    }
+
+    /**
+     * 更新失败日志并产生报警邮件
+     * 1、更改日志状态
+     * 2、发送邮件
+     * 3、更改firedJob
+     *
+     * @param tesseractLog
+     */
+    public void doFail(TesseractLog tesseractLog) {
+        tesseractLog.setStatus(LOG_FAIL);
+        tesseractLogService.updateById(tesseractLog);
+        log.info("tesseractLog:{}", tesseractLog);
+        sendMailComponent.logSendMail(tesseractLog);
+
+        QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());
+        TesseractFiredJob tesseractFiredJob = firedJobService.getOne(queryWrapper);
+        TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
+        if (tesseractTrigger.getRetryCount() <= tesseractFiredJob.getRetryCount()) {
+            firedJobService.remove(queryWrapper);
+        }
     }
 
 

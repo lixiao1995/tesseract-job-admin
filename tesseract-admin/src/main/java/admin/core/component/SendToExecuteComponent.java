@@ -50,6 +50,9 @@ public class SendToExecuteComponent {
     @Autowired
     private SendMailComponent sendMailComponent;
 
+    @Autowired
+    private ITesseractTriggerService tesseractTriggerService;
+
 
     public SendToExecute createSendToExecute() {
         SendToExecute sendToExecute = SendToExecute.builder()
@@ -60,6 +63,7 @@ public class SendToExecuteComponent {
                 .mailTemplate(mailTemplate)
                 .sendMailComponent(sendMailComponent)
                 .tesseractLogService(tesseractLogService)
+                .tesseractTriggerService(tesseractTriggerService)
                 .build();
         return sendToExecute;
     }
