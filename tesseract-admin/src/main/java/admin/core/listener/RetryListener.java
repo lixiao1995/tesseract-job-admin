@@ -48,8 +48,8 @@ import java.util.Optional;
  * @author: liangxuekai
  * @createDate: 2019-07-17 21:25
  * @updateUser: liangxuekai
- * @updateDate: 2019-07-17 21:25
- * @updateRemark: 修改内容
+ * @updateDate: 2019-07-24 15:25
+ * @updateRemark: 修改重试次数超过限定次数之后的邮件警告
  * @version: 1.0
  */
 @Data

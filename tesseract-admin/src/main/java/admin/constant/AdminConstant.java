@@ -8,6 +8,12 @@ import admin.core.scheduler.router.impl.PollingRouter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author: huangjun
+ * @description: 实体参数
+ * @updateRemark: 修改内容(每次大改都要写修改内容)
+ * @date: 2019-07-24 16:04
+ */
 public class AdminConstant {
     /**
      * 用户相关

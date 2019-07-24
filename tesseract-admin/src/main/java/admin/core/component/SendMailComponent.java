@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import tesseract.core.dto.TesseractAdminJobNotify;
 
-import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,8 @@ import static admin.util.AdminUtils.epochMiliToString;
  * @author: liangxuekai
  * @createDate: 2019-07-23 14:51
  * @updateUser: liangxuekai
- * @updateDate: 2019-07-23 14:51
- * @updateRemark: 修改内容
+ * @updateDate: 2019-07-24 15:51
+ * @updateRemark: 添加任务重试失败邮件组件
  * @version: 1.0
  */
 @Component

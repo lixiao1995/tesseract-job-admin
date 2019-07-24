@@ -78,15 +78,21 @@ public class SendToExecute {
     private ITesseractTriggerService tesseractTriggerService;
 
 
-    public void routerExecute(TesseractJobDetail jobDetail, List<TesseractExecutorDetail> executorDetailList, TesseractTrigger trigger) {
+    public void routerExecute(TesseractJobDetail jobDetail,
+                              List<TesseractExecutorDetail> executorDetailList,
+                              TesseractTrigger trigger) {
         routerExecute(jobDetail, executorDetailList, trigger, null);
     }
 
     /**
+     * 路由执行器
      * @param jobDetail          触发器对应任务
      * @param executorDetailList 机器列表
      */
-    public void routerExecute(TesseractJobDetail jobDetail, List<TesseractExecutorDetail> executorDetailList, TesseractTrigger trigger, TesseractLog log) {
+    public void routerExecute(TesseractJobDetail jobDetail,
+                              List<TesseractExecutorDetail> executorDetailList,
+                              TesseractTrigger trigger,
+                              TesseractLog log) {
         //路由选择
         @NotNull Integer strategy = trigger.getStrategy();
         //广播
@@ -266,16 +272,8 @@ public class SendToExecute {
             tesseractAdminJobNotify.setJobId(tesseractFiredJob.getJobId());
             RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify);
             retryEventBus.post(retryEvent);
-        } else {
-            firedJobService.remove(firedJobQueryWrapper);
         }
-
-//        //修改日志状态
-//        tesseractLog.setStatus(LOG_FAIL);
-//        tesseractLogService.updateById(tesseractLog);
-//        log.info("tesseractLog:{}", tesseractLog);
-//        //发送邮件
-//        sendMailComponent.logSendMail(tesseractLog);
+        //失败执行
         doFail(tesseractLog);
     }
 

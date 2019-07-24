@@ -11,6 +11,12 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
+/**
+ * @author: huangjun
+ * @description:   触发器
+ * @updateRemark: 修改内容(每次大改都要写修改内容)
+ * @date: 2019-07-24 16:01
+ */
 @Slf4j
 @Data
 public class TesseractTriggerDispatcher {
@@ -39,6 +45,7 @@ public class TesseractTriggerDispatcher {
     public void init() {
         threadPool.init();
     }
+
 
     private class TaskRunnable implements Runnable {
         private TesseractTrigger trigger;
