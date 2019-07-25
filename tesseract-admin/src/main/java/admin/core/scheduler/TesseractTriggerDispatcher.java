@@ -26,7 +26,7 @@ public class TesseractTriggerDispatcher {
     private ITesseractExecutorDetailService executorDetailService;
     private ITesseractExecutorService executorService;
     private ISchedulerThreadPool threadPool;
-    private SendToExecute sendToExecute;
+    private SenderDelegate senderDelegate;
     private EventBus retryEventBus;
 
 
@@ -35,7 +35,7 @@ public class TesseractTriggerDispatcher {
     }
 
     public void dispatchTrigger(List<TesseractTrigger> triggerList, boolean isOnce) {
-        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce, sendToExecute)));
+        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce, senderDelegate)));
     }
 
     public int blockGetAvailableThreadNum() {
@@ -50,12 +50,12 @@ public class TesseractTriggerDispatcher {
     private class TaskRunnable implements Runnable {
         private TesseractTrigger trigger;
         private boolean isOnce;
-        private SendToExecute sendToExecute;
+        private SenderDelegate senderDelegate;
 
-        public TaskRunnable(TesseractTrigger trigger, boolean isOnce, SendToExecute sendToExecute) {
+        public TaskRunnable(TesseractTrigger trigger, boolean isOnce, SenderDelegate senderDelegate) {
             this.trigger = trigger;
             this.isOnce = isOnce;
-            this.sendToExecute = sendToExecute;
+            this.senderDelegate = senderDelegate;
         }
 
 
@@ -65,23 +65,23 @@ public class TesseractTriggerDispatcher {
                 //获取job detail
                 TesseractJobDetail jobDetail = getJobDetail();
                 if (jobDetail == null) {
-                    sendToExecute.doFail("没有发现可运行job", trigger);
+                    senderDelegate.doFail("没有发现可运行job", trigger);
                     return;
                 }
                 //获取执行器
                 TesseractExecutor executor = executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
-                    sendToExecute.doFail("没有找到可用执行器", trigger);
+                    senderDelegate.doFail("没有找到可用执行器", trigger);
                     return;
                 }
                 //执行器下机器列表
                 List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
-                    sendToExecute.doFail("执行器下没有可用机器", trigger);
+                    senderDelegate.doFail("执行器下没有可用机器", trigger);
                     return;
                 }
                 //路由发送执行
-                sendToExecute.routerExecute(jobDetail, executorDetailList, trigger);
+                senderDelegate.routerExecute(jobDetail, executorDetailList, trigger);
             } catch (Exception e) {
                 e.printStackTrace();
             }

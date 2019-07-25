@@ -1,6 +1,6 @@
 package admin.config;
 
-import admin.core.component.SendToExecuteComponent;
+import admin.core.component.SenderDelegateBuilder;
 import admin.core.listener.MailListener;
 import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
@@ -116,7 +116,7 @@ public class AdminConfig {
         ITesseractFiredJobService tesseractFiredJobService = applicationContext.getBean(ITesseractFiredJobService.class);
         ITesseractJobDetailService tesseractJobDetailService = applicationContext.getBean(ITesseractJobDetailService.class);
         ITesseractExecutorDetailService tesseractExecutorDetailService = applicationContext.getBean(ITesseractExecutorDetailService.class);
-        SendToExecuteComponent sendToExecuteComponent = applicationContext.getBean(SendToExecuteComponent.class);
+        SenderDelegateBuilder senderDelegateBuilder = applicationContext.getBean(SenderDelegateBuilder.class);
         ITesseractLogService tesseractLogService = applicationContext.getBean(ITesseractLogService.class);
         asyncEventBus.register(
                 new RetryListener(
@@ -124,7 +124,7 @@ public class AdminConfig {
                         tesseractFiredJobService,
                         tesseractJobDetailService,
                         tesseractExecutorDetailService,
-                        sendToExecuteComponent,
+                        senderDelegateBuilder,
                         tesseractLogService));
         return asyncEventBus;
     }

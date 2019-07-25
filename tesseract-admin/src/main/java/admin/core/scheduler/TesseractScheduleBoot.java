@@ -1,7 +1,6 @@
 package admin.core.scheduler;
 
-import admin.core.component.SendToExecuteComponent;
-import admin.core.mail.TesseractMailTemplate;
+import admin.core.component.SenderDelegateBuilder;
 import admin.core.scanner.ExecutorScanner;
 import admin.core.scanner.MissfireScanner;
 import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
@@ -11,7 +10,6 @@ import admin.entity.TesseractTrigger;
 import admin.service.*;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
-import feignService.IAdminFeignService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,7 +40,7 @@ public class TesseractScheduleBoot {
     private ITesseractGroupService groupService;
 
     @Autowired
-    private SendToExecuteComponent sendToExecuteComponent;
+    private SenderDelegateBuilder senderDelegateBuilder;
 
     @Autowired
     @Qualifier("retryEventBus")
@@ -144,7 +142,7 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setExecutorService(executorService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setSendToExecute(sendToExecuteComponent.getSendToExecute());
+        tesseractTriggerDispatcher.setSenderDelegate(senderDelegateBuilder.getSenderDelegate());
         tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
         return tesseractTriggerDispatcher;
     }

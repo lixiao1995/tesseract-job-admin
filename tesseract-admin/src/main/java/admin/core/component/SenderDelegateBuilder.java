@@ -1,8 +1,7 @@
 package admin.core.component;
 
-import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
-import admin.core.scheduler.SendToExecute;
+import admin.core.scheduler.SenderDelegate;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
@@ -11,11 +10,7 @@ import com.google.common.eventbus.EventBus;
 import feignService.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @projectName: tesseract-job-admin
@@ -29,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version: 1.0
  */
 @Component
-public class SendToExecuteComponent {
+public class SenderDelegateBuilder {
 
     @Autowired
     private IAdminFeignService feignService;
@@ -51,40 +46,42 @@ public class SendToExecuteComponent {
     private ITesseractGroupService groupService;
 
     @Autowired
-    private SendMailComponent sendMailComponent;
+    private TesseractMailSender tesseractMailSender;
 
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
-    private SendToExecute sendToExecute = null;
-
+    private static SenderDelegate senderDelegate;
+    private static byte[] lock = new byte[0];
 
     /**
      * 单例
+     *
      * @return
      */
-    public SendToExecute getSendToExecute(){
-        synchronized (new Byte[1]){
-            if(sendToExecute == null){
-                sendToExecute = createSendToExecute();
+    public SenderDelegate getSenderDelegate() {
+        if (senderDelegate == null) {
+            synchronized (lock) {
+                if (senderDelegate == null) {
+                    senderDelegate = createSendToExecute();
+                }
             }
         }
-        return sendToExecute;
+        return senderDelegate;
     }
 
-
-    private SendToExecute createSendToExecute() {
-        SendToExecute sendToExecute = SendToExecute.builder()
+    private SenderDelegate createSendToExecute() {
+        SenderDelegate senderDelegate = SenderDelegate.builder()
                 .feignService(feignService)
                 .firedJobService(firedJobService)
                 .groupService(groupService)
                 .mailEventBus(mailEventBus)
                 .mailTemplate(mailTemplate)
-                .sendMailComponent(sendMailComponent)
+                .tesseractMailSender(tesseractMailSender)
                 .tesseractLogService(tesseractLogService)
                 .tesseractTriggerService(tesseractTriggerService)
                 .build();
-        return sendToExecute;
+        return senderDelegate;
     }
 
 }

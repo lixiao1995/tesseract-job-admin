@@ -1,6 +1,6 @@
 package admin.service.impl;
 
-import admin.core.component.SendMailComponent;
+import admin.core.component.TesseractMailSender;
 import admin.core.event.MailEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.entity.TesseractExecutorDetail;
@@ -50,7 +50,7 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
     @Autowired
     private ITesseractLockService lockService;
     @Autowired
-    private SendMailComponent sendMailComponent;
+    private TesseractMailSender tesseractMailSender;
 
     @Override
     public void heartBeat(TesseractHeartbeatRequest heartBeatRequest) {
@@ -109,7 +109,7 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
             modifyLogStatus(detailIdList);
             //发送报警邮件
 //            sendMail(hashMap);
-            sendMailComponent.executorDetailListExceptionSendMail(hashMap);
+            tesseractMailSender.executorDetailListExceptionSendMail(hashMap);
 
         }
         return flag;

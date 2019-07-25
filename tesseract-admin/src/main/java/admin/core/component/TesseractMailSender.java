@@ -37,7 +37,7 @@ import static admin.util.AdminUtils.epochMiliToString;
  * @version: 1.0
  */
 @Component
-public class SendMailComponent {
+public class TesseractMailSender {
 
     @Autowired
     private EventBus mailEventBus;

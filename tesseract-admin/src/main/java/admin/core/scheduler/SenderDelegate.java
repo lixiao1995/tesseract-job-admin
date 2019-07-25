@@ -1,7 +1,7 @@
 package admin.core.scheduler;
 
 import admin.constant.AdminConstant;
-import admin.core.component.SendMailComponent;
+import admin.core.component.TesseractMailSender;
 import admin.core.event.RetryEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.router.impl.HashRouter;
@@ -40,7 +40,7 @@ import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 
 /**
  * @projectName: tesseract-job-admin
- * @className: SendToExecute
+ * @className: SenderDelegate
  * @description:
  * @author: liangxuekai
  * @createDate: 2019-07-20 11:33
@@ -52,7 +52,7 @@ import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 @Slf4j
 @Data
 @Builder
-public class SendToExecute {
+public class SenderDelegate {
 
     private ITesseractLogService tesseractLogService;
 
@@ -66,7 +66,7 @@ public class SendToExecute {
 
     private ITesseractGroupService groupService;
 
-    private SendMailComponent sendMailComponent;
+    private TesseractMailSender tesseractMailSender;
 
     private EventBus retryEventBus;
 
@@ -285,7 +285,7 @@ public class SendToExecute {
         TesseractLog tesseractLog = buildDefaultLog(null, trigger);
         tesseractLog.setMsg(msg);
         tesseractLogService.save(tesseractLog);
-        sendMailComponent.logSendMail(tesseractLog);
+        tesseractMailSender.logSendMail(tesseractLog);
     }
 
     /**
@@ -300,7 +300,7 @@ public class SendToExecute {
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLogService.updateById(tesseractLog);
         log.info("tesseractLog:{}", tesseractLog);
-        sendMailComponent.logSendMail(tesseractLog);
+        tesseractMailSender.logSendMail(tesseractLog);
 
         QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());

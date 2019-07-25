@@ -1,6 +1,6 @@
 package admin.service.impl;
 
-import admin.core.component.SendMailComponent;
+import admin.core.component.TesseractMailSender;
 import admin.core.event.RetryEvent;
 import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
@@ -54,7 +54,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     private ITesseractFiredJobService firedJobService;
 
     @Autowired
-    private SendMailComponent sendMailComponent;
+    private TesseractMailSender tesseractMailSender;
 
     @Autowired
     private EventBus retryEventBus;
@@ -80,7 +80,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
         firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getTriggerId, tesseractAdminJobNotify.getTriggerId());
         if (!StringUtils.isEmpty(exception)) {
-            sendMailComponent.missionFailedSendMail(tesseractAdminJobNotify);
+            tesseractMailSender.missionFailedSendMail(tesseractAdminJobNotify);
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setMsg(exception);
             firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractAdminJobNotify.getLogId());
