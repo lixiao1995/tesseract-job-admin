@@ -1,6 +1,6 @@
 package admin.core.scheduler;
 
-import admin.core.mail.TesseractMailTemplate;
+import admin.core.component.SenderDelegateBuilder;
 import admin.core.scanner.ExecutorScanner;
 import admin.core.scanner.MissfireScanner;
 import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
@@ -10,7 +10,6 @@ import admin.entity.TesseractTrigger;
 import admin.service.*;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
-import feignService.IAdminFeignService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,27 +32,19 @@ public class TesseractScheduleBoot {
 
     @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
-    @Autowired
-    private ITesseractLogService tesseractLogService;
 
     @Autowired
     private ITesseractExecutorService executorService;
 
     @Autowired
-    private ITesseractFiredJobService firedJobService;
-
-    @Autowired
-    private IAdminFeignService feignService;
-
-    @Autowired
     private ITesseractGroupService groupService;
 
     @Autowired
-    private TesseractMailTemplate mailTemplate;
+    private SenderDelegateBuilder senderDelegateBuilder;
 
     @Autowired
-    @Qualifier("mailEventBus")
-    private EventBus mailEventBus;
+    @Qualifier("retryEventBus")
+    EventBus retryEventBus;
 
     private static TesseractScheduleBoot tesseractScheduleBoot;
 
@@ -149,17 +140,12 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setGroupName(groupName);
         tesseractTriggerDispatcher.setExecutorDetailService(executorDetailService);
         tesseractTriggerDispatcher.setExecutorService(executorService);
-        tesseractTriggerDispatcher.setFeignService(feignService);
-        tesseractTriggerDispatcher.setFiredJobService(firedJobService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
-        tesseractTriggerDispatcher.setTesseractLogService(tesseractLogService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setGroupService(groupService);
-        tesseractTriggerDispatcher.setMailEventBus(mailEventBus);
-        tesseractTriggerDispatcher.setMailTemplate(mailTemplate);
+        tesseractTriggerDispatcher.setSenderDelegate(senderDelegateBuilder.getSenderDelegate());
+        tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
         return tesseractTriggerDispatcher;
     }
-
 
     /**
      *

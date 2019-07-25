@@ -1,23 +1,23 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Tesseract-Job 日志报警</title>
+    <title>Tesseract-Job 任务实行失败报警</title>
 </head>
 <body>
 <div class="containner">
     <ul>
         <li>
             <span>日志id:</span>
-            <span class="content">${log.id}</span>
+            <span class="content">${tesseractLog.id}</span>
         </li>
         <li>
             <span>类名</span>
-            <span class="content">${log.className}</span>
+            <span class="content">${tesseractLog.className}</span>
         </li>
         <li>
             <span>触发器名字</span>
-            <span class="content">${log.triggerName}</span>
+            <span class="content">${tesseractLog.triggerName}</span>
         </li>
         <li>
             <span>设置失败重试次数</span>
@@ -29,30 +29,30 @@
         </li>
         <li>
             <span>执行地址</span>
-            <span class="content">${log.socket}</span>
+            <span class="content">${tesseractLog.socket}</span>
         </li>
         <li>
             <span>状态</span>
-            <span class="content">${log.status}</span>
+            <span class="content">${tesseractLog.status}</span>
         </li>
         <li>
             <span>信息</span>
-            <span class="content">${log.msg}</span>
+            <span class="content">${tesseractLog.msg}</span>
         </li>
         <li>
             <span>创建者</span>
-            <span class="content">${log.creator}</span>
+            <span class="content">${tesseractLog.creator}</span>
         </li>
-        <li>
-            <span>创建时间</span>
-            <span class="content">${createTime}</span>
-        </li>
-        <li>
-            <span>结束时间</span>
-            <span class="content">${endTime}</span></li>
-        <li>
+        <!--<li>-->
+            <!--<span>创建时间</span>-->
+            <!--<span class="content">${createTime}</span>-->
+        <!--</li>-->
+        <!--<li>-->
+            <!--<span>结束时间</span>-->
+            <!--<span class="content">${endTime}</span></li>-->
+        <!--<li>-->
             <span>组名</span>
-            <span class="content">${log.groupName}</span>
+            <span class="content">${tesseractLog.groupName}</span>
         </li>
 
     </ul>

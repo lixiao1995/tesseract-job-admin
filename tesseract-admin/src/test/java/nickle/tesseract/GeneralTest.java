@@ -4,6 +4,7 @@ import admin.core.scheduler.CronExpression;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
@@ -35,6 +36,13 @@ public class GeneralTest {
     public void testCronExpression() throws Exception {
         CronExpression cronExpression = new CronExpression("0 0/5 * * * ?");
         System.out.println(cronExpression.getNextValidTimeAfter(new Date()));
+
+    }
+
+
+    @Test
+    public void test (){
+        List<Integer> list = JSON.parseArray("", Integer.class);
 
     }
 

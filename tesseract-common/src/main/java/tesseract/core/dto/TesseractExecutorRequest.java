@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 public class TesseractExecutorRequest {
     @NotNull
     private String className;
-    @NotNull
+
     private Integer shardingIndex;
 
     @NotNull
