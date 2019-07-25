@@ -15,6 +15,7 @@ import tesseract.exception.TesseractException;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static admin.constant.AdminConstant.DEFAULT_PASSWORD_CODE;
 import static admin.constant.AdminConstant.USER_INVALID;
 
 /**
@@ -63,6 +64,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         webUserDetail.setRoleList(roleList);
         webUserDetail.setGroupId(tesseractUser.getGroupId());
         webUserDetail.setGroupName(tesseractUser.getGroupName());
+        webUserDetail.setPasswordInitial(DEFAULT_PASSWORD_CODE.equals(tesseractUser.getPassword()));
         return webUserDetail;
     }
 }

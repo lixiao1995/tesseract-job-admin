@@ -4,9 +4,12 @@ import admin.core.scheduler.router.IScheduleRouter;
 import admin.core.scheduler.router.impl.HashRouter;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.core.scheduler.router.impl.PollingRouter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static admin.util.AdminUtils.bcryptEncode;
 
 public class AdminConstant {
     /**
@@ -15,6 +18,10 @@ public class AdminConstant {
     public static final Integer USER_VALID = 1;
     public static final Integer USER_INVALID = 0;
     public static final String SUPER_ADMIN_NAME = "super_admin";
+    public static final String DEFAULT_PASSWORD = "666666";
+    public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
+
+
     /**
      * 日志相关
      */
