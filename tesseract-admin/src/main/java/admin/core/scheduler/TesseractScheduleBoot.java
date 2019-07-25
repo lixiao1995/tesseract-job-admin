@@ -144,7 +144,7 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setExecutorService(executorService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setSendToExecute(sendToExecuteComponent.createSendToExecute());
+        tesseractTriggerDispatcher.setSendToExecute(sendToExecuteComponent.getSendToExecute());
         tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
         return tesseractTriggerDispatcher;
     }

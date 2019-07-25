@@ -11,8 +11,11 @@ import com.google.common.eventbus.EventBus;
 import feignService.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @projectName: tesseract-job-admin
@@ -53,8 +56,24 @@ public class SendToExecuteComponent {
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
+    private SendToExecute sendToExecute = null;
 
-    public SendToExecute createSendToExecute() {
+
+    /**
+     * 单例
+     * @return
+     */
+    public SendToExecute getSendToExecute(){
+        synchronized (new Byte[1]){
+            if(sendToExecute == null){
+                sendToExecute = createSendToExecute();
+            }
+        }
+        return sendToExecute;
+    }
+
+
+    private SendToExecute createSendToExecute() {
         SendToExecute sendToExecute = SendToExecute.builder()
                 .feignService(feignService)
                 .firedJobService(firedJobService)
