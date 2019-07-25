@@ -4,7 +4,6 @@ import admin.core.scheduler.router.IScheduleRouter;
 import admin.core.scheduler.router.impl.HashRouter;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.core.scheduler.router.impl.PollingRouter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
