@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
+
 /**
  * <p>
  * 服务实现类
@@ -114,6 +116,11 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
 
     @Override
     public void saveOrUpdateRole(TesseractRoleDO tesseractRoleDO) {
+        //超级管理员不允许修改
+        if (SUPER_ADMIN_NAME.equals(tesseractRoleDO.getRoleName())) {
+            throw new TesseractException("超级管理员角色不允许修改");
+        }
+
         long currentTimeMillis = System.currentTimeMillis();
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         Integer roleId = tesseractRoleDO.getRoleId();
@@ -134,6 +141,29 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
             List btnIdList = map.get("btnIdList");
             List roleResourcesList = map.get("roleResourcesList");
             List nullMenuIdList = map.get("nullMenuIdList");
+            //先删除角色菜单关联表
+            QueryWrapper<TesseractRoleResources> roleResourcesQueryWrapper = new QueryWrapper<>();
+            roleResourcesQueryWrapper.lambda().eq(TesseractRoleResources::getRoleId, roleId);
+            roleResourcesService.remove(roleResourcesQueryWrapper);
+            //如果存在菜单
+            if (!CollectionUtils.isEmpty(roleResourcesList)) {
+                List<Integer> menuIdList = (List<Integer>) roleResourcesList.stream().map(roleResource -> ((TesseractRoleResources) roleResource).getMenuId()).collect(Collectors.toList());
+                //删除不在这个角色和菜单外的按钮
+                QueryWrapper<TesseractRoleBtn> roleBtnQueryWrapper = new QueryWrapper<>();
+                roleBtnQueryWrapper.lambda()
+                        .eq(TesseractRoleBtn::getRoleId, roleId)
+                        .notIn(TesseractRoleBtn::getMenuId, menuIdList);
+                roleBtnService.remove(roleBtnQueryWrapper);
+                //保存菜单
+                roleResourcesService.saveBatch(roleResourcesList);
+            } else {
+                //如果菜单为空直接删除所有这个角色下所有菜单按钮
+                QueryWrapper<TesseractRoleBtn> roleBtnQueryWrapper = new QueryWrapper<>();
+                roleBtnQueryWrapper.lambda()
+                        .eq(TesseractRoleBtn::getRoleId, roleId);
+                roleBtnService.remove(roleBtnQueryWrapper);
+                return;
+            }
             /**
              * 按钮需要另外处理
              */
@@ -153,14 +183,6 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
                         .in(TesseractRoleBtn::getBtnId, btnIdList);
                 roleBtnService.remove(roleBtnQueryWrapper);
                 roleBtnService.saveBatch(roleBtnList);
-            }
-            //先删除角色菜单关联表
-            QueryWrapper<TesseractRoleResources> roleResourcesQueryWrapper = new QueryWrapper<>();
-            roleResourcesQueryWrapper.lambda().eq(TesseractRoleResources::getRoleId, roleId);
-            roleResourcesService.remove(roleResourcesQueryWrapper);
-            //如果存在菜单
-            if (!CollectionUtils.isEmpty(roleResourcesList)) {
-                roleResourcesService.saveBatch(roleResourcesList);
             }
             return;
         }

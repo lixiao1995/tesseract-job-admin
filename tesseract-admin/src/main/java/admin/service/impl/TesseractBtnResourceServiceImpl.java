@@ -80,10 +80,13 @@ public class TesseractBtnResourceServiceImpl extends ServiceImpl<TesseractBtnRes
 
     @Override
     public void deleteBtn(Integer btnId) {
-        //删除角色按钮关联表
+        //检测角色按钮关联
         QueryWrapper<TesseractRoleBtn> menuBtnQueryWrapper = new QueryWrapper<>();
         menuBtnQueryWrapper.lambda().eq(TesseractRoleBtn::getBtnId, btnId);
-        roleBtnService.remove(menuBtnQueryWrapper);
+        List<TesseractRoleBtn> roleBtnList = roleBtnService.list(menuBtnQueryWrapper);
+        if (!CollectionUtils.isEmpty(roleBtnList)) {
+            throw new TesseractException("还有角色与按钮关联，请解绑后再删除");
+        }
         //删除按钮
         removeById(btnId);
     }

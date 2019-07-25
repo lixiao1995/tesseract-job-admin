@@ -10,9 +10,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tesseract.exception.TesseractException;
 
 import javax.annotation.Resource;
 import java.util.List;
+
+import static admin.constant.AdminConstant.USER_INVALID;
 
 /**
  * @description: security 登录
@@ -44,6 +47,10 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         TesseractUser tesseractUser = tesseractUserMapper.selectOne(queryWrapper);
         if (ObjectUtils.isEmpty(tesseractUser)) {
             throw new UsernameNotFoundException("用户登录，用户信息查询失败");
+        }
+        //验证是否停用
+        if (USER_INVALID.equals(tesseractUser.getStatus())) {
+            throw new TesseractException("用户已停用");
         }
         Integer userId = tesseractUser.getId();
         List<TesseractRole> roleList = tesseractRoleMapper.listRoleByUserId(userId);
