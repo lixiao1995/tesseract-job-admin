@@ -39,7 +39,7 @@ public class TesseractExecutor implements Serializable {
     @NotNull
     private Integer groupId;
 
-    @NotBlank
+    @NotNull
     private String mail;
 
 

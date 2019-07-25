@@ -155,7 +155,7 @@ create table tesseract_group
 
 
 insert into tesseract_group(id, name, mail, thread_pool_num, description, creator, create_time, update_time)
-values (1, 'defaultGroup', 'huangjun01@koolearn-inc.com', 10, 'test', 'admin', 1562512500000, 1562512500000);
+values (1, '默认调度组', '', 0, '默认调度将不会发送任何邮件', 'admin', 1562512500000, 1562512500000);
 insert into tesseract_user(id, name, password, status, create_time, update_time, group_name, group_id)
 values (1, 'admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000,
         'defaultGroup', 1);
