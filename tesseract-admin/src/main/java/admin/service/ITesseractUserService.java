@@ -4,6 +4,7 @@ import admin.entity.TesseractUser;
 import admin.pojo.TesseractUserDO;
 import admin.pojo.UserAuthVO;
 import admin.pojo.UserDO;
+import admin.pojo.UserLoginVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -18,9 +19,7 @@ import java.util.Collection;
  * @since 2019-07-03
  */
 public interface ITesseractUserService extends IService<TesseractUser> {
-    String userLogin(UserDO userDO);
-
-    String userLoginNew(UserDO userDO);
+    UserLoginVO userLogin(UserDO userDO);
 
     void userLogout(String token);
 

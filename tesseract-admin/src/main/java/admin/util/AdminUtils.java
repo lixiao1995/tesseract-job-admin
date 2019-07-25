@@ -9,6 +9,7 @@ import admin.security.SecurityUserDetail;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
 
@@ -189,5 +190,16 @@ public class AdminUtils {
             string = localDateTime.format(DATE_TIME_FORMATTER);
         }
         return string;
+    }
+
+    /**
+     * 加密字符串
+     *
+     * @param string
+     * @return
+     */
+    public static String bcryptEncode(String string) {
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        return bCryptPasswordEncoder.encode(string);
     }
 }

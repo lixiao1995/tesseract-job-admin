@@ -38,14 +38,7 @@ public class TesseractUserController {
 
     @RequestMapping("/login")
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
-        String token = tesseractUserService.userLoginNew(userDO);
-        HashMap<String, Object> hashMap = Maps.newHashMap();
-        hashMap.put("roles", Arrays.asList("admin"));
-        hashMap.put("introduction", "I am a super administrator");
-        hashMap.put("avatar", "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif");
-        hashMap.put("name", "Super Admin");
-        hashMap.put("token", token);
-        return CommonResponseVO.success(CommonResponseVO.SUCCESS_STATUS, hashMap);
+        return CommonResponseVO.success(tesseractUserService.userLogin(userDO));
     }
 
     @RequestMapping("/logout")
@@ -77,6 +70,15 @@ public class TesseractUserController {
 
     @RequestMapping("/addUser")
     public CommonResponseVO addUser(@Validated @RequestBody TesseractUserDO tesseractUserDO) throws Exception {
+        tesseractUserService.saveOrUpdateUser(tesseractUserDO);
+        return CommonResponseVO.SUCCESS;
+    }
+
+    @RequestMapping("/modifyPassword")
+    public CommonResponseVO modifyPassword(@Validated @RequestBody UserLoginDO userLoginDO) throws Exception {
+        TesseractUserDO tesseractUserDO = new TesseractUserDO();
+        tesseractUserDO.setId(userLoginDO.getId());
+        tesseractUserDO.setPassword(userLoginDO.getPassword());
         tesseractUserService.saveOrUpdateUser(tesseractUserDO);
         return CommonResponseVO.SUCCESS;
     }
