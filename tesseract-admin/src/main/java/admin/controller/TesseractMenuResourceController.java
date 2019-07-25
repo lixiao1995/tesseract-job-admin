@@ -50,7 +50,7 @@ public class TesseractMenuResourceController {
      * @author: LeoLee
      * @date: 2019/7/12
      */
-    //@PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+    @PreAuthorize("hasPermission('menu', 'search') and hasRole('admin')")
     @RequestMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
