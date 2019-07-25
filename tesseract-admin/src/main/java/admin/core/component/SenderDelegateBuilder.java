@@ -51,8 +51,7 @@ public class SenderDelegateBuilder {
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
-    private static SenderDelegate senderDelegate;
-    private static byte[] lock = new byte[0];
+    private volatile SenderDelegate senderDelegate;
 
     /**
      * 单例
@@ -61,7 +60,7 @@ public class SenderDelegateBuilder {
      */
     public SenderDelegate getSenderDelegate() {
         if (senderDelegate == null) {
-            synchronized (lock) {
+            synchronized (this) {
                 if (senderDelegate == null) {
                     senderDelegate = createSendToExecute();
                 }
