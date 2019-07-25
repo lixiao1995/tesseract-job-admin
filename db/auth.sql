@@ -138,25 +138,25 @@ INSERT INTO `tesseract_menu_resource`
 VALUES (3, 'log', 0, '', '', '/log/index', '/log/index', 'documentation', '日志列表', 0, '', 3, 1, 'admin', 1, 'admin', 0,
         NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (4, 'group', 6, '权限管理', '', '/permission-new/group/index', '/permission-new/group/index', 'documentation',
+VALUES (4, 'group', 6, '权限管理', '', '/permission/group/index', '/permission/group/index', 'documentation',
         '用户组管理', 0, '', 6, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
 VALUES (5, 'trigger', 0, '', '', '/trigger/index', '/trigger/index', 'documentation', '触发器列表', 0, '', 4, 1, 'admin', 1,
         'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (6, 'permission', 0, '', '', '/permission-new', '/permission-new', 'lock', '权限管理', 0, '', 5, 1, 'admin', 1,
+VALUES (6, 'permission', 0, '', '', '/permission', '/permission', 'lock', '权限管理', 0, '', 5, 1, 'admin', 1,
         'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (7, 'menu', 6, '权限管理', '', '/permission-new/menuResource/index', '/permission-new/menuResource/index', 'lock',
+VALUES (7, 'menu', 6, '权限管理', '', '/permission/menuResource/index', '/permission/menuResource/index', 'lock',
         '菜单管理', 0, '', 7, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (8, 'role', 6, '权限管理', '', '/permission-new/role/index', '/permission-new/role/index', 'lock', '角色管理', 0, '', 8,
+VALUES (8, 'role', 6, '权限管理', '', '/permission/role/index', '/permission/role/index', 'lock', '角色管理', 0, '', 8,
         1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (9, 'btn', 6, '权限管理', '', '/permission-new/btn/index', '/permission-new/btn/index', 'lock', '按钮管理', 0, '', 9, 1,
+VALUES (9, 'btn', 6, '权限管理', '', '/permission/btn/index', '/permission/btn/index', 'lock', '按钮管理', 0, '', 9, 1,
         'admin', 1, 'admin', 0, NULL, NULL, 0);
 INSERT INTO `tesseract_menu_resource`
-VALUES (10, 'user', 6, '权限管理', '', '/permission-new/user/index', '/permission-new/user/index', 'documentation', '用户管理',
+VALUES (10, 'user', 6, '权限管理', '', '/permission/user/index', '/permission/user/index', 'documentation', '用户管理',
         0, '', 10, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
 
 # 角色菜单
