@@ -99,19 +99,27 @@ public class TesseractScheduleBoot {
         tesseractScheduleBoot = this;
         //创建调度线程,根据部门进行线程池隔离
         List<TesseractGroup> groupList = groupService.list();
+        boolean hasScheduler = false;
         if (!CollectionUtils.isEmpty(groupList)) {
-            groupList.forEach(group -> {
+            for (TesseractGroup group : groupList) {
+                //默认调度组不需要调度任何程序
+                if (group.getThreadPoolNum() == 0) {
+                    continue;
+                }
+                hasScheduler = true;
                 String groupName = group.getName();
                 SCHEDULER_THREAD_MAP.put(groupName, createSchedulerThread(groupName, group.getThreadPoolNum()));
-            });
-            //创建扫描线程
-            executorScanner = new ExecutorScanner(executorDetailService);
-            missfireScanner = new MissfireScanner(tesseractTriggerService);
-            executorScanner.setDaemon(true);
-            missfireScanner.setDaemon(true);
+            }
+            if (hasScheduler) {
+                //创建扫描线程
+                executorScanner = new ExecutorScanner(executorDetailService);
+                missfireScanner = new MissfireScanner(tesseractTriggerService);
+                executorScanner.setDaemon(true);
+                missfireScanner.setDaemon(true);
+            }
             return;
         }
-        log.info("没有调度组");
+        log.warn("没有调度组");
     }
 
     /**
@@ -171,6 +179,13 @@ public class TesseractScheduleBoot {
                 throw new TesseractException("找不到SchedulerThread");
             }
             schedulerThread.stopThread();
+            //如果没有线程组了停止扫描线程
+            if (SCHEDULER_THREAD_MAP.size() == 0) {
+                tesseractScheduleBoot.missfireScanner.stopThread();
+                tesseractScheduleBoot.executorScanner.stopThread();
+                tesseractScheduleBoot.missfireScanner = null;
+                tesseractScheduleBoot.executorScanner = null;
+            }
         } finally {
             WRITE_LOCK.unlock();
         }
@@ -189,6 +204,16 @@ public class TesseractScheduleBoot {
             SchedulerThread schedulerThread = tesseractScheduleBoot.createSchedulerThread(groupName, tesseractGroup.getThreadPoolNum());
             schedulerThread.startThread();
             SCHEDULER_THREAD_MAP.put(groupName, schedulerThread);
+            //检测scanner是否创建，如果只有一个默认调度组将不会创建
+            if (tesseractScheduleBoot.executorScanner == null) {
+                tesseractScheduleBoot.executorScanner = new ExecutorScanner(tesseractScheduleBoot.executorDetailService);
+                tesseractScheduleBoot.executorScanner.startThread();
+                ;
+            }
+            if (tesseractScheduleBoot.missfireScanner == null) {
+                tesseractScheduleBoot.missfireScanner = new MissfireScanner(tesseractScheduleBoot.tesseractTriggerService);
+                tesseractScheduleBoot.missfireScanner.startThread();
+            }
         } finally {
             WRITE_LOCK.unlock();
         }

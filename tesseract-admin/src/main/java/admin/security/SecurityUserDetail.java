@@ -20,7 +20,10 @@ import java.util.stream.Collectors;
  */
 @Data
 public class SecurityUserDetail extends TesseractUser implements UserDetails {
-
+    /**
+     * 密码是否是初始密码
+     */
+    private Boolean passwordInitial;
     /**
      * 角色
      */

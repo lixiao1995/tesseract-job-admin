@@ -11,6 +11,7 @@ import admin.service.ITesseractBtnResourceService;
 import admin.service.ITesseractRoleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +48,7 @@ public class TesseractBtnResourceController {
      * @author: 李明
      * @date: 2019/7/12 15:35
      */
+    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
     @RequestMapping("/btnList")
     public CommonResponseVO btnList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractBtnResource condition,
@@ -63,23 +65,37 @@ public class TesseractBtnResourceController {
         return CommonResponseVO.success(btnVO);
     }
 
+    /**
+     *
+     * @return
+     */
+    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
     @RequestMapping("/allBtn")
     public CommonResponseVO allBtn() {
         return CommonResponseVO.success(btnResourceService.list());
     }
 
+    /**
+     *
+     * @param btnResource
+     * @return
+     * @throws Exception
+     */
+    @PreAuthorize("hasPermission('btn', 'add') and hasRole('admin')")
     @RequestMapping("/saveOrUpdateBtn")
     public CommonResponseVO saveOrUpdateBtn(@Validated @RequestBody TesseractBtnResource btnResource) throws Exception {
         btnResourceService.saveOrUpdateBtn(btnResource);
         return CommonResponseVO.SUCCESS;
     }
 
+    @PreAuthorize("hasPermission('btn', 'delete') and hasRole('admin')")
     @RequestMapping("/deleteBtn")
     public CommonResponseVO deleteBtn(@NotNull Integer btnId) throws Exception {
         btnResourceService.deleteBtn(btnId);
         return CommonResponseVO.SUCCESS;
     }
 
+    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
     @RequestMapping("/btnListByMenuIdAndRoleId")
     public CommonResponseVO btnListByMenuIdAndRoleId(@NotNull Integer roleId, @NotNull Integer menuId) {
         return CommonResponseVO.success(btnResourceService.btnListByMenuIdAndRoleId(roleId, menuId));

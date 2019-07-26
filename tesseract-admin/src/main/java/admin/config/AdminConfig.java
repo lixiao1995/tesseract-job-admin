@@ -5,6 +5,7 @@ import admin.core.listener.MailListener;
 import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.TesseractScheduleBoot;
+
 import admin.service.ITesseractExecutorDetailService;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractJobDetailService;
@@ -30,7 +31,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 import java.util.concurrent.ExecutorService;
@@ -92,8 +92,6 @@ public class AdminConfig {
                 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
 
-//        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10
-//                , 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100));
         AsyncEventBus asyncEventBus = new AsyncEventBus("mailEventBus", threadPoolExecutor);
         asyncEventBus.register(new MailListener(mailSender, from));
         return asyncEventBus;

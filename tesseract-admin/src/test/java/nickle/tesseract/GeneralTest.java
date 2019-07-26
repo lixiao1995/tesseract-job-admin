@@ -75,7 +75,7 @@ public class GeneralTest {
         //String encode = bCryptPasswordEncoder.encode("admin");
         //System.out.println(encode);
         //结果：$2a$10$/eEV4X7hXPzYGzOLXfCizu6h7iRisp7I116wPA3P9uRcHAKJyY4TK
-        System.out.println(bCryptPasswordEncoder.matches("admin", "$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni."));
+        System.out.println(bCryptPasswordEncoder.encode("666666"));
     }
 
     @Test

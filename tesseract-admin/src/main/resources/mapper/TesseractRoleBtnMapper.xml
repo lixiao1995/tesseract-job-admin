@@ -29,4 +29,32 @@
             </if>
         </where>
     </select>
+
+
+    <!-- 返回权限值 -->
+    <select id="countPermissions" resultType="int">
+        SELECT
+            count(1)
+        FROM
+        tesseract_role_btn AS trb
+        LEFT JOIN tesseract_btn_resource AS tbr ON trb.btn_id = tbr.id
+        LEFT JOIN tesseract_menu_resource AS tmr ON trb.menu_id = tmr.id
+        LEFT JOIN tesseract_role AS tr ON trb.role_id = tr.id
+        <where>
+            <if test="menuCode != null and '' != menuCode">
+                AND tmr.code = #{menuCode}
+            </if>
+            <if test="btnCode != null and '' != btnCode">
+                AND tbr.btn_code = #{btnCode}
+            </if>
+            <if test="roleNameList != null and roleNameList.size() > 0">
+                AND tr.role_name IN
+                <foreach collection="roleNameList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
 </mapper>

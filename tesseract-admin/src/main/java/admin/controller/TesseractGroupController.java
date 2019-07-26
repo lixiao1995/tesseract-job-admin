@@ -35,7 +35,7 @@ public class TesseractGroupController {
 
     @RequestMapping("/allGroup")
     public CommonResponseVO allGroup() {
-        return CommonResponseVO.success(groupService.list());
+        return CommonResponseVO.success(groupService.allGroup());
     }
 
 

@@ -10,6 +10,7 @@ import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractTriggerMapper;
 import admin.pojo.PageVO;
 import admin.pojo.TriggerVO;
+import admin.security.SecurityUserContextHolder;
 import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLockService;
@@ -136,6 +137,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         tesseractTrigger.setGroupId(executor.getGroupId());
         tesseractTrigger.setGroupName(executor.getGroupName());
         tesseractTrigger.setPrevTriggerTime(0L);
+        tesseractTrigger.setCreator(SecurityUserContextHolder.getUser().getUsername());
         tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
         tesseractTrigger.setCreateTime(currentTimeMillis);
         tesseractTrigger.setStatus(TRGGER_STATUS_STOPING);

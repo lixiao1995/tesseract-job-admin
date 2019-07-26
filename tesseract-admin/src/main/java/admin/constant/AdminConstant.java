@@ -8,18 +8,18 @@ import admin.core.scheduler.router.impl.PollingRouter;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author: huangjun
- * @description: 实体参数
- * @updateRemark: 修改内容(每次大改都要写修改内容)
- * @date: 2019-07-24 16:04
- */
+import static admin.util.AdminUtils.bcryptEncode;
 public class AdminConstant {
     /**
      * 用户相关
      */
     public static final Integer USER_VALID = 1;
     public static final Integer USER_INVALID = 0;
+    public static final String SUPER_ADMIN_NAME = "super_admin";
+    public static final String DEFAULT_PASSWORD = "666666";
+    public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
+
+
     /**
      * 日志相关
      */
