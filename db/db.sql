@@ -155,15 +155,16 @@ create table tesseract_group
 
 
 insert into tesseract_group(id, name, mail, thread_pool_num, description, creator, create_time, update_time)
-values (1, 'defaultGroup', 'huangjun01@koolearn-inc.com', 10, 'test', 'admin', 1562512500000, 1562512500000);
+values (1, '默认调度组', '', 0, '默认调度将不会发送任何邮件', 'admin', 1562512500000, 1562512500000),
+       (2,'shark-dev1','',10,'liangxuekai@koolearn-inc.com','admin',1562512500000,1562512500000),
+       (3,'shark-dev2','',10,'huangjun01@koolearn-inc.com','admin',1562512500000,1562512500000);
 insert into tesseract_user(id, name, password, status, create_time, update_time, group_name, group_id)
 values (1, 'admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 0, 1562336661000, 1562336661000,
         'defaultGroup', 1);
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time
                              , group_id, group_name)
-values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
-       , 1562512500000, 1562512500000, 1, 'defaultGroup');
+values  ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor', 1562512500000, 1562512500000, 1, 'defaultGroup');
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
 values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 1, 'huangjun01@koolearn-inc.com');
 
