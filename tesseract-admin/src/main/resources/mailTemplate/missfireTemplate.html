@@ -7,22 +7,20 @@
 <body>
 <body>
 <#list triggerList as trigger>
-<#assign nextTriggerTime = trigger.nextTriggerTime?number * 1000 />
-<#assign prevTriggerTime = trigger.prevTriggerTime?number * 1000 />
 <div class="containner">
     <ul>
         <li>
             <span>触发器名称</span>
-            <span class="content">${trigger.name?}</span>
+            <span class="content">${trigger.name!}</span>
         </li>
         <li>
             <span>下一次触发时间</span>
-            <span class="content">${nextTriggerTime?number_to_datetime}</span>
+            <span class="content">${trigger.nextTriggerTime?number_to_datetime}</span>
         </li>
-        <li>
-            <span>上一次触发时间</span>
-            <span class="content">${prevTriggerTime?number_to_datetime}</span>
-        </li>
+        <!--<li>-->
+            <!--<span>上一次触发时间</span>-->
+            <!--<span class="content">${trigger.prevTriggerTime?number_to_datetime}</span>-->
+        <!--</li>-->
         <li>
             <span>组名称</span>
             <span class="content">${trigger.groupName}</span>
