@@ -1,8 +1,10 @@
 package admin.service;
 
+import admin.entity.Permission;
 import admin.entity.TesseractBtnResource;
 import admin.entity.TesseractRoleBtn;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +19,6 @@ import java.util.List;
 public interface ITesseractRoleBtnService extends IService<TesseractRoleBtn> {
 
     List<TesseractBtnResource> listBtnByRoleIdList(List<Integer> roleIdList);
+
+    Integer countPermissions(List<String> roleNameList,String menuCode,String btnCode);
 }

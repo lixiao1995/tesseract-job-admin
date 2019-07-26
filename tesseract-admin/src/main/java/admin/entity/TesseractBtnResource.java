@@ -31,6 +31,10 @@ public class TesseractBtnResource implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+
+    @ApiModelProperty(value = "按钮Code")
+    private String btnCode;
+
     @ApiModelProperty(value = "按钮名称")
     private String btnName;
 
@@ -54,6 +58,5 @@ public class TesseractBtnResource implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Long updateTime;
-
 
 }

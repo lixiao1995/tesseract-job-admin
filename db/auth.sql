@@ -2,10 +2,8 @@ DROP TABLE IF EXISTS `tesseract_btn_resource`;
 CREATE TABLE `tesseract_btn_resource`
 (
     `id`               int(11)                                                 NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
+    `btn_code`         varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '按钮code',
     `btn_name`         varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '按钮名称',
-    `menu_id`          int(11)                                                 NULL DEFAULT NULL COMMENT '所属菜单ID',
-    `menu_name`        varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '父菜单名',
-    `menu_path`        varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '父菜单路径',
     `create_user_id`   int(11)                                                 NULL DEFAULT NULL COMMENT '创建人ID',
     `create_user_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '创建人姓名',
     `update_user_id`   int(11)                                                 NULL DEFAULT NULL COMMENT '更新人ID',
@@ -24,6 +22,7 @@ DROP TABLE IF EXISTS `tesseract_menu_resource`;
 CREATE TABLE `tesseract_menu_resource`
 (
     `id`               int(11)                                                 NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
+    `code`             varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL   COMMENT '菜单唯一code',
     `name`             varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL DEFAULT '' COMMENT '命名路由',
     `parent_id`        int(11)                                                 NOT NULL DEFAULT 0 COMMENT '父级菜单ID',
     `parent_name`      varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '菜单的名字',
