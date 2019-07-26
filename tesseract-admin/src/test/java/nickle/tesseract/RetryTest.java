@@ -43,10 +43,8 @@ public class RetryTest {
     @Test
     public void demo1() {
         TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
-        tesseractAdminJobNotify.setJobId(1);
         tesseractAdminJobNotify.setLogId(1L);
         tesseractAdminJobNotify.setExecutorDetailId(1);
-        tesseractAdminJobNotify.setTriggerId(1);
 //        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
         while (true) {
 

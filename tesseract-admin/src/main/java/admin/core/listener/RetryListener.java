@@ -65,8 +65,7 @@ public class RetryListener {
         queryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId())
                 .eq(TesseractFiredJob::getJobId, tesseractTrigger.getId());
         TesseractFiredJob firedJob = tesseractFiredJobService.getOne(queryWrapper);
-        @NotNull Integer jobId = jobNotify.getJobId();
-        TesseractJobDetail jobDetail = tesseractJobDetailService.getById(jobId);
+        TesseractJobDetail jobDetail = tesseractJobDetailService.getById(firedJob.getJobId());
         SenderDelegate senderDelegate = senderDelegateBuilder.getSenderDelegate();
         QueryWrapper<TesseractExecutorDetail> executorDetailAueryWrapper = new QueryWrapper<>();
         TesseractExecutorDetail executorDetail = tesseractExecutorDetailService.getById(jobNotify.getExecutorDetailId());

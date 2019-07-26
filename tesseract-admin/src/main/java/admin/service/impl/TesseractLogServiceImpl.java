@@ -71,20 +71,18 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         Long logId = tesseractAdminJobNotify.getLogId();
         String exception = tesseractAdminJobNotify.getException();
         TesseractLog tesseractLog = this.getById(logId);
-        @NotNull Integer triggerId = tesseractAdminJobNotify.getTriggerId();
-        TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
         if (tesseractLog == null) {
             log.error("获取日志为空:{}", tesseractAdminJobNotify);
             throw new TesseractException("获取日志为空" + tesseractAdminJobNotify);
         }
         QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
-        firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getTriggerId, tesseractAdminJobNotify.getTriggerId());
         if (!StringUtils.isEmpty(exception)) {
             tesseractMailSender.missionFailedSendMail(tesseractAdminJobNotify);
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setMsg(exception);
             firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractAdminJobNotify.getLogId());
             TesseractFiredJob tesseractFiredJob = firedJobService.getOne(firedJobQueryWrapper);
+            TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
             if (tesseractTrigger.getRetryCount() > tesseractFiredJob.getRetryCount()) {
                 tesseractFiredJob.setRetryCount(tesseractFiredJob.getRetryCount() + 1);
                 firedJobService.updateById(tesseractFiredJob);
