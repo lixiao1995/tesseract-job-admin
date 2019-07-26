@@ -78,13 +78,13 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
      */
     @Transactional
     @Override
-    public List<TesseractTrigger> findTriggerWithLock(String groupName, int batchSize, long time, Integer timeWindowSize) {
-        lockService.lock(groupName, TRIGGER_LOCK_NAME);
+    public List<TesseractTrigger> findTriggerWithLock(TesseractGroup tesseractGroup, int batchSize, long time, Integer timeWindowSize) {
+        lockService.lock(tesseractGroup.getName(), TRIGGER_LOCK_NAME);
         QueryWrapper<TesseractTrigger> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .le(TesseractTrigger::getNextTriggerTime, time + timeWindowSize)
                 .eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
-                .eq(TesseractTrigger::getGroupName, groupName)
+                .eq(TesseractTrigger::getGroupId, tesseractGroup.getId())
                 .orderByDesc(TesseractTrigger::getNextTriggerTime);
         Page<TesseractTrigger> page = new Page<>(1, batchSize);
         IPage<TesseractTrigger> listPage = page(page, queryWrapper);

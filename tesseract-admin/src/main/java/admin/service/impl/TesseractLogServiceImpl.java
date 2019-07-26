@@ -86,11 +86,12 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             if (tesseractTrigger.getRetryCount() > tesseractFiredJob.getRetryCount()) {
                 tesseractFiredJob.setRetryCount(tesseractFiredJob.getRetryCount() + 1);
                 firedJobService.updateById(tesseractFiredJob);
+                //执行失败重试
+                retry(tesseractAdminJobNotify, tesseractTrigger, tesseractLog);
             } else {
                 firedJobService.remove(firedJobQueryWrapper);
             }
-            //执行失败重试
-            retry(tesseractAdminJobNotify,tesseractTrigger,tesseractLog);
+
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
             tesseractLog.setMsg("执行成功");
@@ -103,12 +104,13 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
 
     /**
      * 失败重试
+     *
      * @param tesseractAdminJobNotify
      */
     private void retry(TesseractAdminJobNotify tesseractAdminJobNotify,
                        TesseractTrigger tesseractTrigger,
                        TesseractLog tesseractLog) {
-        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify,tesseractTrigger,tesseractLog);
+        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify, tesseractTrigger, tesseractLog);
         retryEventBus.post(retryEvent);
 //        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
 
