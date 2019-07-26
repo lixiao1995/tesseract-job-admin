@@ -67,19 +67,30 @@ public class TesseractMenuResourceController {
         return CommonResponseVO.success(menuVO);
     }
 
-    //@PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
+    /**
+     * 查询全部菜单
+     * @return
+     */
+    @PreAuthorize("hasPermission('menu', 'search') and hasRole('admin')")
     @RequestMapping("/allMenu")
     public CommonResponseVO allMenu() {
         return CommonResponseVO.success(tesseractMenuResourceService.list());
     }
 
-
+    /**
+     * 保存修改菜单
+     * @param tesseractMenuResource
+     * @return
+     * @throws Exception
+     */
+    @PreAuthorize("hasPermission('menu', 'add') and hasRole('admin')")
     @RequestMapping("/saveOrUpdateMenu")
     public CommonResponseVO saveOrUpdateMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
         tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
 
+    @PreAuthorize("hasPermission('menu', 'delete') and hasRole('admin')")
     @RequestMapping("/deleteMenu")
     public CommonResponseVO deleteMenu(@NotNull Integer menuId) throws Exception {
         tesseractMenuResourceService.deleteMenu(menuId);
