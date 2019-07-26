@@ -3,6 +3,7 @@ package admin.service.impl;
 import admin.core.component.TesseractMailSender;
 import admin.core.event.RetryEvent;
 import admin.entity.TesseractFiredJob;
+import admin.entity.TesseractJobDetail;
 import admin.entity.TesseractLog;
 import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractLogMapper;
@@ -69,7 +70,6 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     public void notify(TesseractAdminJobNotify tesseractAdminJobNotify) {
         Long logId = tesseractAdminJobNotify.getLogId();
         String exception = tesseractAdminJobNotify.getException();
-//        Integer jobId = tesseractAdminJobNotify.getJobId();
         TesseractLog tesseractLog = this.getById(logId);
         @NotNull Integer triggerId = tesseractAdminJobNotify.getTriggerId();
         TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
@@ -92,7 +92,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
                 firedJobService.remove(firedJobQueryWrapper);
             }
             //执行失败重试
-            retry(tesseractAdminJobNotify);
+            retry(tesseractAdminJobNotify,tesseractTrigger,tesseractLog);
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
             tesseractLog.setMsg("执行成功");
@@ -107,8 +107,10 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
      * 失败重试
      * @param tesseractAdminJobNotify
      */
-    private void retry(TesseractAdminJobNotify tesseractAdminJobNotify) {
-        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify);
+    private void retry(TesseractAdminJobNotify tesseractAdminJobNotify,
+                       TesseractTrigger tesseractTrigger,
+                       TesseractLog tesseractLog) {
+        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify,tesseractTrigger,tesseractLog);
         retryEventBus.post(retryEvent);
 //        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
 

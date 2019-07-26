@@ -58,14 +58,12 @@ public class RetryListener {
         log.info("监听到重试事件请求,参数为:{}", JSON.toJSONString(event.getJobNotify()));
         TesseractAdminJobNotify jobNotify = event.getJobNotify();
         // 重试策略
-        @NotNull Integer triggerId = jobNotify.getTriggerId();
-        TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(triggerId);
+        TesseractTrigger tesseractTrigger = event.getTesseractTrigger();
         @NotNull Integer retryCount = tesseractTrigger.getRetryCount();
-        @NotNull Long logId = jobNotify.getLogId();
-        TesseractLog tesseractLog = tesseractLogService.getById(logId);
+        TesseractLog tesseractLog = event.getTesseractLog();
         QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(TesseractFiredJob::getLogId, logId)
-                .eq(TesseractFiredJob::getJobId, triggerId);
+        queryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId())
+                .eq(TesseractFiredJob::getJobId, tesseractTrigger.getId());
         TesseractFiredJob firedJob = tesseractFiredJobService.getOne(queryWrapper);
         @NotNull Integer jobId = jobNotify.getJobId();
         TesseractJobDetail jobDetail = tesseractJobDetailService.getById(jobId);
