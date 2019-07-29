@@ -80,6 +80,7 @@ public class SenderDelegate {
 
     /**
      * 路由执行器
+     *
      * @param jobDetail          触发器对应任务
      * @param executorDetailList 机器列表
      */
@@ -260,11 +261,9 @@ public class SenderDelegate {
             firedJobService.updateById(tesseractFiredJob);
             //发布重试事件
             TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
-            tesseractAdminJobNotify.setTriggerId(trigger.getId());
             tesseractAdminJobNotify.setExecutorDetailId(executorDetail.getId());
             tesseractAdminJobNotify.setLogId(tesseractLog.getId());
-            tesseractAdminJobNotify.setJobId(tesseractFiredJob.getJobId());
-            RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify);
+            RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify, trigger, tesseractLog);
             retryEventBus.post(retryEvent);
         }
         //失败执行

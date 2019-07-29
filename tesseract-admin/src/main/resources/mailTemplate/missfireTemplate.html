@@ -5,6 +5,47 @@
     <title>missfire邮件</title>
 </head>
 <body>
-missfire邮件
+<body>
+<#list triggerList as trigger>
+<div class="containner">
+    <ul>
+        <li>
+            <span>触发器名称</span>
+            <span class="content">${trigger.name!}</span>
+        </li>
+        <li>
+            <span>下一次触发时间</span>
+            <span class="content">${trigger.nextTriggerTime?number_to_datetime}</span>
+        </li>
+        <!--<li>-->
+            <!--<span>上一次触发时间</span>-->
+            <!--<span class="content">${trigger.prevTriggerTime?number_to_datetime}</span>-->
+        <!--</li>-->
+        <li>
+            <span>组名称</span>
+            <span class="content">${trigger.groupName}</span>
+        </li>
+        <li>
+            <span>执行器名称</span>
+            <span class="content">${trigger.executorName}</span>
+        </li>
+    </ul>
+</div>
+</#list>
 </body>
+<style type="text/css">
+    ul {
+        list-style: none;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+
+    .content {
+        margin-left: 15px;
+    }
+</style>
 </html>

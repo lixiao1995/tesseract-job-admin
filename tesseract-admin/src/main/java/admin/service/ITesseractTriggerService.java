@@ -1,5 +1,6 @@
 package admin.service;
 
+import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import admin.pojo.VO.TriggerVO;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -16,7 +17,7 @@ import java.util.List;
  * @since 2019-07-03
  */
 public interface ITesseractTriggerService extends IService<TesseractTrigger> {
-    List<TesseractTrigger> findTriggerWithLock(String groupName, int batchSize, long time, Integer timeWindowSize);
+    List<TesseractTrigger> findTriggerWithLock(TesseractGroup tesseractGroup, int batchSize, long time, Integer timeWindowSize);
 
     TriggerVO listByPage(Integer currentPage, Integer pageSize,
                          TesseractTrigger condition,
