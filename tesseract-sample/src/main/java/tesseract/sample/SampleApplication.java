@@ -7,7 +7,7 @@ import tesseract.EnableTesseractJob;
 import tesseract.config.ExecutorConfig;
 
 @SpringBootApplication
-@EnableTesseractJob(basePackage = "tesseract.sample")
+@EnableTesseractJob
 public class SampleApplication {
 
     public static void main(String[] args) {

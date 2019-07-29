@@ -18,6 +18,7 @@ import org.springframework.util.Assert;
 import tesseract.EnableTesseractJob;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.annotation.TesseractJob;
+import tesseract.exception.TesseractException;
 
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,7 @@ public class TesseractJobDetailRegistrar implements ImportBeanDefinitionRegistra
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+
         String basePackage = getBasePackage(metadata);
         ClassPathScanningCandidateComponentProvider scanner = getScanner();
         scanner.setResourceLoader(this.resourceLoader);
@@ -73,8 +75,22 @@ public class TesseractJobDetailRegistrar implements ImportBeanDefinitionRegistra
     }
 
     private String getBasePackage(AnnotationMetadata metadata) {
+        String basePackage;
         Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(EnableTesseractJob.class.getCanonicalName());
-        return annotationAttributes.get("basePackage").toString();
+        Object basePackageObj = annotationAttributes.get("basePackage");
+        if (!"".equals(basePackageObj)) {
+            basePackage = basePackageObj.toString();
+        } else {
+            //默认和注解加的类包一致
+            String className = metadata.getClassName();
+            try {
+                Class<?> aClass = Class.forName(className);
+                basePackage = aClass.getPackage().getName();
+            } catch (ClassNotFoundException e) {
+                throw new TesseractException("类反射错误");
+            }
+        }
+        return basePackage;
     }
 
     protected ClassPathScanningCandidateComponentProvider getScanner() {

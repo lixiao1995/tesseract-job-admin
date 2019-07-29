@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Import({TesseractJobDetailRegistrar.class, ExecutorConfig.class})
 public @interface EnableTesseractJob {
-    String basePackage();
+    String basePackage() default "";
 }
