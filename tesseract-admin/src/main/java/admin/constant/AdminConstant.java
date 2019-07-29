@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static admin.util.AdminUtils.bcryptEncode;
+
 public class AdminConstant {
     /**
      * 用户相关
@@ -77,4 +78,5 @@ public class AdminConstant {
      */
     public static final Integer MENU_NO_CACHE = 0;
     public static final Integer MENU_CACHE = 1;
+
 }

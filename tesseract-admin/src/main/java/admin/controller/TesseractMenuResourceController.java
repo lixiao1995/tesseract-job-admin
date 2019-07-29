@@ -1,22 +1,18 @@
 package admin.controller;
 
 
+import admin.constant.AdminConstant;
 import admin.entity.TesseractMenuResource;
-import admin.entity.TesseractUser;
-import admin.pojo.*;
-import admin.security.SecurityUserContextHolder;
+import admin.pojo.CommonResponseVO;
+import admin.pojo.MenuVO;
+import admin.pojo.PageVO;
 import admin.service.ITesseractMenuResourceService;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Max;
@@ -50,7 +46,7 @@ public class TesseractMenuResourceController {
      * @author: LeoLee
      * @date: 2019/7/12
      */
-    @PreAuthorize("hasPermission('menu', 'search') and hasRole('admin')")
+    @PreAuthorize("hasPermission('menu', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractMenuResource condition,
@@ -69,9 +65,10 @@ public class TesseractMenuResourceController {
 
     /**
      * 查询全部菜单
+     *
      * @return
      */
-    @PreAuthorize("hasPermission('menu', 'search') and hasRole('admin')")
+    @PreAuthorize("hasPermission('menu', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/allMenu")
     public CommonResponseVO allMenu() {
         return CommonResponseVO.success(tesseractMenuResourceService.list());
@@ -79,18 +76,19 @@ public class TesseractMenuResourceController {
 
     /**
      * 保存修改菜单
+     *
      * @param tesseractMenuResource
      * @return
      * @throws Exception
      */
-    @PreAuthorize("hasPermission('menu', 'add') and hasRole('admin')")
+    @PreAuthorize("hasPermission('menu', 'add') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/saveOrUpdateMenu")
     public CommonResponseVO saveOrUpdateMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
         tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
 
-    @PreAuthorize("hasPermission('menu', 'delete') and hasRole('admin')")
+    @PreAuthorize("hasPermission('menu', 'delete') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/deleteMenu")
     public CommonResponseVO deleteMenu(@NotNull Integer menuId) throws Exception {
         tesseractMenuResourceService.deleteMenu(menuId);

@@ -335,7 +335,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
             for (TesseractRoleBtn tesseractRoleBtn : roleBtnList) {
                 Integer btnId = tesseractRoleBtn.getBtnId();
                 Integer menuId = tesseractRoleBtn.getMenuId();
-                btnList.add(menuMap.get(menuId).getFullPath() + "/" + btnMap.get(btnId).getBtnName());
+                btnList.add(menuMap.get(menuId).getFullPath() + "/" + btnMap.get(btnId).getBtnCode());
             }
         }
         userAuthVO.setMenuList(menuList);

@@ -1,21 +1,18 @@
 package admin.controller;
 
 
+import admin.constant.AdminConstant;
 import admin.entity.TesseractBtnResource;
-import admin.entity.TesseractRole;
 import admin.pojo.BtnVO;
 import admin.pojo.CommonResponseVO;
 import admin.pojo.PageVO;
-import admin.pojo.RoleVO;
 import admin.service.ITesseractBtnResourceService;
-import admin.service.ITesseractRoleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Max;
@@ -48,7 +45,7 @@ public class TesseractBtnResourceController {
      * @author: 李明
      * @date: 2019/7/12 15:35
      */
-    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
+    @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/btnList")
     public CommonResponseVO btnList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractBtnResource condition,
@@ -66,36 +63,34 @@ public class TesseractBtnResourceController {
     }
 
     /**
-     *
      * @return
      */
-    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
+    @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/allBtn")
     public CommonResponseVO allBtn() {
         return CommonResponseVO.success(btnResourceService.list());
     }
 
     /**
-     *
      * @param btnResource
      * @return
      * @throws Exception
      */
-    @PreAuthorize("hasPermission('btn', 'add') and hasRole('admin')")
+    @PreAuthorize("hasPermission('btn', 'add') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/saveOrUpdateBtn")
     public CommonResponseVO saveOrUpdateBtn(@Validated @RequestBody TesseractBtnResource btnResource) throws Exception {
         btnResourceService.saveOrUpdateBtn(btnResource);
         return CommonResponseVO.SUCCESS;
     }
 
-    @PreAuthorize("hasPermission('btn', 'delete') and hasRole('admin')")
+    @PreAuthorize("hasPermission('btn', 'delete') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/deleteBtn")
     public CommonResponseVO deleteBtn(@NotNull Integer btnId) throws Exception {
         btnResourceService.deleteBtn(btnId);
         return CommonResponseVO.SUCCESS;
     }
 
-    @PreAuthorize("hasPermission('btn', 'search') and hasRole('admin')")
+    @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/btnListByMenuIdAndRoleId")
     public CommonResponseVO btnListByMenuIdAndRoleId(@NotNull Integer roleId, @NotNull Integer menuId) {
         return CommonResponseVO.success(btnResourceService.btnListByMenuIdAndRoleId(roleId, menuId));
