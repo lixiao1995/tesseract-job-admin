@@ -5,6 +5,7 @@ import admin.pojo.UserAuthVO;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import tesseract.exception.TesseractException;
@@ -29,7 +30,7 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        //此处为业务代码，可以忽略
+        //检测token是否过期
         String token = request.getHeader(AdminConstant.TOKEN);
         if (StringUtils.isEmpty(token)) {
             // 从 cookie 中 取token
@@ -42,13 +43,12 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
             }
         }
         // 如果token仍然为空
-        if(StringUtils.isEmpty(token)){
+        if (StringUtils.isEmpty(token)) {
             throw new TesseractException("token 不能为空");
         }
-        if(UserContextHolder.getUser() == null){
-            UserAuthVO userAuthInfo = tesseractUserService.getUserAuthInfo(token);
-            // 保存用户信息到本地线程变量
-            UserContextHolder.putUser(userAuthInfo);
+        //校验
+        if (!tesseractUserService.checkToken(token)) {
+            throw new TesseractException("token 过期，请重新登录");
         }
 
         return super.preHandle(request, response, handler);
@@ -56,9 +56,6 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        // 上下文属性值清除，防止内存泄漏
-        // RequestContextHolder 在执行完毕之后，会自行调用remove
-        UserContextHolder.clear();
         super.afterCompletion(request, response, handler, ex);
     }
 }

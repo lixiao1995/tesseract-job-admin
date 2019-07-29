@@ -226,6 +226,15 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
+    public boolean checkToken(String token) {
+        QueryWrapper<TesseractToken> tokenQueryWrapper = new QueryWrapper<>();
+        tokenQueryWrapper.lambda()
+                .eq(TesseractToken::getToken, token)
+                .gt(TesseractToken::getExpireTime, System.currentTimeMillis());
+        return !(tokenService.getOne(tokenQueryWrapper) == null);
+    }
+
+    @Override
     public void validUser(Integer userId) {
 
         TesseractUser user = getById(userId);
@@ -290,6 +299,9 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         QueryWrapper<TesseractToken> tesseractTokenQueryWrapper = new QueryWrapper<>();
         tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getToken, token);
         TesseractToken tesseractToken = tokenService.getOne(tesseractTokenQueryWrapper);
+        if (tesseractToken == null) {
+            throw new TesseractException("token过期,请重新登陆");
+        }
         Integer userId = tesseractToken.getUserId();
         // 获取用户信息
         TesseractUser tesseractUser = this.getById(userId);

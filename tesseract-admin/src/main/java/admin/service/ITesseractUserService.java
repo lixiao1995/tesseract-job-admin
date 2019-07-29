@@ -46,4 +46,6 @@ public interface ITesseractUserService extends IService<TesseractUser> {
     UserAuthVO getUserAuthInfo(String token);
 
     void passwordRevert(Integer userId);
+
+    boolean checkToken(String token);
 }
