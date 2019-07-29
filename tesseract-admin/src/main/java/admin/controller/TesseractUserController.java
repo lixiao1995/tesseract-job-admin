@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenNoCheck;
 import admin.entity.TesseractUser;
 import admin.pojo.DO.TesseractUserDO;
 import admin.pojo.DO.UserDO;
@@ -39,6 +40,7 @@ public class TesseractUserController {
     private ITesseractUserService tesseractUserService;
 
     @RequestMapping("/login")
+    @TokenNoCheck
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
         return CommonResponseVO.success(tesseractUserService.userLogin(userDO));
     }
@@ -131,6 +133,7 @@ public class TesseractUserController {
      * @return
      */
     @RequestMapping("/getUserAuthInfo")
+    @TokenNoCheck
     public CommonResponseVO getUserInfo(HttpServletRequest httpServletRequest) {
         String token = httpServletRequest.getHeader("X-Token");
         return CommonResponseVO.success(tesseractUserService.getUserAuthInfo(token));

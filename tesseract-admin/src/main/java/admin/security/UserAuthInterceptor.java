@@ -1,10 +1,12 @@
 package admin.security;
 
+import admin.annotation.TokenNoCheck;
 import admin.constant.AdminConstant;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import tesseract.exception.TesseractException;
 
@@ -27,7 +29,11 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+        TokenNoCheck annotation = handlerMethod.getMethod().getAnnotation(TokenNoCheck.class);
+        if (annotation != null) {
+            return super.preHandle(request, response, handler);
+        }
         //检测token是否过期
         String token = request.getHeader(AdminConstant.TOKEN);
         if (StringUtils.isEmpty(token)) {
