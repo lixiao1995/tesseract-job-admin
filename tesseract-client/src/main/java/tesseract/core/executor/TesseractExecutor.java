@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.context.ExecutorContext;
@@ -81,20 +82,26 @@ public class TesseractExecutor {
      */
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
-        heartbeatThread = new HeartbeatThread(clientFeignService, adminServerAddress, getValidIP(), port);
-        registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress, getValidIP(), port);
-        heartbeatThread.setDaemon(true);
-        registryThread.setDaemon(true);
-        heartbeatThread.setTesseractExecutor(this);
-        heartbeatThread.setRegistryThread(registryThread);
-        registryThread.setHeartbeatThread(heartbeatThread);
-        registryThread.startThread();
-        heartbeatThread.startThread();
+        if (!CollectionUtils.isEmpty(clientJobDetailList)) {
+            heartbeatThread = new HeartbeatThread(clientFeignService, adminServerAddress, getValidIP(), port);
+            registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress, getValidIP(), port);
+            heartbeatThread.setDaemon(true);
+            registryThread.setDaemon(true);
+            heartbeatThread.setTesseractExecutor(this);
+            heartbeatThread.setRegistryThread(registryThread);
+            registryThread.setHeartbeatThread(heartbeatThread);
+            registryThread.startThread();
+            heartbeatThread.startThread();
+        }
     }
 
     public void destroy() {
-        registryThread.stopThread();
-        heartbeatThread.stopThread();
+        if (registryThread != null) {
+            registryThread.stopThread();
+        }
+        if (heartbeatThread != null) {
+            heartbeatThread.stopThread();
+        }
     }
 
     /**

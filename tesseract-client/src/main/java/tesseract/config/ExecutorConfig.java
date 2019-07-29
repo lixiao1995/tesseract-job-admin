@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import tesseract.controller.ExecutorController;
 import tesseract.core.executor.TesseractExecutor;
 import tesseract.feignService.IClientFeignService;
-import tesseract.postproccsor.TesseractBeanFactoryProcesser;
 
 @Configuration
 @Import(FeignClientsConfiguration.class)
@@ -38,10 +37,5 @@ public class ExecutorConfig {
     public IClientFeignService iClientFeignService() {
         return Feign.builder().encoder(encoder).decoder(decoder)
                 .target(Target.EmptyTarget.create(IClientFeignService.class));
-    }
-
-    @Bean
-    public static TesseractBeanFactoryProcesser tesseractBeanFactoryProcesser() {
-        return new TesseractBeanFactoryProcesser();
     }
 }
