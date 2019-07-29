@@ -173,23 +173,19 @@
     -->
 
     <!--开发环境:打印控制台-->
-    <!--    <springProfile name="dev">-->
-    <!--        <logger name="com.nmys.view" level="debug"/>-->
-    <!--    </springProfile>-->
+    <springProfile name="dev">
+        <logger name="admin" level="debug"/>
+    </springProfile>
 
     <root level="info">
         <appender-ref ref="CONSOLE"/>
     </root>
 
     <!--生产环境:输出到文件-->
-    <!--<springProfile name="pro">-->
-    <!--<root level="info">-->
-    <!--<appender-ref ref="CONSOLE" />-->
-    <!--<appender-ref ref="DEBUG_FILE" />-->
-    <!--<appender-ref ref="INFO_FILE" />-->
-    <!--<appender-ref ref="ERROR_FILE" />-->
-    <!--<appender-ref ref="WARN_FILE" />-->
-    <!--</root>-->
-    <!--</springProfile>-->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="INFO_FILE"/>
+        </root>
+    </springProfile>
 
 </configuration>
