@@ -1,5 +1,6 @@
 package admin.core.scheduler;
 
+import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import admin.service.ITesseractTriggerService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +17,14 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
     private int timeWindowSize = 5 * 1000;
     private int sleepTime = 20 * 1000;
     private int accurateTime = 1 * 1000;
-    private String groupName;
+    private TesseractGroup tesseractGroup;
 
-    public SchedulerThread(String groupName, TesseractTriggerDispatcher tesseractTriggerDispatcher, ITesseractTriggerService tesseractTriggerService) {
+
+    public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher, ITesseractTriggerService tesseractTriggerService) {
         this.tesseractTriggerDispatcher = tesseractTriggerDispatcher;
         this.tesseractTriggerService = tesseractTriggerService;
-        this.setName(String.format("SchedulerThread-%s", groupName));
-        this.groupName = groupName;
+        this.tesseractGroup = tesseractGroup;
+        this.setName(String.format("SchedulerThread-%s", tesseractGroup.getName()));
     }
 
     public TesseractTriggerDispatcher getTesseractTriggerDispatcher() {
@@ -31,11 +33,11 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("SchedulerThread {} start", groupName);
+        log.info("SchedulerThread {} start", tesseractGroup.getName());
         while (!isStop) {
             int blockGetAvailableThreadNum = tesseractTriggerDispatcher.blockGetAvailableThreadNum();
             log.info("可用线程数:{}", blockGetAvailableThreadNum);
-            List<TesseractTrigger> triggerList = tesseractTriggerService.findTriggerWithLock(groupName, blockGetAvailableThreadNum, System.currentTimeMillis(), timeWindowSize);
+            List<TesseractTrigger> triggerList = tesseractTriggerService.findTriggerWithLock(tesseractGroup, blockGetAvailableThreadNum, System.currentTimeMillis(), timeWindowSize);
             log.info("扫描触发器数量:{}", triggerList.size());
             if (!CollectionUtils.isEmpty(triggerList)) {
                 //降序排序等待时间差

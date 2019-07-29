@@ -108,7 +108,7 @@ public class TesseractScheduleBoot {
                 }
                 hasScheduler = true;
                 String groupName = group.getName();
-                SCHEDULER_THREAD_MAP.put(groupName, createSchedulerThread(groupName, group.getThreadPoolNum()));
+                SCHEDULER_THREAD_MAP.put(groupName, createSchedulerThread(group));
             }
             if (hasScheduler) {
                 //创建扫描线程
@@ -125,12 +125,11 @@ public class TesseractScheduleBoot {
     /**
      * 创建调度线程
      *
-     * @param groupName
-     * @param threadPoolNum
+     * @param tesseractGroup
      * @return
      */
-    private SchedulerThread createSchedulerThread(String groupName, Integer threadPoolNum) {
-        SchedulerThread schedulerThread = new SchedulerThread(groupName, createTesseractTriggerDispatcher(groupName, threadPoolNum), tesseractTriggerService);
+    private SchedulerThread createSchedulerThread( TesseractGroup tesseractGroup) {
+        SchedulerThread schedulerThread = new SchedulerThread(tesseractGroup, createTesseractTriggerDispatcher(tesseractGroup.getName(), tesseractGroup.getThreadPoolNum()), tesseractTriggerService);
         schedulerThread.setDaemon(true);
         return schedulerThread;
     }
@@ -201,7 +200,7 @@ public class TesseractScheduleBoot {
         WRITE_LOCK.lock();
         try {
             String groupName = tesseractGroup.getName();
-            SchedulerThread schedulerThread = tesseractScheduleBoot.createSchedulerThread(groupName, tesseractGroup.getThreadPoolNum());
+            SchedulerThread schedulerThread = tesseractScheduleBoot.createSchedulerThread(tesseractGroup);
             schedulerThread.startThread();
             SCHEDULER_THREAD_MAP.put(groupName, schedulerThread);
             //检测scanner是否创建，如果只有一个默认调度组将不会创建
