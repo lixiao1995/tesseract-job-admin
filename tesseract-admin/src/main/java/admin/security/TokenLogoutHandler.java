@@ -1,9 +1,7 @@
 package admin.security;
 
 import admin.entity.TesseractToken;
-import admin.pojo.CommonResponseVO;
 import admin.service.ITesseractTokenService;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -14,7 +12,6 @@ import tesseract.exception.TesseractException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @description: TODO-Eden.Lee

@@ -1,7 +1,7 @@
 package admin.security;
 
 import admin.constant.AdminConstant;
-import admin.pojo.UserAuthVO;
+import admin.pojo.VO.UserAuthVO;
 import admin.service.ITesseractUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

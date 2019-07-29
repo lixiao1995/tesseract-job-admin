@@ -1,7 +1,6 @@
-package admin.pojo;
+package admin.pojo.VO;
 
 import admin.entity.TesseractBtnResource;
-import admin.entity.TesseractRole;
 import lombok.Data;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package admin.service.impl;
 
 import admin.entity.TesseractToken;
 import admin.mapper.TesseractTokenMapper;
-import admin.pojo.StatisticsLogDO;
+import admin.pojo.DO.StatisticsLogDO;
 import admin.service.ITesseractTokenService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;

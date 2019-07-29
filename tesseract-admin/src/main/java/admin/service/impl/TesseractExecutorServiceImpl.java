@@ -2,11 +2,10 @@ package admin.service.impl;
 
 import admin.entity.*;
 import admin.mapper.TesseractExecutorMapper;
-import admin.pojo.ExecutorVO;
-import admin.pojo.PageVO;
-import admin.pojo.TesseractExecutorVO;
+import admin.pojo.VO.ExecutorVO;
+import admin.pojo.VO.PageVO;
+import admin.pojo.VO.TesseractExecutorVO;
 import admin.security.SecurityUserContextHolder;
-import admin.security.SecurityUserDetail;
 import admin.service.ITesseractExecutorDetailService;
 import admin.service.ITesseractExecutorService;
 import admin.service.ITesseractJobDetailService;
@@ -32,9 +31,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
 
 /**
  * <p>

@@ -3,9 +3,9 @@ package admin.controller;
 
 import admin.constant.AdminConstant;
 import admin.entity.TesseractMenuResource;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.MenuVO;
-import admin.pojo.PageVO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.MenuVO;
+import admin.pojo.VO.PageVO;
 import admin.service.ITesseractMenuResourceService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class TesseractMenuResourceController {
      * @param condition
      * @param startCreateTime
      * @param endCreateTime
-     * @return: admin.pojo.CommonResponseVO
+     * @return: admin.pojo.VO.CommonResponseVO
      * @author: LeoLee
      * @date: 2019/7/12
      */

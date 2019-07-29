@@ -1,4 +1,4 @@
-package admin.pojo;
+package admin.pojo.DO;
 
 import admin.entity.TesseractUser;
 import lombok.Data;

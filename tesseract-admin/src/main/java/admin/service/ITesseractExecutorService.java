@@ -1,7 +1,7 @@
 package admin.service;
 
 import admin.entity.TesseractExecutor;
-import admin.pojo.ExecutorVO;
+import admin.pojo.VO.ExecutorVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
 import tesseract.core.dto.TesseractAdminRegistryResDTO;

@@ -1,7 +1,7 @@
 package admin.service;
 
 import admin.entity.TesseractToken;
-import admin.pojo.StatisticsLogDO;
+import admin.pojo.DO.StatisticsLogDO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

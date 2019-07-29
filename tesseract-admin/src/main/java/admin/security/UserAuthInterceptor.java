@@ -1,11 +1,9 @@
 package admin.security;
 
 import admin.constant.AdminConstant;
-import admin.pojo.UserAuthVO;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import tesseract.exception.TesseractException;

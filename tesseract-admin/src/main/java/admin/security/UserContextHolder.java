@@ -1,8 +1,6 @@
 package admin.security;
 
-import admin.pojo.UserAuthVO;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+import admin.pojo.VO.UserAuthVO;
 
 /**
  * @description: 保存用户登录信息

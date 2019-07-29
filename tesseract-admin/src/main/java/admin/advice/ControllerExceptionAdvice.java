@@ -1,6 +1,6 @@
 package admin.advice;
 
-import admin.pojo.CommonResponseVO;
+import admin.pojo.VO.CommonResponseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.AuthorizationServiceException;

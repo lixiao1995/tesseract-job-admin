@@ -1,4 +1,4 @@
-package admin.pojo;
+package admin.pojo.VO;
 
 import admin.entity.TesseractMenuResource;
 import lombok.Data;

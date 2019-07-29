@@ -17,7 +17,7 @@
     <sql id="Base_Column_List">
         id, userId, userName, token, create_time, expire_time, update_time
     </sql>
-    <select id="statisticsActiveUser" resultType="admin.pojo.StatisticsLogDO">
+    <select id="statisticsActiveUser" resultType="admin.pojo.DO.StatisticsLogDO">
         select from_unixtime(update_time/1000,'%Y-%m-%d') as dataStr,count(*) as num from tesseract_token
         where update_time between #{startTime} and #{endTime}
         group by

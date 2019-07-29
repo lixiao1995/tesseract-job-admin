@@ -1,22 +1,25 @@
-package admin.pojo;
+package admin.pojo.VO;
 
 import admin.entity.TesseractMenuResource;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * @description: TODO-Eden.Lee
- * @author: 李明
- * @company: 朴新教育
+ * @description: 用户权限信息实体
+ * @author: LeoLee
+ * @company: ***
  * @version:
- * @date: 2019/7/10 10:07
+ * @date: 2019/7/10 10:09
  */
-public class TesseractBtnResourceVo implements Serializable {
+@Data
+public class UserAuthVO implements Serializable {
     private List<String> roles;
     private List<TesseractMenuResource> menuList;
     private List<String> btnList;
 
+    private String name;
     private String avatar;
     private String introduction;
 }

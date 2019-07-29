@@ -1,7 +1,6 @@
-package admin.pojo;
+package admin.pojo.VO;
 
 import admin.entity.TesseractLog;
-import admin.entity.TesseractTrigger;
 import lombok.Data;
 
 import java.util.List;

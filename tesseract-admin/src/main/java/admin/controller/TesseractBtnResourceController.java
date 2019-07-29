@@ -3,9 +3,9 @@ package admin.controller;
 
 import admin.constant.AdminConstant;
 import admin.entity.TesseractBtnResource;
-import admin.pojo.BtnVO;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.PageVO;
+import admin.pojo.VO.BtnVO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.PageVO;
 import admin.service.ITesseractBtnResourceService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class TesseractBtnResourceController {
      * @param condition
      * @param startCreateTime
      * @param endCreateTime
-     * @return: admin.pojo.CommonResponseVO
+     * @return: admin.pojo.VO.CommonResponseVO
      * @author: 李明
      * @date: 2019/7/12 15:35
      */

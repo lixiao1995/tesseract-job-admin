@@ -1,8 +1,7 @@
 package admin.service;
 
-import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
-import admin.pojo.TesseractRoleDO;
+import admin.pojo.DO.TesseractRoleDO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 

@@ -1,7 +1,7 @@
 package admin.service;
 
 import admin.entity.TesseractTrigger;
-import admin.pojo.TriggerVO;
+import admin.pojo.VO.TriggerVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.text.ParseException;

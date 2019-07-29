@@ -2,9 +2,9 @@ package admin.service.impl;
 
 import admin.entity.*;
 import admin.mapper.TesseractRoleMapper;
-import admin.pojo.BtnDO;
-import admin.pojo.TesseractMenuDO;
-import admin.pojo.TesseractRoleDO;
+import admin.pojo.DO.BtnDO;
+import admin.pojo.DO.TesseractMenuDO;
+import admin.pojo.DO.TesseractRoleDO;
 import admin.security.SecurityUserDetail;
 import admin.security.SecurityUserContextHolder;
 import admin.service.ITesseractRoleBtnService;
@@ -25,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import tesseract.exception.TesseractException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

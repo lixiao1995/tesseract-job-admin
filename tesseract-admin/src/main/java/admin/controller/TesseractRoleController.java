@@ -1,17 +1,17 @@
 package admin.controller;
 
 
-import admin.entity.TesseractMenuResource;
 import admin.entity.TesseractRole;
-import admin.pojo.*;
-import admin.service.ITesseractMenuResourceService;
+import admin.pojo.DO.TesseractRoleDO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.PageVO;
+import admin.pojo.VO.RoleVO;
 import admin.service.ITesseractRoleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +43,7 @@ public class TesseractRoleController {
      * @param condition
      * @param startCreateTime
      * @param endCreateTime
-     * @return: admin.pojo.CommonResponseVO
+     * @return: admin.pojo.VO.CommonResponseVO
      * @author: 李明
      * @date: 2019/7/12 15:35
      */

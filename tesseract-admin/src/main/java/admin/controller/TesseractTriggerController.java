@@ -2,8 +2,8 @@ package admin.controller;
 
 
 import admin.entity.TesseractTrigger;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.TriggerVO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.TriggerVO;
 import admin.service.ITesseractTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;

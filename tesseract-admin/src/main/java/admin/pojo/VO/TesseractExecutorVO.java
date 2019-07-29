@@ -1,4 +1,4 @@
-package admin.pojo;
+package admin.pojo.VO;
 
 import admin.entity.TesseractExecutor;
 import admin.entity.TesseractExecutorDetail;

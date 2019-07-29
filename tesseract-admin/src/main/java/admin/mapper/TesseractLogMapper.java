@@ -1,7 +1,7 @@
 package admin.mapper;
 
 import admin.entity.TesseractLog;
-import admin.pojo.StatisticsLogDO;
+import admin.pojo.DO.StatisticsLogDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 

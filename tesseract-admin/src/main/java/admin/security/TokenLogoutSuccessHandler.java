@@ -1,6 +1,6 @@
 package admin.security;
 
-import admin.pojo.CommonResponseVO;
+import admin.pojo.VO.CommonResponseVO;
 import com.alibaba.fastjson.JSON;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;

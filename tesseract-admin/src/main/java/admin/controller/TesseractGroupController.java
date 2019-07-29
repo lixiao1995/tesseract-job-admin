@@ -2,9 +2,9 @@ package admin.controller;
 
 
 import admin.entity.TesseractGroup;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.GroupVO;
-import admin.pojo.PageVO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.GroupVO;
+import admin.pojo.VO.PageVO;
 import admin.service.ITesseractGroupService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,10 @@
 package admin.service;
 
 import admin.entity.TesseractUser;
-import admin.pojo.TesseractUserDO;
-import admin.pojo.UserAuthVO;
-import admin.pojo.UserDO;
-import admin.pojo.UserLoginVO;
+import admin.pojo.DO.TesseractUserDO;
+import admin.pojo.VO.UserAuthVO;
+import admin.pojo.DO.UserDO;
+import admin.pojo.VO.UserLoginVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -39,7 +39,7 @@ public interface ITesseractUserService extends IService<TesseractUser> {
      * 根据Token获取用户权限信息
      *
      * @param token
-     * @return: admin.pojo.UserAuthVO
+     * @return: admin.pojo.VO.UserAuthVO
      * @author: LeoLee
      * @date: 2019/7/10 10:16
      */

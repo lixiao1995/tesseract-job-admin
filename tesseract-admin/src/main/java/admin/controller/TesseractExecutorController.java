@@ -2,8 +2,8 @@ package admin.controller;
 
 
 import admin.entity.TesseractExecutor;
-import admin.pojo.CommonResponseVO;
-import admin.pojo.ExecutorVO;
+import admin.pojo.VO.CommonResponseVO;
+import admin.pojo.VO.ExecutorVO;
 import admin.service.ITesseractExecutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
