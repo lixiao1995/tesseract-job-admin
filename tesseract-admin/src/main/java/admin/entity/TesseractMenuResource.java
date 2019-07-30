@@ -33,7 +33,7 @@ public class TesseractMenuResource implements Serializable {
     private Integer id;
 
 
-    @ApiModelProperty(value = "菜单名称")
+    @ApiModelProperty(value = "菜单编码")
     private String code;
 
     @ApiModelProperty(value = "菜单名称")

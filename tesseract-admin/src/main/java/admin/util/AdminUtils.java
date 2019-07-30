@@ -6,6 +6,7 @@ import admin.pojo.DO.StatisticsLogDO;
 import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -86,9 +87,9 @@ public class AdminUtils {
                     //添加进查询条件
                     //String 采用like处理
                     if (value instanceof String && !"".equals(((String) value).trim())) {
-                        queryWrapper.like(name, value);
+                        queryWrapper.like(StringUtils.camelToUnderline(name), value);
                     } else {
-                        queryWrapper.eq(name, value);
+                        queryWrapper.eq(StringUtils.camelToUnderline(name), value);
                     }
 
                 }

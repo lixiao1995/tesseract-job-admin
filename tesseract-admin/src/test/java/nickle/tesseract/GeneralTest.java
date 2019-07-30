@@ -5,6 +5,7 @@ import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
@@ -42,7 +43,7 @@ public class GeneralTest {
 
     @Test
     public void test (){
-        List<Integer> list = JSON.parseArray("", Integer.class);
+        System.out.println(StringUtils.camelToUnderline("xxlTess"));
 
     }
 

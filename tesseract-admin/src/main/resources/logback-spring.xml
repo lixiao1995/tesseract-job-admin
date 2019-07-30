@@ -13,10 +13,6 @@
 
     <!--输出到控制台-->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>info</level>
-        </filter>
         <encoder>
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</Pattern>
             <!-- 设置字符集 -->
@@ -64,7 +60,7 @@
               如果未设置此属性，那么当前logger将会继承上级的级别。
         addtivity:是否向上级logger传递打印信息。默认是true。
     -->
-    <!--<logger name="org.springframework.web" level="info"/>-->
+    <logger name="admin.mapper" level="debug"/>
     <!--<logger name="org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor" level="INFO"/>-->
     <!--
         使用mybatis的时候，sql语句是debug下才会打印，而这里我们只配置了info，所以想要查看sql语句的话，有以下两种操作：
@@ -82,7 +78,7 @@
 
     <!--开发环境:打印控制台-->
     <springProfile name="dev">
-        <logger name="admin" level="debug"/>
+        <logger name="admin" level="info"/>
     </springProfile>
 
     <root level="info">
