@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenCheck;
 import admin.constant.AdminConstant;
 import admin.entity.TesseractBtnResource;
 import admin.pojo.VO.BtnVO;
@@ -45,6 +46,7 @@ public class TesseractBtnResourceController {
      * @author: 李明
      * @date: 2019/7/12 15:35
      */
+    @TokenCheck
     @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/btnList")
     public CommonResponseVO btnList(@NotNull @Min(1) Integer currentPage
@@ -65,6 +67,7 @@ public class TesseractBtnResourceController {
     /**
      * @return
      */
+    @TokenCheck
     @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/allBtn")
     public CommonResponseVO allBtn() {
@@ -76,6 +79,7 @@ public class TesseractBtnResourceController {
      * @return
      * @throws Exception
      */
+    @TokenCheck
     @PreAuthorize("hasPermission('btn', 'add') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/saveOrUpdateBtn")
     public CommonResponseVO saveOrUpdateBtn(@Validated @RequestBody TesseractBtnResource btnResource) throws Exception {
@@ -83,6 +87,7 @@ public class TesseractBtnResourceController {
         return CommonResponseVO.SUCCESS;
     }
 
+    @TokenCheck
     @PreAuthorize("hasPermission('btn', 'delete') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/deleteBtn")
     public CommonResponseVO deleteBtn(@NotNull Integer btnId) throws Exception {
@@ -90,6 +95,7 @@ public class TesseractBtnResourceController {
         return CommonResponseVO.SUCCESS;
     }
 
+    @TokenCheck
     @PreAuthorize("hasPermission('btn', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/btnListByMenuIdAndRoleId")
     public CommonResponseVO btnListByMenuIdAndRoleId(@NotNull Integer roleId, @NotNull Integer menuId) {

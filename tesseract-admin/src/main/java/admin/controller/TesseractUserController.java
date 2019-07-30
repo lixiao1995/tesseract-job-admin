@@ -1,7 +1,7 @@
 package admin.controller;
 
 
-import admin.annotation.TokenNoCheck;
+import admin.annotation.TokenCheck;
 import admin.entity.TesseractUser;
 import admin.pojo.DO.TesseractUserDO;
 import admin.pojo.DO.UserDO;
@@ -40,7 +40,6 @@ public class TesseractUserController {
     private ITesseractUserService tesseractUserService;
 
     @RequestMapping("/login")
-    @TokenNoCheck
     public CommonResponseVO login(@Validated @RequestBody UserDO userDO) {
         return CommonResponseVO.success(tesseractUserService.userLogin(userDO));
     }
@@ -53,11 +52,11 @@ public class TesseractUserController {
     }
 
     @RequestMapping("/userList")
+    @TokenCheck
     public CommonResponseVO userList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractUser condition,
                                      Long startCreateTime,
                                      Long endCreateTime) {
-        // UserAuthVO user = UserContextHolder2.getUser();
         // TODO 所有使用当前用户信息的地方可以统一获取
         SecurityUserDetail webUserDetail = (SecurityUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println(">>>>> UserContextHolder中获取的用户信息: " + JSON.toJSONString(webUserDetail));
@@ -73,12 +72,14 @@ public class TesseractUserController {
     }
 
     @RequestMapping("/addUser")
+    @TokenCheck
     public CommonResponseVO addUser(@Validated @RequestBody TesseractUserDO tesseractUserDO) throws Exception {
         tesseractUserService.saveOrUpdateUser(tesseractUserDO);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/modifyPassword")
+    @TokenCheck
     public CommonResponseVO modifyPassword(@Validated @RequestBody UserLoginDO userLoginDO) throws Exception {
         TesseractUserDO tesseractUserDO = new TesseractUserDO();
         tesseractUserDO.setId(userLoginDO.getId());
@@ -88,30 +89,35 @@ public class TesseractUserController {
     }
 
     @RequestMapping("/passwordRevert")
+    @TokenCheck
     public CommonResponseVO passwordRevert(@NotNull Integer userId) throws Exception {
         tesseractUserService.passwordRevert(userId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/validUser")
+    @TokenCheck
     public CommonResponseVO validUser(@NotNull Integer userId) throws Exception {
         tesseractUserService.validUser(userId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/invalidUser")
+    @TokenCheck
     public CommonResponseVO invalidUser(@NotNull Integer userId) throws Exception {
         tesseractUserService.invalidUser(userId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/deleteUser")
+    @TokenCheck
     public CommonResponseVO deleteUser(@NotNull Integer userId) throws Exception {
         tesseractUserService.deleteUser(userId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/getUserCount")
+    @TokenCheck
     public CommonResponseVO getUserCount() {
         return CommonResponseVO.success(tesseractUserService.count());
     }
@@ -122,6 +128,7 @@ public class TesseractUserController {
      * @return
      */
     @RequestMapping("/statisticsUser")
+    @TokenCheck
     public CommonResponseVO statisticsUser() {
         return CommonResponseVO.success(tesseractUserService.statisticsUser());
     }
@@ -133,7 +140,6 @@ public class TesseractUserController {
      * @return
      */
     @RequestMapping("/getUserAuthInfo")
-    @TokenNoCheck
     public CommonResponseVO getUserInfo(HttpServletRequest httpServletRequest) {
         String token = httpServletRequest.getHeader("X-Token");
         return CommonResponseVO.success(tesseractUserService.getUserAuthInfo(token));

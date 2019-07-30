@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenCheck;
 import admin.entity.TesseractLog;
 import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.LogVO;
@@ -42,7 +43,7 @@ public class TesseractLogController {
         logService.notify(tesseractAdminJobNotify);
         return TesseractExecutorResponse.SUCCESS;
     }
-
+    @TokenCheck
     @RequestMapping("/logList")
     public CommonResponseVO logList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize
@@ -63,7 +64,7 @@ public class TesseractLogController {
         logVO.setLogList(logIPage.getRecords());
         return CommonResponseVO.success(logVO);
     }
-
+    @TokenCheck
     @RequestMapping("/getLogCount")
     public CommonResponseVO getLogCount() {
         return CommonResponseVO.success(logService.count());
@@ -74,6 +75,7 @@ public class TesseractLogController {
      *
      * @return
      */
+    @TokenCheck
     @RequestMapping("/statisticsLogLine")
     public CommonResponseVO statisticsLogLine() {
         return CommonResponseVO.success(logService.statisticsLogLine());
@@ -84,6 +86,7 @@ public class TesseractLogController {
      *
      * @return
      */
+    @TokenCheck
     @RequestMapping("/statisticsLogPie")
     public CommonResponseVO statisticsLogPie() {
         return CommonResponseVO.success(logService.statisticsLogPie());

@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenCheck;
 import admin.entity.TesseractExecutor;
 import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.ExecutorVO;
@@ -42,6 +43,7 @@ public class TesseractExecutorController {
         return success;
     }
 
+    @TokenCheck
     @RequestMapping("/executorList")
     public CommonResponseVO executorList(@NotNull @Min(1) Long currentPage
             , @NotNull @Min(1) @Max(50) Long pageSize, TesseractExecutor condition,
@@ -52,18 +54,20 @@ public class TesseractExecutorController {
         return CommonResponseVO.success(executorVO);
     }
 
-
+    @TokenCheck
     @RequestMapping("/executorListNoDetail")
     public CommonResponseVO executorListNoDetail() {
         return CommonResponseVO.success(tesseractExecutorService.list());
     }
 
+    @TokenCheck
     @RequestMapping("/addExecutor")
     public CommonResponseVO addExecutor(@Validated @RequestBody TesseractExecutor tesseractExecutor) throws Exception {
         tesseractExecutorService.saveOrUpdateExecutor(tesseractExecutor);
         return CommonResponseVO.SUCCESS;
     }
 
+    @TokenCheck
     @RequestMapping("/deleteExecutor")
     public CommonResponseVO deleteExecutor(@NotNull Integer executorId) throws Exception {
         tesseractExecutorService.deleteExecutor(executorId);

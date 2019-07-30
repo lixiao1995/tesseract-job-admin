@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenCheck;
 import admin.entity.TesseractRole;
 import admin.pojo.DO.TesseractRoleDO;
 import admin.pojo.VO.CommonResponseVO;
@@ -48,6 +49,7 @@ public class TesseractRoleController {
      * @date: 2019/7/12 15:35
      */
     @RequestMapping("/roleList")
+    @TokenCheck
     public CommonResponseVO roleList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractRole condition,
                                      Long startCreateTime,
@@ -64,29 +66,34 @@ public class TesseractRoleController {
     }
 
     @RequestMapping("/allRole")
+    @TokenCheck
     public CommonResponseVO allRole() {
         return CommonResponseVO.success(tesseractRoleService.list());
     }
 
     @RequestMapping("/saveOrUpdateRole")
+    @TokenCheck
     public CommonResponseVO addRole(@Validated @RequestBody TesseractRoleDO tesseractRoleDO) throws Exception {
         tesseractRoleService.saveOrUpdateRole(tesseractRoleDO);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/deleteRole")
+    @TokenCheck
     public CommonResponseVO deleteRole(@NotNull Integer roleId) throws Exception {
         tesseractRoleService.deleteRole(roleId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/getRoleMenu")
+    @TokenCheck
     public CommonResponseVO getRoleMenu(@NotNull Integer roleId) throws Exception {
         List<Integer> menuIdList = tesseractRoleService.getRoleMenuIdList(roleId);
         return CommonResponseVO.success(menuIdList);
     }
 
     @RequestMapping("/getRoleByUserId")
+    @TokenCheck
     public CommonResponseVO getRoleByUserId(@NotNull Integer userId) throws Exception {
         return CommonResponseVO.success(tesseractRoleService.getRoleByUserId(userId));
     }

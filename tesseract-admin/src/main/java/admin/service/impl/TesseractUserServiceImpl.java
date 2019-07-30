@@ -131,7 +131,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Deprecated
     public void userLogout(String token) {
         if (StringUtils.isEmpty(token)) {
-            throw new TesseractException("token为空");
+            return;
         }
         QueryWrapper<TesseractToken> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TesseractToken::getToken, token);

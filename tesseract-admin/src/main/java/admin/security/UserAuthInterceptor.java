@@ -1,6 +1,6 @@
 package admin.security;
 
-import admin.annotation.TokenNoCheck;
+import admin.annotation.TokenCheck;
 import admin.constant.AdminConstant;
 import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,34 +29,35 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if (handler instanceof HandlerMethod) {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            TokenCheck annotation = handlerMethod.getMethod().getAnnotation(TokenCheck.class);
+            if (annotation == null) {
+                return super.preHandle(request, response, handler);
+            }
+            //检测token是否过期
+            String token = request.getHeader(AdminConstant.TOKEN);
+            if (StringUtils.isEmpty(token)) {
+                // 从 cookie 中 取token
+                if (request.getCookies() != null) {
+                    for (Cookie cookie : request.getCookies()) {
+                        if (cookie.getName().equals(AdminConstant.TOKEN)) {
+                            token = cookie.getValue();
+                        }
+                    }
+                }
+            }
+            // 如果token仍然为空
+            if (StringUtils.isEmpty(token)) {
+                throw new TesseractException("token 不能为空");
+            }
+            //校验
+            if (!tesseractUserService.checkToken(token)) {
+                throw new TesseractException("token 过期，请重新登录");
+            }
+            return super.preHandle(request, response, handler);
+        }
         return super.preHandle(request, response, handler);
-//        HandlerMethod handlerMethod = (HandlerMethod) handler;
-//        TokenNoCheck annotation = handlerMethod.getMethod().getAnnotation(TokenNoCheck.class);
-//        if (annotation != null) {
-//            return super.preHandle(request, response, handler);
-//        }
-//        //检测token是否过期
-//        String token = request.getHeader(AdminConstant.TOKEN);
-//        if (StringUtils.isEmpty(token)) {
-//            // 从 cookie 中 取token
-//            if (request.getCookies() != null) {
-//                for (Cookie cookie : request.getCookies()) {
-//                    if (cookie.getName().equals(AdminConstant.TOKEN)) {
-//                        token = cookie.getValue();
-//                    }
-//                }
-//            }
-//        }
-//        // 如果token仍然为空
-//        if (StringUtils.isEmpty(token)) {
-//            throw new TesseractException("token 不能为空");
-//        }
-//        //校验
-//        if (!tesseractUserService.checkToken(token)) {
-//            throw new TesseractException("token 过期，请重新登录");
-//        }
-//
-//        return super.preHandle(request, response, handler);
     }
 
     @Override

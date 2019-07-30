@@ -1,6 +1,7 @@
 package admin.controller;
 
 
+import admin.annotation.TokenCheck;
 import admin.entity.TesseractGroup;
 import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.GroupVO;
@@ -32,13 +33,13 @@ public class TesseractGroupController {
     @Autowired
     private ITesseractGroupService groupService;
 
-
+    @TokenCheck
     @RequestMapping("/allGroup")
     public CommonResponseVO allGroup() {
         return CommonResponseVO.success(groupService.allGroup());
     }
 
-
+    @TokenCheck
     @RequestMapping("/groupList")
     public CommonResponseVO groupList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractGroup condition,
@@ -55,14 +56,14 @@ public class TesseractGroupController {
         groupVO.setGroupList(groupIPage.getRecords());
         return CommonResponseVO.success(groupVO);
     }
-
+    @TokenCheck
     @RequestMapping("/addGroup")
     public CommonResponseVO addGroup(@Validated @RequestBody TesseractGroup tesseractGroup) throws Exception {
         groupService.saveOrUpdateGroup(tesseractGroup);
         return CommonResponseVO.SUCCESS;
     }
 
-
+    @TokenCheck
     @RequestMapping("/deleteGroup")
     public CommonResponseVO deleteGroup(@NotNull Integer groupId) throws Exception {
         groupService.deleteGroup(groupId);
