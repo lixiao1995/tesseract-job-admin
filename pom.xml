@@ -7,6 +7,7 @@
         <module>tesseract-common</module>
         <module>tesseract-client</module>
         <module>tesseract-sample</module>
+        <module>Tesseract-ActuatorServer</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

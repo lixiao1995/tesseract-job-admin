@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -80,8 +81,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-executor" + REGISTRY_MAPPING_SUFFIX).permitAll()
                 .antMatchers("/tesseract-log" + NOTIFY_MAPPING_SUFFIX).permitAll()
                 .antMatchers("/tesseract-menu").permitAll()
+                .antMatchers("/instances/**").permitAll()
+                .antMatchers("/actuator/**").permitAll()
                 // 其它请求随意访问
-                .anyRequest().authenticated().and()
+                .anyRequest().authenticated()
+                .and()
                 // 基于token，所以不需要session。无状态
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .exceptionHandling()
