@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>Tesseract-ActuatorServer</artifactId>
+    <artifactId>tesseract-actuator-server</artifactId>
 
     <dependencies>
         <dependency>
