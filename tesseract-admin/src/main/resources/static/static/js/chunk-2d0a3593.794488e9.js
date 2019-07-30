@@ -1,0 +1,1 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0a3593"],{"0294":function(e,a,t){"use strict";t.r(a);var n=t("2a40"),u=[{key:"select",value:"查询"},{key:"add",value:"增加"},{key:"delete",value:"删除"},{key:"edit",value:"编辑"}];a["default"]={btnList:u,btnMap:n["a"].listToMap(u)}}}]);

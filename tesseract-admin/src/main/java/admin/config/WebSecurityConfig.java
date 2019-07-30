@@ -24,6 +24,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import static tesseract.core.constant.CommonConstant.*;
 
@@ -71,6 +72,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                  注解例子: @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
                  #condition 为 资源唯一标志
                  */
+                .antMatchers("/static/**").permitAll()
                 .antMatchers("/tesseract-user/userList").permitAll()
                 .antMatchers("/tesseract-user/getUserAuthInfo").permitAll()
                 .antMatchers("/tesseract-user/login").permitAll()
@@ -102,11 +104,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Autowired
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
+
 
     @Bean
     @Override
