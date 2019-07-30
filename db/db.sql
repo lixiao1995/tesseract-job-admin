@@ -158,7 +158,7 @@ insert into tesseract_group(id, name, mail, thread_pool_num, description, creato
 values (1, '默认调度组', '', 0, '默认调度将不会发送任何邮件', 'admin', 1562512500000, 1562512500000),
        (2, 'dev1', '', 10, 'liangxuekai@koolearn-inc.com', 'admin', 1562512500000, 1562512500000);
 insert into tesseract_user(id, name, password, status, create_time, update_time, group_name, group_id)
-values (1, 'admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 1, 1562336661000, 1562336661000,
+values (1, 'super_admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 1, 1562336661000, 1562336661000,
         'defaultGroup', 1);
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time

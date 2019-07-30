@@ -17,6 +17,7 @@ public class AdminConstant {
     public static final Integer USER_VALID = 1;
     public static final Integer USER_INVALID = 0;
     public static final String SUPER_ADMIN_NAME = "super_admin";
+    public static final String SUPER_ADMIN_ROLE_NAME = SUPER_ADMIN_NAME;
     public static final String DEFAULT_PASSWORD = "666666";
     public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
 

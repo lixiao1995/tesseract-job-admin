@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static admin.constant.AdminConstant.SUPER_ADMIN_NAME;
+import static admin.constant.AdminConstant.SUPER_ADMIN_ROLE_NAME;
 
 /**
  * <p>
@@ -205,6 +206,14 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
 
     @Override
     public void deleteRole(Integer roleId) {
+        //超级管理员不允许删除
+        TesseractRole tesseractRole = getById(roleId);
+        if (tesseractRole == null) {
+            throw new TesseractException("角色为空");
+        }
+        if (SUPER_ADMIN_ROLE_NAME.equals(tesseractRole.getRoleName())) {
+            throw new TesseractException("超级管理员角色不允许被删除");
+        }
         //删除角色菜单关联
         QueryWrapper<TesseractRoleResources> roleResourcesQueryWrapper = new QueryWrapper<>();
         roleResourcesQueryWrapper.lambda().eq(TesseractRoleResources::getRoleId, roleId);

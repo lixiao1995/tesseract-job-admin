@@ -274,6 +274,10 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user == null) {
             throw new TesseractException("用户不存在");
         }
+        //超级管理员不允许删除
+        if (SUPER_ADMIN_NAME.equals(user.getName())) {
+            throw new TesseractException("超级管理员不允许被删除");
+        }
         //删除用户和角色关联表
         QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
         userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
