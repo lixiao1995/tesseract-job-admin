@@ -9,7 +9,7 @@
 ### 七、提供任务失败，机器下线邮件报警
 ### 八、提供任务分片机制
 ## 系统架构图：
-
+![tesseract-job架构](https://github.com/tesseract-job/tesseract-job-admin/tree/master/%E6%9E%B6%E6%9E%84/tesseract-job.jpg)
 ## 下一个版本展望：
 ### 一、心跳、注册、任务发放 netty 支持（目前采用http tomcat支持）
 ### 二、任务网格调度支持
