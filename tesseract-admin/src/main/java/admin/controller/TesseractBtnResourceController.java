@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
  */
 @RestController
 @RequestMapping("/tesseract-btn-resource")
+
 public class TesseractBtnResourceController {
     @Autowired
     private ITesseractBtnResourceService btnResourceService;

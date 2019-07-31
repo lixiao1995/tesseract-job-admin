@@ -112,11 +112,12 @@ public class TesseractScheduleBoot {
             }
             if (hasScheduler) {
                 //创建扫描线程
-                executorScanner = new ExecutorScanner(executorDetailService);
                 missfireScanner = new MissfireScanner(tesseractTriggerService);
-                executorScanner.setDaemon(true);
                 missfireScanner.setDaemon(true);
             }
+            //失效机器扫描器
+            executorScanner = new ExecutorScanner(executorDetailService);
+            executorScanner.setDaemon(true);
             return;
         }
         log.warn("没有调度组");
@@ -128,7 +129,7 @@ public class TesseractScheduleBoot {
      * @param tesseractGroup
      * @return
      */
-    private SchedulerThread createSchedulerThread( TesseractGroup tesseractGroup) {
+    private SchedulerThread createSchedulerThread(TesseractGroup tesseractGroup) {
         SchedulerThread schedulerThread = new SchedulerThread(tesseractGroup, createTesseractTriggerDispatcher(tesseractGroup.getName(), tesseractGroup.getThreadPoolNum()), tesseractTriggerService);
         schedulerThread.setDaemon(true);
         return schedulerThread;
@@ -181,9 +182,7 @@ public class TesseractScheduleBoot {
             //如果没有线程组了停止扫描线程
             if (SCHEDULER_THREAD_MAP.size() == 0) {
                 tesseractScheduleBoot.missfireScanner.stopThread();
-                tesseractScheduleBoot.executorScanner.stopThread();
                 tesseractScheduleBoot.missfireScanner = null;
-                tesseractScheduleBoot.executorScanner = null;
             }
         } finally {
             WRITE_LOCK.unlock();
@@ -204,11 +203,6 @@ public class TesseractScheduleBoot {
             schedulerThread.startThread();
             SCHEDULER_THREAD_MAP.put(groupName, schedulerThread);
             //检测scanner是否创建，如果只有一个默认调度组将不会创建
-            if (tesseractScheduleBoot.executorScanner == null) {
-                tesseractScheduleBoot.executorScanner = new ExecutorScanner(tesseractScheduleBoot.executorDetailService);
-                tesseractScheduleBoot.executorScanner.startThread();
-                ;
-            }
             if (tesseractScheduleBoot.missfireScanner == null) {
                 tesseractScheduleBoot.missfireScanner = new MissfireScanner(tesseractScheduleBoot.tesseractTriggerService);
                 tesseractScheduleBoot.missfireScanner.startThread();
