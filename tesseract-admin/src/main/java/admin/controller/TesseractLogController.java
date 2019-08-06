@@ -43,6 +43,7 @@ public class TesseractLogController {
         logService.notify(tesseractAdminJobNotify);
         return TesseractExecutorResponse.SUCCESS;
     }
+
     @TokenCheck
     @RequestMapping("/logList")
     public CommonResponseVO logList(@NotNull @Min(1) Integer currentPage
@@ -64,6 +65,7 @@ public class TesseractLogController {
         logVO.setLogList(logIPage.getRecords());
         return CommonResponseVO.success(logVO);
     }
+
     @TokenCheck
     @RequestMapping("/getLogCount")
     public CommonResponseVO getLogCount() {

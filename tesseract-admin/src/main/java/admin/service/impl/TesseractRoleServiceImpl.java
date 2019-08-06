@@ -191,6 +191,8 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         role.setRoleDesc(tesseractRoleDO.getRoleDesc());
         AdminUtils.buildNewEntityCommonFields(role, currentTimeMillis, user);
         this.save(role);
+        //设置为新role的id
+        tesseractRoleDO.setRoleId(role.getId());
         Map<String, List> map = buildRoleMap(tesseractRoleDO);
         List roleBtnList = map.get("roleBtnList");
         List roleResourcesList = map.get("roleResourcesList");
