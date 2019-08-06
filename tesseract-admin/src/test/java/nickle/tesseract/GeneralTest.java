@@ -41,7 +41,7 @@ public class GeneralTest {
             int c = 100;
             Integer a1 = 200;
 
-            System.out.print(a == b);
+            System.out.print(a.equals(b));
             System.out.print(",");
             System.out.print(a == c);
             System.out.print(",");
