@@ -65,19 +65,19 @@ public class TesseractTriggerDispatcher {
                 //获取job detail
                 TesseractJobDetail jobDetail = getJobDetail();
                 if (jobDetail == null) {
-                    senderDelegate.doFail("没有发现可运行job", trigger);
+                    senderDelegate.doFail("没有发现可运行job", trigger,jobDetail);
                     return;
                 }
                 //获取执行器
                 TesseractExecutor executor = executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
-                    senderDelegate.doFail("没有找到可用执行器", trigger);
+                    senderDelegate.doFail("没有找到可用执行器", trigger,jobDetail);
                     return;
                 }
                 //执行器下机器列表
                 List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
-                    senderDelegate.doFail("执行器下没有可用机器", trigger);
+                    senderDelegate.doFail("执行器下没有可用机器", trigger,jobDetail);
                     return;
                 }
                 //路由发送执行

@@ -33,24 +33,6 @@ import java.util.function.Function;
  */
 
 public class GeneralTest {
-    @Test
-    public void testCronExpression() throws Exception {
-
-            Integer a = 100;
-            Integer b = new Integer(100);
-            int c = 100;
-            Integer a1 = 200;
-
-            System.out.print(a == b);
-            System.out.print(",");
-            System.out.print(a == c);
-            System.out.print(",");
-            System.out.print(a1 == a + b);
-
-
-
-    }
-
 
     @Test
     public void test (){

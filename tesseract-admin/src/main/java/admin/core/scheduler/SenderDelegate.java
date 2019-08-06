@@ -124,7 +124,7 @@ public class SenderDelegate {
                                      TesseractLog log) {
         TesseractLog tesseractLog = new TesseractLog();
         if (log == null) {
-            tesseractLog = buildDefaultLog(shardingIndex, trigger);
+            tesseractLog = buildDefaultLog(shardingIndex, trigger, jobDetail);
             tesseractLog.setSocket(executorDetail.getSocket());
             tesseractLog.setMsg("执行中");
             //设置结束时间为0 表示未结束
@@ -148,11 +148,11 @@ public class SenderDelegate {
      *
      * @return
      */
-    private TesseractLog buildDefaultLog(Integer shardingIndex, TesseractTrigger trigger) {
+    private TesseractLog buildDefaultLog(Integer shardingIndex, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
         TesseractLog tesseractLog = new TesseractLog();
-        tesseractLog.setClassName("");
+        tesseractLog.setClassName(jobDetail.getClassName());
         tesseractLog.setCreateTime(System.currentTimeMillis());
-        tesseractLog.setCreator("test");
+        tesseractLog.setCreator(jobDetail.getCreator());
         tesseractLog.setGroupId(trigger.getGroupId());
         tesseractLog.setGroupName(trigger.getGroupName());
         tesseractLog.setTriggerName(trigger.getName());
@@ -279,8 +279,8 @@ public class SenderDelegate {
      *
      * @param msg
      */
-    public void doFail(String msg, TesseractTrigger trigger) {
-        TesseractLog tesseractLog = buildDefaultLog(null, trigger);
+    public void doFail(String msg, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
+        TesseractLog tesseractLog = buildDefaultLog(null, trigger, jobDetail);
         tesseractLog.setMsg(msg);
         tesseractLogService.save(tesseractLog);
         tesseractMailSender.logSendMail(tesseractLog);
