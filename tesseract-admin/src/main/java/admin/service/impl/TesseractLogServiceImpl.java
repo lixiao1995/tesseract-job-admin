@@ -8,6 +8,8 @@ import admin.entity.TesseractLog;
 import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.DO.StatisticsLogDO;
+import admin.security.SecurityUserContextHolder;
+import admin.security.SecurityUserDetail;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
@@ -146,6 +148,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
 
     @Override
     public Map<String, Collection<Integer>> statisticsLogLine() {
+        SecurityUserDetail user = SecurityUserContextHolder.getUser();
         LocalDate now = LocalDate.now();
         long startTime = now.minus(6, ChronoUnit.DAYS).atStartOfDay().toInstant(ZoneOffset.of("+8")).toEpochMilli();
         long endTime = now.plus(1, ChronoUnit.DAYS).atStartOfDay().toInstant(ZoneOffset.of("+8")).toEpochMilli();
@@ -154,8 +157,8 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         Date endDate = new Date();
         startDate.setTime(endTime);
         log.info("startTime:{},endTime:{}", startDate, endDate);
-        List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime);
-        List<StatisticsLogDO> successStatisticsLogDOList = this.getBaseMapper().statisticsSuccessLogLine(startTime, endTime);
+        List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime, user.getGroupId());
+        List<StatisticsLogDO> successStatisticsLogDOList = this.getBaseMapper().statisticsSuccessLogLine(startTime, endTime, user.getGroupId());
         Map<String, Collection<Integer>> map = Maps.newHashMap();
         Collection<Integer> failCountList = AdminUtils.buildStatisticsList(failStatisticsLogDOList, statisticsDays);
         Collection<Integer> successCountList = AdminUtils.buildStatisticsList(successStatisticsLogDOList, statisticsDays);
@@ -166,8 +169,9 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
 
     @Override
     public List<Map<String, Object>> statisticsLogPie() {
+        SecurityUserDetail user = SecurityUserContextHolder.getUser();
         List<Map<String, Object>> list = Lists.newArrayList();
-        List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie();
+        List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie(user.getGroupId());
         statisticsLogDOList.forEach(statisticsLogDO -> {
             HashMap<String, Object> hashMap = Maps.newHashMap();
             hashMap.put("name", statisticsLogDO.getDataStr());
