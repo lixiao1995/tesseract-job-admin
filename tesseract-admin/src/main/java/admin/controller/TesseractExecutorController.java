@@ -56,8 +56,8 @@ public class TesseractExecutorController {
 
     @TokenCheck
     @RequestMapping("/executorListNoDetail")
-    public CommonResponseVO executorListNoDetail() {
-        return CommonResponseVO.success(tesseractExecutorService.list());
+    public CommonResponseVO executorListNoDetail(Integer groupId) {
+        return CommonResponseVO.success(tesseractExecutorService.executorListNoDetail(groupId));
     }
 
     @TokenCheck

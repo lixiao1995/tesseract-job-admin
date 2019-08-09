@@ -17,9 +17,9 @@ import java.util.List;
  */
 public interface TesseractLogMapper extends BaseMapper<TesseractLog> {
 
-    List<StatisticsLogDO> statisticsFailLog(@Param("startTime") long startTime, @Param("endTime") long endTime);
+    List<StatisticsLogDO> statisticsFailLog(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("groupId") Integer groupId);
 
-    List<StatisticsLogDO> statisticsSuccessLogLine(@Param("startTime") long startTime, @Param("endTime") long endTime);
+    List<StatisticsLogDO> statisticsSuccessLogLine(@Param("startTime") long startTime, @Param("endTime") long endTime, @Param("groupId") Integer groupId);
 
-    List<StatisticsLogDO> statisticsSuccessLogPie();
+    List<StatisticsLogDO> statisticsSuccessLogPie(@Param("groupId") Integer groupId);
 }
