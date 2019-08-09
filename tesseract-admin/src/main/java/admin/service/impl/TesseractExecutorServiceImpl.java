@@ -146,6 +146,15 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
         removeById(executorId);
     }
 
+    @Override
+    public List<TesseractExecutor> executorListNoDetail(Integer groupId) {
+        QueryWrapper<TesseractExecutor> executorQueryWrapper = new QueryWrapper<>();
+        if (groupId != null) {
+            executorQueryWrapper.lambda().eq(TesseractExecutor::getGroupId, groupId);
+        }
+        return this.list(executorQueryWrapper);
+    }
+
     private TesseractAdminRegistryResDTO toRegistry(String socket, List<TesseractAdminJobDetailDTO> tesseractAdminJobDetailDTOList) {
         final List<String> repeatJobList = Collections.synchronizedList(Lists.newArrayList());
         List<TesseractJobDetail> jobDetailList = Collections.synchronizedList(Lists.newArrayList());

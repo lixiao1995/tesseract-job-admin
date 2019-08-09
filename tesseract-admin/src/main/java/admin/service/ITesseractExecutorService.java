@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
 import tesseract.core.dto.TesseractAdminRegistryResDTO;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -25,4 +27,6 @@ public interface ITesseractExecutorService extends IService<TesseractExecutor> {
     void saveOrUpdateExecutor(TesseractExecutor tesseractExecutor);
 
     void deleteExecutor(Integer executorId);
+
+    List<TesseractExecutor> executorListNoDetail(Integer groupId);
 }
