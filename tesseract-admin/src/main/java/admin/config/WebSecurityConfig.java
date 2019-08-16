@@ -8,6 +8,7 @@ import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -63,6 +64,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 // 开启跨域共享
                 .cors().and()
+                .formLogin().loginPage("/static/index.html")
+                .loginProcessingUrl("/tesseract-user/login")
+                .and()
                 // 跨域伪造请求限制.无效
                 .csrf().disable()
                 // 开启授权认证
@@ -72,6 +76,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                  注解例子: @PreAuthorize("hasPermission(#condition, 'admin') and hasRole('admin')")
                  #condition 为 资源唯一标志
                  */
+                .antMatchers("/index/**").permitAll()
                 .antMatchers("/static/**").permitAll()
                 .antMatchers("/tesseract-user/userList").permitAll()
                 .antMatchers("/tesseract-user/getUserAuthInfo").permitAll()
