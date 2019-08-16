@@ -63,9 +63,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 // 开启跨域共享
-                .cors().and()
-                .formLogin().loginPage("/static/index.html")
-                .loginProcessingUrl("/tesseract-user/login")
+                .cors()
                 .and()
                 // 跨域伪造请求限制.无效
                 .csrf().disable()
