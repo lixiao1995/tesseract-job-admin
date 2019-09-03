@@ -36,5 +36,13 @@
             <artifactId>guava</artifactId>
             <version>28.0-jre</version>
         </dependency>
+
+        <!-- 集成scepter-client -->
+        <dependency>
+            <groupId>com.kevin</groupId>
+            <artifactId>scepter-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

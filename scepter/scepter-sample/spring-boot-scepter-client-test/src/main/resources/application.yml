@@ -1,0 +1,18 @@
+application:
+  name: spring-onion-test
+
+#数据库
+
+spring:
+  profiles:
+    active: dev
+socket:
+  client:
+    deviceId: 10001
+    port: 9527
+    serverHost: 127.0.0.1
+    serverPort: 9527
+    requestTimeout: 500
+    writerIdleTime: 5
+    serializeType: 5
+    basePackages: com.kevin.springboot.scepter.client.test.command

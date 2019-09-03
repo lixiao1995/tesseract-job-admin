@@ -1,0 +1,15 @@
+application:
+  name: spring-onion-test
+
+#数据库
+
+spring:
+  profiles:
+    active: dev
+
+scepter:
+  server:
+    enable: true
+    port: 9527
+    basePackages: com.kevin.springboot.scepter.server.test.command
+    serializeType: 5

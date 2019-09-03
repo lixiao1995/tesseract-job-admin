@@ -123,6 +123,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <!-- 集成scepter -->
+        <dependency>
+            <groupId>com.kevin</groupId>
+            <artifactId>scepter-server</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.kevin</groupId>
+            <artifactId>spring-boot-starter-scepter-server</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
