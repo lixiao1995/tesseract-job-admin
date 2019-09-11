@@ -4,9 +4,18 @@ package tesseract.core.lifecycle;
  * @author nickle
  */
 public interface IThreadLifycycle {
-    void initThread();
+    default void initThread() {
+    }
 
-    void startThread();
+    default void startThread() {
+    }
 
-    void stopThread();
+    default void stopThread() {
+    }
+
+    default void pauseThread() {
+    }
+
+    default void interruptThread() {
+    }
 }

@@ -27,14 +27,12 @@
             <artifactId>jul-to-slf4j</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.nickle</groupId>
             <artifactId>tesseract-client</artifactId>

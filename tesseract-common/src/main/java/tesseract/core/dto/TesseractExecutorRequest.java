@@ -2,25 +2,25 @@ package tesseract.core.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
-public class TesseractExecutorRequest {
-    @NotNull
+public class TesseractExecutorRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String className;
 
     private Integer shardingIndex;
 
-    @NotNull
+
     private Long logId;
 
-    @NotNull
+
     private Integer triggerId;
 
-    @NotNull
+
     private Integer jobId;
 
 
-    @NotNull
     private Integer executorDetailId;
 }

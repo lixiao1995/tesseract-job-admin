@@ -2,7 +2,7 @@ package tesseract.core.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 〈执行器执行Job情况〉
@@ -12,10 +12,11 @@ import javax.validation.constraints.NotNull;
  * @since 1.0.0
  */
 @Data
-public class TesseractAdminJobNotify {
-    @NotNull
+public class TesseractAdminJobNotify implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long logId;
-    @NotNull
+
     private Integer executorDetailId;
     private String exception;
 //    private String log;

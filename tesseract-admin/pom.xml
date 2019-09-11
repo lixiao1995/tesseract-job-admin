@@ -12,6 +12,11 @@
     <artifactId>tesseract-admin</artifactId>
 
     <dependencies>
+        
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>de.codecentric</groupId>

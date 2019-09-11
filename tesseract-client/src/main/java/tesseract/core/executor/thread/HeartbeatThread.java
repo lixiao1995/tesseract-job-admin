@@ -1,37 +1,32 @@
 package tesseract.core.executor.thread;
 
 import lombok.extern.slf4j.Slf4j;
-import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.dto.TesseractHeartbeatRequest;
 import tesseract.core.executor.TesseractExecutor;
 import tesseract.core.lifecycle.IThreadLifycycle;
-import tesseract.feignService.IClientFeignService;
+import tesseract.service.IClientService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static tesseract.core.constant.CommonConstant.*;
+import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 
 @Slf4j
 public class HeartbeatThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;
     private volatile boolean isPause = true;
 
-    private IClientFeignService clientFeignService;
+    private IClientService clientFeignService;
     private String adminServerAddress;
-    private String ip;
-    private Integer port;
     private RegistryThread registryThread;
     private Integer heartIntervalTime = 10 * 1000;
     private TesseractExecutor tesseractExecutor;
 
-    public HeartbeatThread(IClientFeignService clientFeignService, String adminServerAddress, String ip, Integer port) {
+    public HeartbeatThread(IClientService clientFeignService, String adminServerAddress) {
         super("HeartbeatThread");
         this.clientFeignService = clientFeignService;
         this.adminServerAddress = adminServerAddress;
-        this.ip = ip;
-        this.port = port;
     }
 
     public void setTesseractExecutor(TesseractExecutor tesseractExecutor) {
@@ -97,19 +92,8 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
             tesseractHeartbeatRequest.setMaximumPoolSize(maximumPoolSize);
             tesseractHeartbeatRequest.setPoolSize(poolSize);
             tesseractHeartbeatRequest.setQueueSize(queueSize);
-            tesseractHeartbeatRequest.setSocket(String.format(SOCKET_FORMATTER, ip, port));
-            TesseractExecutorResponse response = clientFeignService.heartbeat(new URI(adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
-            if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
-                log.info("心跳成功");
-                return;
-            }
-            if (response.getStatus() == EXECUTOR_DETAIL_NOT_FIND) {
-                log.info("机器已失效，将重新注册", response);
-                this.isPause = true;
-                registryThread.startRegistry();
-                return;
-            }
-            log.error("心跳失败:{}", response);
+//            tesseractHeartbeatRequest.setSocket(String.format(SOCKET_FORMATTER, ip, port));
+            clientFeignService.heartbeat(new URI(adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
         } catch (URISyntaxException e) {
             log.error("uri信息错误，请检查配置");
         } catch (Exception e) {
@@ -121,8 +105,14 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
     /**
      * 开始心跳
      */
-    public void startHeartbeat() {
+    @Override
+    public void interruptThread() {
         this.isPause = false;
         this.interrupt();
+    }
+
+    @Override
+    public void pauseThread() {
+        this.isPause = true;
     }
 }

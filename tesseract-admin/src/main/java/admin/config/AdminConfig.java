@@ -5,12 +5,7 @@ import admin.core.listener.MailListener;
 import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.TesseractScheduleBoot;
-
-import admin.service.ITesseractExecutorDetailService;
-import admin.service.ITesseractFiredJobService;
-import admin.service.ITesseractJobDetailService;
-import admin.service.ITesseractLogService;
-import admin.service.ITesseractTriggerService;
+import admin.service.*;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
@@ -24,7 +19,6 @@ import feignService.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,15 +26,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
+import tesseract.core.serializer.HessianSerializerService;
+import tesseract.core.serializer.ISerializerService;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Configuration
-@EnableFeignClients
 @Import(FeignClientsConfiguration.class)
 public class AdminConfig {
     @Autowired
@@ -55,6 +46,7 @@ public class AdminConfig {
     @Value("${spring.mail.username}")
     private String from;
 
+
     /**
      * 启动器
      *
@@ -63,6 +55,16 @@ public class AdminConfig {
     @Bean(initMethod = "init", destroyMethod = "destroy")
     public TesseractScheduleBoot tesseractScheduler() {
         return new TesseractScheduleBoot();
+    }
+
+    /**
+     * 序列化
+     *
+     * @return
+     */
+    @Bean
+    public ISerializerService serializerService() {
+        return new HessianSerializerService();
     }
 
 

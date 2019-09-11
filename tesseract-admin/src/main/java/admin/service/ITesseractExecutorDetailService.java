@@ -16,4 +16,6 @@ public interface ITesseractExecutorDetailService extends IService<TesseractExecu
     void heartBeat(TesseractHeartbeatRequest heartBeatRequest);
 
     boolean clearInvalidMachine(Integer pageSize, Long time) throws Exception;
+
+
 }

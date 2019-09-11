@@ -6,10 +6,8 @@ import org.springframework.util.CollectionUtils;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.dto.TesseractAdminJobDetailDTO;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
-import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.lifecycle.IThreadLifycycle;
-import tesseract.exception.TesseractException;
-import tesseract.feignService.IClientFeignService;
+import tesseract.service.IClientService;
 
 import java.net.URI;
 import java.util.Collections;
@@ -24,31 +22,22 @@ import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
  */
 @Slf4j
 public class RegistryThread extends Thread implements IThreadLifycycle {
-    private volatile boolean isRegistry = false;
     private volatile boolean isStop = false;
-    private IClientFeignService clientFeignService;
+    private IClientService clientFeignService;
     private List<ClientJobDetail> clientJobDetailList;
     private String adminServerAddress;
-    private String ip;
-    private Integer port;
     private HeartbeatThread heartbeatThread;
+    public volatile boolean isPause = false;
 
-    public RegistryThread(IClientFeignService clientFeignService, List<ClientJobDetail> clientJobDetailList, String adminServerAddress, String ip, Integer port) {
+    public RegistryThread(IClientService clientFeignService, List<ClientJobDetail> clientJobDetailList, String adminServerAddress) {
         super("RegistryThread");
         this.clientFeignService = clientFeignService;
         this.clientJobDetailList = clientJobDetailList;
         this.adminServerAddress = adminServerAddress;
-        this.ip = ip;
-        this.port = port;
     }
 
     public void setHeartbeatThread(HeartbeatThread heartbeatThread) {
         this.heartbeatThread = heartbeatThread;
-    }
-
-    @Override
-    public void initThread() {
-
     }
 
     @Override
@@ -66,11 +55,11 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
     public void run() {
         log.info("RegistryThread start");
         while (!isStop) {
-            if (!isRegistry) {
+            if (!isPause) {
                 //注册
                 registry();
             }
-            if (!isRegistry) {
+            if (!isPause) {
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -98,15 +87,9 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
             }
             TesseractAdminRegistryRequest tesseractAdminRegistryRequest = buildRequest();
             log.info("注册中:{}", tesseractAdminRegistryRequest);
-            TesseractExecutorResponse response = clientFeignService.registry(new URI(adminServerAddress + REGISTRY_MAPPING), tesseractAdminRegistryRequest);
-            if (response.getStatus() != TesseractExecutorResponse.SUCCESS_STATUS) {
-                log.error("注册异常,状态码：{},信息：{}", response.getStatus(), response.getBody());
-                throw new TesseractException(response.getBody().toString());
-            }
-            log.info("注册成功,返回信息:{}", response.getBody());
-            isRegistry = true;
-            heartbeatThread.startHeartbeat();
+            clientFeignService.registry(new URI(adminServerAddress + REGISTRY_MAPPING), tesseractAdminRegistryRequest);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("注册失败:{}", e.getMessage());
         }
     }
@@ -118,8 +101,6 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
      */
     private TesseractAdminRegistryRequest buildRequest() {
         TesseractAdminRegistryRequest tesseractAdminRegistryRequest = new TesseractAdminRegistryRequest();
-        tesseractAdminRegistryRequest.setIp(ip);
-        tesseractAdminRegistryRequest.setPort(port);
         List<TesseractAdminJobDetailDTO> detailDTOList = Collections.synchronizedList(Lists.newArrayList());
         if (!CollectionUtils.isEmpty(clientJobDetailList)) {
             clientJobDetailList.parallelStream().forEach(clientJobDetail -> {
@@ -136,8 +117,14 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
     /**
      * 将它从睡眠中唤醒注册
      */
-    public void startRegistry() {
-        isRegistry = false;
+    @Override
+    public void interruptThread() {
+        isPause = false;
         this.interrupt();
+    }
+
+    @Override
+    public void pauseThread() {
+        isPause = true;
     }
 }

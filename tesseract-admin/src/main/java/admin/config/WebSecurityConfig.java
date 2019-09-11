@@ -8,7 +8,6 @@ import admin.service.ITesseractUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -21,13 +20,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-
-import static tesseract.core.constant.CommonConstant.*;
 
 /**
  * @description: 安全配置类
@@ -81,10 +76,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
                 .antMatchers("/tesseract-user/logout").permitAll()
-                //内部心跳和注册放行
-                .antMatchers("/tesseract-executor-detail" + HEARTBEAT_MAPPING_SUFFIX).permitAll()
-                .antMatchers("/tesseract-executor" + REGISTRY_MAPPING_SUFFIX).permitAll()
-                .antMatchers("/tesseract-log" + NOTIFY_MAPPING_SUFFIX).permitAll()
                 .antMatchers("/tesseract-menu").permitAll()
                 .antMatchers("/instances/**").permitAll()
                 .antMatchers("/actuator/**").permitAll()

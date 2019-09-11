@@ -9,18 +9,13 @@ import admin.pojo.VO.PageVO;
 import admin.service.ITesseractLogService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tesseract.core.dto.TesseractAdminJobNotify;
-import tesseract.core.dto.TesseractExecutorResponse;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING_SUFFIX;
 
 /**
  * <p>
@@ -37,12 +32,12 @@ public class TesseractLogController {
     @Autowired
     public ITesseractLogService logService;
 
-    @RequestMapping(NOTIFY_MAPPING_SUFFIX)
-    private TesseractExecutorResponse notify(@Validated @RequestBody TesseractAdminJobNotify tesseractAdminJobNotify) {
-        //客户端日志回调
-        logService.notify(tesseractAdminJobNotify);
-        return TesseractExecutorResponse.SUCCESS;
-    }
+//    @RequestMapping(NOTIFY_MAPPING_SUFFIX)
+//    private TesseractExecutorResponse notify(@Validated @RequestBody TesseractAdminJobNotify tesseractAdminJobNotify) {
+//        //客户端日志回调
+//        logService.notify(tesseractAdminJobNotify);
+//        return TesseractExecutorResponse.SUCCESS;
+//    }
 
     @TokenCheck
     @RequestMapping("/logList")

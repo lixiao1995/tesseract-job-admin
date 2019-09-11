@@ -2,12 +2,16 @@ package tesseract.core.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
+/**
+ * @author lyp
+ */
 @Data
-public class TesseractAdminJobDetailDTO {
-    @NotBlank
+public class TesseractAdminJobDetailDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String className;
-    @NotBlank
+
     private String triggerName;
 }

@@ -1,11 +1,8 @@
 package nickle.tesseract;
 
-import admin.core.scheduler.CronExpression;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
@@ -13,13 +10,14 @@ import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import tesseract.core.dto.TesseractExecutorResponse;
+import tesseract.core.serializer.HessianSerializerService;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Function;
@@ -35,9 +33,12 @@ import java.util.function.Function;
 public class GeneralTest {
 
     @Test
-    public void test (){
-        System.out.println(StringUtils.camelToUnderline("xxlTess"));
-
+    public void test() throws Exception {
+        HessianSerializerService hessianSerializerService = new HessianSerializerService();
+        TesseractExecutorResponse fail = TesseractExecutorResponse.FAIL;
+        byte[] serialize = hessianSerializerService.serialize(fail);
+        System.out.println(new String(serialize));
+        System.out.println(hessianSerializerService.deserialize(serialize));
     }
 
     @Test

@@ -4,23 +4,23 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TesseractHeartbeatRequest {
-    @NotBlank
+public class TesseractHeartbeatRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String socket;
-    @NotNull
+
     Integer activeCount;
-    @NotNull
+
     Integer corePoolSize;
-    @NotNull
+
     Integer maximumPoolSize;
-    @NotNull
+
     Integer poolSize;
-    @NotNull
+
     Integer queueSize;
 }

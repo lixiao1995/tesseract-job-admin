@@ -1,6 +1,8 @@
 package admin.core.scheduler;
 
 import admin.core.component.SenderDelegateBuilder;
+import admin.core.netty.server.NettyServer;
+import admin.core.netty.server.TesseractJobServiceDelegator;
 import admin.core.scanner.ExecutorScanner;
 import admin.core.scanner.MissfireScanner;
 import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
@@ -13,9 +15,11 @@ import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.CollectionUtils;
+import tesseract.core.serializer.ISerializerService;
 import tesseract.exception.TesseractException;
 
 import java.util.List;
@@ -43,8 +47,15 @@ public class TesseractScheduleBoot {
     private SenderDelegateBuilder senderDelegateBuilder;
 
     @Autowired
+    private ISerializerService serializerService;
+
+    @Autowired
     @Qualifier("retryEventBus")
     EventBus retryEventBus;
+
+    @Value("${netty.port}")
+    private int port;
+
 
     private static TesseractScheduleBoot tesseractScheduleBoot;
 
@@ -90,13 +101,39 @@ public class TesseractScheduleBoot {
         if (missfireScanner != null) {
             missfireScanner.startThread();
         }
+        //启动netty server
+        new Thread(() -> {
+            new NettyServer().start(port);
+        }).start();
+
+    }
+
+    /***********************************初始化*************************************/
+
+    public void init() {
+        tesseractScheduleBoot = this;
+        initGroupScheduler();
+        initServiceDelegator();
     }
 
     /**
-     * 单线程 不需要加锁
+     * 初始化service 代理
      */
-    public void init() {
-        tesseractScheduleBoot = this;
+    private void initServiceDelegator() {
+        Map<Class, Object> tesseractJobServiceMap = TesseractJobServiceDelegator.TESSERACT_JOB_SERVICE_MAP;
+        tesseractJobServiceMap.put(ITesseractTriggerService.class, tesseractTriggerService);
+        tesseractJobServiceMap.put(ITesseractExecutorDetailService.class, executorDetailService);
+        tesseractJobServiceMap.put(ITesseractJobDetailService.class, tesseractJobDetailService);
+        tesseractJobServiceMap.put(ITesseractExecutorService.class, executorService);
+        tesseractJobServiceMap.put(ITesseractGroupService.class, groupService);
+        tesseractJobServiceMap.put(ISerializerService.class, serializerService);
+
+    }
+
+    /**
+     * 初始化组调度器
+     */
+    private void initGroupScheduler() {
         //创建调度线程,根据部门进行线程池隔离
         List<TesseractGroup> groupList = groupService.list();
         boolean hasScheduler = false;
@@ -155,15 +192,7 @@ public class TesseractScheduleBoot {
         return tesseractTriggerDispatcher;
     }
 
-    /**
-     *
-     *
-     *   静态工具方法
-     *
-     *
-     *
-     */
-
+    /***********************************静态工具方法*************************************/
 
     /**
      * 删除组线程池并停止
