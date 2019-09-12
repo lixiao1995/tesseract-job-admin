@@ -11,7 +11,6 @@ import tesseract.exception.TesseractException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @description: 业务service的代理
@@ -21,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 public class TesseractJobServiceDelegator {
     public static final Map<Class, Object> TESSERACT_JOB_SERVICE_MAP = Maps.newHashMap();
 
-    private static Map<String, Channel> channelMap = new ConcurrentHashMap<>();
+    public static final Map<String, Channel> CHANNEL_MAP = new ConcurrentHashMap<>();
 
     public static ITesseractExecutorService getTesseractExecutorService() {
         return (ITesseractExecutorService) Optional.of(TESSERACT_JOB_SERVICE_MAP.get(ITesseractExecutorService.class)).orElseThrow(() -> new TesseractException("获取服务异常"));
@@ -37,9 +36,5 @@ public class TesseractJobServiceDelegator {
 
     public static ITesseractLogService getTesseractLogService() {
         return (ITesseractLogService) Optional.of(TESSERACT_JOB_SERVICE_MAP.get(ITesseractLogService.class)).orElseThrow(() -> new TesseractException("获取服务异常"));
-    }
-
-    public static Map<String, Channel> getChannelMap() {
-        return channelMap;
     }
 }

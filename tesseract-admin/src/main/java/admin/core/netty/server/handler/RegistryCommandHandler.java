@@ -36,7 +36,7 @@ public class RegistryCommandHandler implements ICommandHandler {
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
         // 注册channel
         String socket = tesseractAdminRegistryRequest.getIp() + ":" + tesseractAdminRegistryRequest.getPort();
-        TesseractJobServiceDelegator.getChannelMap().put(socket, channel);
+        TesseractJobServiceDelegator.CHANNEL_MAP.put(socket, channel);
         channel.writeAndFlush(fullHttpResponse).sync();
     }
 }

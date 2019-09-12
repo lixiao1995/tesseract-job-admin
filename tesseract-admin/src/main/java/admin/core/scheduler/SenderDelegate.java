@@ -5,11 +5,7 @@ import admin.core.component.TesseractMailSender;
 import admin.core.event.RetryEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.router.impl.HashRouter;
-import admin.entity.TesseractExecutorDetail;
-import admin.entity.TesseractFiredJob;
-import admin.entity.TesseractJobDetail;
-import admin.entity.TesseractLog;
-import admin.entity.TesseractTrigger;
+import admin.entity.*;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
@@ -23,19 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.exception.ChannelException;
-import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
-import static admin.constant.AdminConstant.LOG_FAIL;
-import static admin.constant.AdminConstant.SCHEDULER_NAME_MAP;
-import static admin.constant.AdminConstant.SCHEDULER_STRATEGY_BROADCAST;
-import static admin.constant.AdminConstant.SCHEDULER_STRATEGY_SHARDING;
-import static admin.constant.AdminConstant.SCHEDULE_ROUTER_MAP;
+import static admin.constant.AdminConstant.*;
 import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 

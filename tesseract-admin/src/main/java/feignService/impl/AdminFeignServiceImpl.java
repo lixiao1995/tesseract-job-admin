@@ -29,7 +29,7 @@ public class AdminFeignServiceImpl implements IAdminFeignService {
     @Override
     public TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request) throws InterruptedException {
         String socket = uri.getHost() + ":" + uri.getPort();
-        Map<String, Channel> channelMap = TesseractJobServiceDelegator.getChannelMap();
+        Map<String, Channel> channelMap = TesseractJobServiceDelegator.CHANNEL_MAP;
         if (!channelMap.containsKey(socket)) {
             log.error("sendToExecutor, channelMap not contain key:{}", socket);
             throw new TesseractException("没有可用channel");
@@ -47,7 +47,6 @@ public class AdminFeignServiceImpl implements IAdminFeignService {
         byte[] serialize = serializerService.serialize(response);
         FullHttpResponse httpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
         channel.writeAndFlush(httpResponse).sync();
-
         return TesseractExecutorResponse.SUCCESS;
     }
 
