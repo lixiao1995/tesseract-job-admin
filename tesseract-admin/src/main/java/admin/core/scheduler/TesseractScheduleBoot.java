@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.CollectionUtils;
+import tesseract.core.lifecycle.IThreadLifycycle;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.exception.TesseractException;
 
@@ -97,7 +98,7 @@ public class TesseractScheduleBoot {
 
     @EventListener(ContextRefreshedEvent.class)
     public void start() {
-        SCHEDULER_THREAD_MAP.values().forEach(schedulerThread -> schedulerThread.startThread());
+        SCHEDULER_THREAD_MAP.values().forEach(SchedulerThread::startThread);
         if (executorScanner != null) {
             executorScanner.startThread();
         }
@@ -131,6 +132,7 @@ public class TesseractScheduleBoot {
         tesseractJobServiceMap.put(ITesseractGroupService.class, tesseractGroupService);
         tesseractJobServiceMap.put(ISerializerService.class, serializerService);
         tesseractJobServiceMap.put(ITesseractLogService.class, tesseractLogService);
+        tesseractJobServiceMap.put(ExecutorScanner.class, executorScanner);
     }
 
     /**

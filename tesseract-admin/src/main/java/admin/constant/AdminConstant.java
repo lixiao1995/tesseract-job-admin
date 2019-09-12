@@ -21,7 +21,6 @@ public class AdminConstant {
     public static final String DEFAULT_PASSWORD = "666666";
     public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
 
-
     /**
      * 日志相关
      */
@@ -29,6 +28,7 @@ public class AdminConstant {
     public static final Integer LOG_WAIT = 2;
     public static final Integer LOG_SUCCESS = 1;
     public static final Integer LOG_FAIL = 0;
+
     /**
      * 锁相关
      */
@@ -36,6 +36,7 @@ public class AdminConstant {
     public static final String JOB_LOCK_NAME = "JOB_LOCK";
     public static final String MISSFIRE_LOCK_NAME = "MISSFIRE_LOCK_NAME";
     public static final String EXECUTOR_LOCK_NAME = "EXECUTOR_LOCK_NAME";
+
     /**
      * 调度策略
      */
@@ -62,6 +63,12 @@ public class AdminConstant {
             put(SCHEDULER_STRATEGY_LOADFACTOR, new LoadFactorRouter());
         }
     };
+
+    /**
+     * 调度时间
+     */
+    public static final Long SCAN_INTERVAL_TIME = 15 * 1000L;
+
     /**
      * 触发器状态
      */

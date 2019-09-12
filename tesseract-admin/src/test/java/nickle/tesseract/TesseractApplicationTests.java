@@ -6,7 +6,7 @@ import admin.core.mail.TesseractMailTemplate;
 import admin.core.scanner.MissfireScanner;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
-import feignService.IAdminFeignService;
+import feignservice.IAdminFeignService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

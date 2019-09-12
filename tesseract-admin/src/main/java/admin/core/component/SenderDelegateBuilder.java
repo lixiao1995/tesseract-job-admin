@@ -7,7 +7,7 @@ import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.google.common.eventbus.EventBus;
-import feignService.IAdminFeignService;
+import feignservice.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
