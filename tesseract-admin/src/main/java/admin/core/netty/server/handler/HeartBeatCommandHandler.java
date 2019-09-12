@@ -22,7 +22,7 @@ import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
  **/
 public class HeartBeatCommandHandler implements ICommandHandler {
     @Override
-    public void handleCommand(HandleBean handleBean, Channel channel) {
+    public void handleCommand(HandleBean handleBean, Channel channel) throws InterruptedException {
         ISerializerService serializerService = TesseractJobServiceDelegator.getSerializerService();
         ITesseractExecutorDetailService tesseractExecutorDetailService = TesseractJobServiceDelegator.getTesseractExecutorDetailService();
         TesseractHeartbeatRequest heartBeatRequest =
@@ -38,6 +38,6 @@ public class HeartBeatCommandHandler implements ICommandHandler {
         response.setHandlerPath(HEARTBEAT_MAPPING);
         byte[] serialize = serializerService.serialize(response);
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
-        channel.writeAndFlush(fullHttpResponse);
+        channel.writeAndFlush(fullHttpResponse).sync();
     }
 }

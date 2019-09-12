@@ -43,11 +43,10 @@ public class NettyClientService implements IClientService {
 
     private FullHttpRequest buildGeneralFullHttpRequest(URI uri, Object object) {
         byte[] serialize = serializerService.serialize(object);
-        FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
+        return HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
             fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
             fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
         });
-        return httpRequest;
     }
 }

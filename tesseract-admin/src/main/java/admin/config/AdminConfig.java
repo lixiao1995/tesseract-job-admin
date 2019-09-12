@@ -10,20 +10,14 @@ import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import feign.Feign;
-import feign.Request;
-import feign.Target;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
 import feignService.IAdminFeignService;
+import feignService.impl.AdminFeignServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import tesseract.core.serializer.HessianSerializerService;
@@ -32,12 +26,7 @@ import tesseract.core.serializer.ISerializerService;
 import java.util.concurrent.*;
 
 @Configuration
-@Import(FeignClientsConfiguration.class)
 public class AdminConfig {
-    @Autowired
-    private Decoder decoder;
-    @Autowired
-    private Encoder encoder;
     @Autowired
     private JavaMailSender mailSender;
     @Autowired
@@ -45,7 +34,6 @@ public class AdminConfig {
 
     @Value("${spring.mail.username}")
     private String from;
-
 
     /**
      * 启动器
@@ -67,7 +55,6 @@ public class AdminConfig {
         return new HessianSerializerService();
     }
 
-
     /**
      * 配置feign服务
      *
@@ -75,10 +62,7 @@ public class AdminConfig {
      */
     @Bean
     public IAdminFeignService iAdminFeignService() {
-        Request.Options options = new Request.Options(3 * 1000, 3 * 1000, true);
-        IAdminFeignService iAdminFeignService = Feign.builder().encoder(encoder).decoder(decoder).options(options)
-                .target(Target.EmptyTarget.create(IAdminFeignService.class));
-        return iAdminFeignService;
+        return new AdminFeignServiceImpl();
     }
 
     /**
@@ -140,7 +124,6 @@ public class AdminConfig {
     public TesseractMailTemplate tesseractMailTemplate(@Qualifier("tesseractConfiguration") freemarker.template.Configuration configuration) throws Exception {
         return new TesseractMailTemplate(configuration);
     }
-
 
     /**
      * 分页插件

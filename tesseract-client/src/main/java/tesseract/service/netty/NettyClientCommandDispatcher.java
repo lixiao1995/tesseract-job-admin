@@ -10,11 +10,13 @@ import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.netty.HandleBean;
 import tesseract.core.netty.ICommandHandler;
 import tesseract.core.serializer.ISerializerService;
+import tesseract.service.netty.handler.ClientExecuteHandler;
 import tesseract.service.netty.handler.ClientHeartBeatHandler;
 import tesseract.service.netty.handler.ClientRegistryHandler;
 
 import java.util.Map;
 
+import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 
@@ -37,7 +39,7 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
     private static void init() {
         COMMAND_HANDLER_MAP.put(REGISTRY_MAPPING, new ClientRegistryHandler());
         COMMAND_HANDLER_MAP.put(HEARTBEAT_MAPPING, new ClientHeartBeatHandler());
-//        COMMAND_HANDLER_MAP.put(HEARTBEAT_MAPPING, new HeartBeatCommandHandler());
+        COMMAND_HANDLER_MAP.put(EXECUTE_MAPPING, new ClientExecuteHandler());
     }
 
     @Override

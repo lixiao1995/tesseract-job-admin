@@ -1,14 +1,13 @@
 package feignService;
 
-import feign.RequestLine;
-import org.springframework.cloud.openfeign.FeignClient;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
-@FeignClient("AdminFeignClient")
 public interface IAdminFeignService {
-    @RequestLine("POST")
-    TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request);
+    TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request) throws URISyntaxException, InterruptedException;
+
+    void failCallBack();
 }

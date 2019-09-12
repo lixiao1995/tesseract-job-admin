@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
+import tesseract.exception.ChannelException;
+import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -236,8 +238,9 @@ public class SenderDelegate {
         TesseractExecutorResponse response;
         try {
             response = feignService.sendToExecutor(new URI(HTTP_PREFIX + executorDetail.getSocket() + EXECUTE_MAPPING), executorRequest);
-        } catch (URISyntaxException e) {
-            log.error("URI异常:{}", e.getMessage());
+        } catch (Exception e) {
+            log.error("发起调度异常", e);
+            feignService.failCallBack();
             response = TesseractExecutorResponse.builder().body("URI异常").status(TesseractExecutorResponse.FAIL_STAUTS).build();
         }
         //执行成功直接返回等待执行后更新日志状态

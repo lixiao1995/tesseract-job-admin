@@ -32,16 +32,19 @@ public class TesseractScheduleBoot {
     private ITesseractTriggerService tesseractTriggerService;
 
     @Autowired
-    private ITesseractExecutorDetailService executorDetailService;
+    private ITesseractExecutorDetailService tesseractExecutorDetailService;
 
     @Autowired
     private ITesseractJobDetailService tesseractJobDetailService;
 
     @Autowired
-    private ITesseractExecutorService executorService;
+    private ITesseractExecutorService tesseractExecutorService;
 
     @Autowired
-    private ITesseractGroupService groupService;
+    private ITesseractGroupService tesseractGroupService;
+
+    @Autowired
+    private ITesseractLogService tesseractLogService;
 
     @Autowired
     private SenderDelegateBuilder senderDelegateBuilder;
@@ -122,12 +125,12 @@ public class TesseractScheduleBoot {
     private void initServiceDelegator() {
         Map<Class, Object> tesseractJobServiceMap = TesseractJobServiceDelegator.TESSERACT_JOB_SERVICE_MAP;
         tesseractJobServiceMap.put(ITesseractTriggerService.class, tesseractTriggerService);
-        tesseractJobServiceMap.put(ITesseractExecutorDetailService.class, executorDetailService);
+        tesseractJobServiceMap.put(ITesseractExecutorDetailService.class, tesseractExecutorDetailService);
         tesseractJobServiceMap.put(ITesseractJobDetailService.class, tesseractJobDetailService);
-        tesseractJobServiceMap.put(ITesseractExecutorService.class, executorService);
-        tesseractJobServiceMap.put(ITesseractGroupService.class, groupService);
+        tesseractJobServiceMap.put(ITesseractExecutorService.class, tesseractExecutorService);
+        tesseractJobServiceMap.put(ITesseractGroupService.class, tesseractGroupService);
         tesseractJobServiceMap.put(ISerializerService.class, serializerService);
-
+        tesseractJobServiceMap.put(ITesseractLogService.class, tesseractLogService);
     }
 
     /**
@@ -135,7 +138,7 @@ public class TesseractScheduleBoot {
      */
     private void initGroupScheduler() {
         //创建调度线程,根据部门进行线程池隔离
-        List<TesseractGroup> groupList = groupService.list();
+        List<TesseractGroup> groupList = tesseractGroupService.list();
         boolean hasScheduler = false;
         if (!CollectionUtils.isEmpty(groupList)) {
             for (TesseractGroup group : groupList) {
@@ -153,7 +156,7 @@ public class TesseractScheduleBoot {
                 missfireScanner.setDaemon(true);
             }
             //失效机器扫描器
-            executorScanner = new ExecutorScanner(executorDetailService);
+            executorScanner = new ExecutorScanner(tesseractExecutorDetailService);
             executorScanner.setDaemon(true);
             return;
         }
@@ -183,8 +186,8 @@ public class TesseractScheduleBoot {
         DefaultSchedulerThreadPool threadPool = new DefaultSchedulerThreadPool(threadNum);
         TesseractTriggerDispatcher tesseractTriggerDispatcher = new TesseractTriggerDispatcher();
         tesseractTriggerDispatcher.setGroupName(groupName);
-        tesseractTriggerDispatcher.setExecutorDetailService(executorDetailService);
-        tesseractTriggerDispatcher.setExecutorService(executorService);
+        tesseractTriggerDispatcher.setExecutorDetailService(tesseractExecutorDetailService);
+        tesseractTriggerDispatcher.setExecutorService(tesseractExecutorService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
         tesseractTriggerDispatcher.setSenderDelegate(senderDelegateBuilder.getSenderDelegate());

@@ -98,6 +98,7 @@ public class TesseractExecutor {
         }
         //初始化序列化
         NettyHttpClient.serializerService = this.serializerService;
+        NettyHttpClient.tesseractExecutor = this;
     }
 
     public void destroy() {

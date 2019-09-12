@@ -169,8 +169,7 @@ values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
 values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, 'liangxuekai@koolearn-inc.com');
 
-
-
+/*
 truncate table tesseract_job_detail;
 truncate table tesseract_log;
 truncate table tesseract_trigger;
@@ -194,3 +193,4 @@ END
 //
 DELIMITER ;
 call insert_trigger(20000000);
+*/

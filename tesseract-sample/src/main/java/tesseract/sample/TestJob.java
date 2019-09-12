@@ -19,7 +19,8 @@ public class TestJob implements JobHandler {
         Thread.sleep( 1000);
         Random random = new Random(100);
         int i = random.nextInt(100);
-        if (i > 90) {
+        System.out.println(i);
+        if (i > 10) {
             Thread.sleep(3 * 1000);
         } else {
             throw new Exception("添加失败任务，测试重试功能");

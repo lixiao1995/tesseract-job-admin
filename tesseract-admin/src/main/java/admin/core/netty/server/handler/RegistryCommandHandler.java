@@ -34,7 +34,9 @@ public class RegistryCommandHandler implements ICommandHandler {
         TesseractExecutorResponse success = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, registry, CommonConstant.REGISTRY_MAPPING);
         byte[] serialize = serializerService.serialize(success);
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
-        // @todo 需要保存channel 放入 TesseractJobServiceDelegator
-        channel.writeAndFlush(fullHttpResponse);
+        // 注册channel
+        String socket = tesseractAdminRegistryRequest.getIp() + ":" + tesseractAdminRegistryRequest.getPort();
+        TesseractJobServiceDelegator.getChannelMap().put(socket, channel);
+        channel.writeAndFlush(fullHttpResponse).sync();
     }
 }

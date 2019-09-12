@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import lombok.extern.slf4j.Slf4j;
+import tesseract.core.executor.TesseractExecutor;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.exception.TesseractException;
 
@@ -17,6 +18,7 @@ public class NettyHttpClient {
     private static volatile Channel channel;
     private static EventLoopGroup eventLoopGroup;
     public static ISerializerService serializerService;
+    public static TesseractExecutor tesseractExecutor;
 
     public static Channel getChannel(String host, int port) {
         if (channel == null || !channel.isActive()) {
