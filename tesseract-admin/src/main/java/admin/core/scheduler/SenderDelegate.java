@@ -114,9 +114,9 @@ public class SenderDelegate {
                                      Integer shardingIndex,
                                      TesseractTrigger trigger,
                                      TesseractLog log) {
-        TesseractLog tesseractLog = new TesseractLog();
+        TesseractLog tesseractLog;
         if (log == null) {
-            tesseractLog = buildDefaultLog(shardingIndex, trigger, jobDetail);
+            tesseractLog = TesseractBeanFactory.createDefaultLog(shardingIndex, trigger, jobDetail);
             tesseractLog.setSocket(executorDetail.getSocket());
             tesseractLog.setMsg("执行中");
             //设置结束时间为0 表示未结束
@@ -125,93 +125,17 @@ public class SenderDelegate {
             tesseractLog.setExecutorDetailId(executorDetail.getId());
             tesseractLogService.save(tesseractLog);
             //设置firedTrigger
-            firedJobService.save(buildFiredJob(jobDetail, executorDetail, tesseractLog.getId(), trigger));
+            TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(jobDetail, executorDetail, tesseractLog.getId(), trigger);
+            firedJobService.save(firedJob);
         } else {
             tesseractLog = log;
         }
 
         //构建请求发送
-        TesseractExecutorRequest tesseractExecutorRequest = buildRequest(tesseractLog.getId(), jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex, trigger);
+        TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(tesseractLog.getId(), jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex, trigger);
         doRequest(tesseractExecutorRequest, tesseractLog, executorDetail, trigger);
     }
 
-    /**
-     * 构建默认日志
-     *
-     * @return
-     */
-    private TesseractLog buildDefaultLog(Integer shardingIndex, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
-        TesseractLog tesseractLog = new TesseractLog();
-        tesseractLog.setClassName(jobDetail.getClassName());
-        tesseractLog.setCreateTime(System.currentTimeMillis());
-        tesseractLog.setCreator(jobDetail.getCreator());
-        tesseractLog.setGroupId(trigger.getGroupId());
-        tesseractLog.setGroupName(trigger.getGroupName());
-        tesseractLog.setTriggerName(trigger.getName());
-        tesseractLog.setEndTime(System.currentTimeMillis());
-        tesseractLog.setExecutorDetailId(0);
-        tesseractLog.setStatus(LOG_FAIL);
-        tesseractLog.setSocket("");
-        tesseractLog.setStrategy(SCHEDULER_NAME_MAP.getOrDefault(trigger.getStrategy(), "未知调度<不应该出现>"));
-        if (shardingIndex == null) {
-            tesseractLog.setShardingIndex(-1);
-        } else {
-            tesseractLog.setShardingIndex(shardingIndex);
-        }
-        return tesseractLog;
-    }
-
-
-    /**
-     * 构建正在执行的任务bean
-     *
-     * @param jobDetail
-     * @param executorDetail
-     * @param logId
-     * @return
-     */
-    private TesseractFiredJob buildFiredJob(TesseractJobDetail jobDetail,
-                                            TesseractExecutorDetail executorDetail,
-                                            Long logId,
-                                            TesseractTrigger trigger) {
-        TesseractFiredJob tesseractFiredTrigger = new TesseractFiredJob();
-        tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
-        tesseractFiredTrigger.setTriggerName(trigger.getName());
-        tesseractFiredTrigger.setTriggerId(trigger.getId());
-        tesseractFiredTrigger.setJobId(jobDetail.getId());
-        tesseractFiredTrigger.setClassName(jobDetail.getClassName());
-        tesseractFiredTrigger.setSocket(executorDetail.getSocket());
-        tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
-        tesseractFiredTrigger.setLogId(logId);
-        tesseractFiredTrigger.setRetryCount(0);
-        return tesseractFiredTrigger;
-    }
-
-
-    /**
-     * 构建请求
-     *
-     * @param logId
-     * @param className
-     * @param executorDetailId
-     * @return
-     */
-    private TesseractExecutorRequest buildRequest(Long logId,
-                                                  Integer jobId,
-                                                  String className,
-                                                  Integer executorDetailId,
-                                                  Integer shardingIndex,
-                                                  TesseractTrigger trigger) {
-        TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
-        executorRequest.setJobId(jobId);
-        executorRequest.setClassName(className);
-        executorRequest.setShardingIndex(trigger.getShardingNum());
-        executorRequest.setLogId(logId);
-        executorRequest.setTriggerId(trigger.getId());
-        executorRequest.setShardingIndex(shardingIndex);
-        executorRequest.setExecutorDetailId(executorDetailId);
-        return executorRequest;
-    }
 
     /**
      * 发送调度请求
@@ -229,7 +153,7 @@ public class SenderDelegate {
         String socket = executorDetail.getSocket();
         try {
             response = feignService.sendToExecutor(new URI(HTTP_PREFIX + socket + EXECUTE_MAPPING), executorRequest);
-        } catch (TesseractException e){
+        } catch (TesseractException e) {
             log.error("发起调度异常", e);
             feignService.errorHandle(socket);
             response = TesseractExecutorResponse.builder().body("URI异常").status(TesseractExecutorResponse.FAIL_STAUTS).build();
@@ -277,7 +201,7 @@ public class SenderDelegate {
      * @param msg
      */
     public void doFail(String msg, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
-        TesseractLog tesseractLog = buildDefaultLog(null, trigger, jobDetail);
+        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(null, trigger, jobDetail);
         tesseractLog.setMsg(msg);
         tesseractLogService.save(tesseractLog);
         tesseractMailSender.logSendMail(tesseractLog);
