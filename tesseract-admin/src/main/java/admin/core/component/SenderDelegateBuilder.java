@@ -71,7 +71,7 @@ public class SenderDelegateBuilder {
 
     private TaskExecutorDelegate createSendToExecute() {
         TaskExecutorDelegate taskExecutorDelegate = TaskExecutorDelegate.builder()
-                .feignService(feignService)
+                .taskService(feignService)
                 .firedJobService(firedJobService)
                 .groupService(groupService)
                 .mailEventBus(mailEventBus)

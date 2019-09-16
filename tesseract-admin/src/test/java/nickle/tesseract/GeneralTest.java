@@ -5,13 +5,13 @@ import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 import freemarker.template.Configuration;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.serializer.HessianSerializerService;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -34,11 +34,10 @@ public class GeneralTest {
 
     @Test
     public void test() throws Exception {
-        HessianSerializerService hessianSerializerService = new HessianSerializerService();
-        TesseractExecutorResponse fail = TesseractExecutorResponse.FAIL;
-        byte[] serialize = hessianSerializerService.serialize(fail);
-        System.out.println(new String(serialize));
-        System.out.println(hessianSerializerService.deserialize(serialize));
+        List<VirtualMachineDescriptor> list = VirtualMachine.list();
+        list.stream().forEach(virtualMachineDescriptor -> {
+            System.out.println(virtualMachineDescriptor);
+        });
     }
 
     @Test

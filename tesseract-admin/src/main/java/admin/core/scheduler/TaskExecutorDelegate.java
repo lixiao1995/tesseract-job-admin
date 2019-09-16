@@ -129,7 +129,8 @@ public class TaskExecutorDelegate {
         }
 
         //构建请求发送
-        TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(tesseractLog.getId(), jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex, trigger);
+        TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(tesseractLog.getId(),
+                jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex, trigger);
         doRequest(tesseractExecutorRequest, tesseractLog, executorDetail, trigger);
     }
 
