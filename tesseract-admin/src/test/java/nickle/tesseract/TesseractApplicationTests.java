@@ -6,7 +6,7 @@ import admin.core.mail.TesseractMailTemplate;
 import admin.core.scanner.MissfireScanner;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
-import feignservice.IAdminFeignService;
+import admin.core.scheduler.service.ITaskService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class TesseractApplicationTests {
     private ITesseractFiredJobService firedJobService;
 
     @Autowired
-    private IAdminFeignService feignService;
+    private ITaskService feignService;
 
     @Autowired
     private ITesseractGroupService groupService;

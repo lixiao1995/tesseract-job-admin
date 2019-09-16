@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.CollectionUtils;
-import tesseract.core.lifecycle.IThreadLifycycle;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.exception.TesseractException;
 
@@ -192,7 +191,7 @@ public class TesseractScheduleBoot {
         tesseractTriggerDispatcher.setExecutorService(tesseractExecutorService);
         tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
         tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setSenderDelegate(senderDelegateBuilder.getSenderDelegate());
+        tesseractTriggerDispatcher.setTaskExecutorDelegate(senderDelegateBuilder.getTaskExecutorDelegate());
         tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
         return tesseractTriggerDispatcher;
     }

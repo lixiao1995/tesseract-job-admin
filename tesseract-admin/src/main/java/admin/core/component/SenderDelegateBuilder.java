@@ -1,13 +1,13 @@
 package admin.core.component;
 
 import admin.core.mail.TesseractMailTemplate;
-import admin.core.scheduler.SenderDelegate;
+import admin.core.scheduler.TaskExecutorDelegate;
+import admin.core.scheduler.service.ITaskService;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.google.common.eventbus.EventBus;
-import feignservice.IAdminFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class SenderDelegateBuilder {
 
     @Autowired
-    private IAdminFeignService feignService;
+    private ITaskService feignService;
 
     @Autowired
     private ITesseractLogService tesseractLogService;
@@ -51,26 +51,26 @@ public class SenderDelegateBuilder {
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
-    private volatile SenderDelegate senderDelegate;
+    private volatile TaskExecutorDelegate taskExecutorDelegate;
 
     /**
      * 单例
      *
      * @return
      */
-    public SenderDelegate getSenderDelegate() {
-        if (senderDelegate == null) {
+    public TaskExecutorDelegate getTaskExecutorDelegate() {
+        if (taskExecutorDelegate == null) {
             synchronized (this) {
-                if (senderDelegate == null) {
-                    senderDelegate = createSendToExecute();
+                if (taskExecutorDelegate == null) {
+                    taskExecutorDelegate = createSendToExecute();
                 }
             }
         }
-        return senderDelegate;
+        return taskExecutorDelegate;
     }
 
-    private SenderDelegate createSendToExecute() {
-        SenderDelegate senderDelegate = SenderDelegate.builder()
+    private TaskExecutorDelegate createSendToExecute() {
+        TaskExecutorDelegate taskExecutorDelegate = TaskExecutorDelegate.builder()
                 .feignService(feignService)
                 .firedJobService(firedJobService)
                 .groupService(groupService)
@@ -80,7 +80,7 @@ public class SenderDelegateBuilder {
                 .tesseractLogService(tesseractLogService)
                 .tesseractTriggerService(tesseractTriggerService)
                 .build();
-        return senderDelegate;
+        return taskExecutorDelegate;
     }
 
 }

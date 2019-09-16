@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import feignservice.IAdminFeignService;
-import feignservice.impl.AdminFeignServiceImpl;
+import admin.core.scheduler.service.ITaskService;
+import admin.core.scheduler.service.impl.TaskServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,8 +61,8 @@ public class AdminConfig {
      * @return
      */
     @Bean
-    public IAdminFeignService iAdminFeignService() {
-        return new AdminFeignServiceImpl();
+    public ITaskService iAdminFeignService() {
+        return new TaskServiceImpl();
     }
 
     /**

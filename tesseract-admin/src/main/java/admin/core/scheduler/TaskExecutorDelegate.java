@@ -5,6 +5,7 @@ import admin.core.component.TesseractMailSender;
 import admin.core.event.RetryEvent;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.router.impl.HashRouter;
+import admin.core.scheduler.service.ITaskService;
 import admin.entity.*;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
@@ -12,7 +13,6 @@ import admin.service.ITesseractLogService;
 import admin.service.ITesseractTriggerService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.eventbus.EventBus;
-import feignservice.IAdminFeignService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -30,20 +30,14 @@ import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 
 /**
- * @projectName: tesseract-job-admin
- * @className: SenderDelegate
- * @description:
- * @author: liangxuekai
- * @createDate: 2019-07-20 11:33
- * @updateUser: liangxuekai
- * @updateDate: 2019-07-20 11:33
- * @updateRemark: 修改内容
- * @version: 1.0
+ * @author: nickle, liangxuekai
+ * @description: 任务执行器代理，真正执行任务
+ * @date: 2019-07-24 16:01
  */
 @Slf4j
 @Data
 @Builder
-public class SenderDelegate {
+public class TaskExecutorDelegate {
 
     private ITesseractLogService tesseractLogService;
 
@@ -53,7 +47,7 @@ public class SenderDelegate {
 
     private EventBus mailEventBus;
 
-    private IAdminFeignService feignService;
+    private ITaskService taskService;
 
     private ITesseractGroupService groupService;
 
@@ -84,6 +78,9 @@ public class SenderDelegate {
         @NotNull Integer strategy = trigger.getStrategy();
         //广播
         if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
+            /**
+             * 并行发送任务到所有机器执行
+             */
             executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail, null, trigger, log));
         } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
             //分片
@@ -152,16 +149,16 @@ public class SenderDelegate {
         TesseractExecutorResponse response;
         String socket = executorDetail.getSocket();
         try {
-            response = feignService.sendToExecutor(new URI(HTTP_PREFIX + socket + EXECUTE_MAPPING), executorRequest);
+            response = taskService.sendToExecutor(new URI(HTTP_PREFIX + socket + EXECUTE_MAPPING), executorRequest);
         } catch (TesseractException e) {
             log.error("发起调度异常", e);
-            feignService.errorHandle(socket);
-            response = TesseractExecutorResponse.builder().body("URI异常").status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            taskService.errorHandle(socket);
+            response = TesseractExecutorResponse.builder().body(e.getMsg()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
         } catch (Exception e) {
             log.error("发起调度异常", e);
-            response = TesseractExecutorResponse.builder().body("URI异常").status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            response = TesseractExecutorResponse.builder().body(e.getMessage()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
         }
-        //执行成功直接返回等待执行后更新日志状态
+        //发送任务成功直接返回等待执行后更新日志状态
         if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
             return;
         }
@@ -196,12 +193,11 @@ public class SenderDelegate {
      * 保存失败日志并产生报警邮件
      * 1、更改日志状态
      * 2、发送邮件
-     * 3、更改firedJob
      *
      * @param msg
      */
     public void doFail(String msg, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
-        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(null, trigger, jobDetail);
+        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(trigger.getShardingNum(), trigger, jobDetail);
         tesseractLog.setMsg(msg);
         tesseractLogService.save(tesseractLog);
         tesseractMailSender.logSendMail(tesseractLog);

@@ -12,9 +12,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 
 /**
- * @author: huangjun
- * @description:   触发器
- * @updateRemark: 修改内容(每次大改都要写修改内容)
+ * @author: nickle
+ * @description: 触发器分发器，在这里执行任务的分发
  * @date: 2019-07-24 16:01
  */
 @Slf4j
@@ -26,7 +25,7 @@ public class TesseractTriggerDispatcher {
     private ITesseractExecutorDetailService executorDetailService;
     private ITesseractExecutorService executorService;
     private ISchedulerThreadPool threadPool;
-    private SenderDelegate senderDelegate;
+    private TaskExecutorDelegate taskExecutorDelegate;
     private EventBus retryEventBus;
 
 
@@ -35,7 +34,7 @@ public class TesseractTriggerDispatcher {
     }
 
     public void dispatchTrigger(List<TesseractTrigger> triggerList, boolean isOnce) {
-        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce, senderDelegate)));
+        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce, taskExecutorDelegate)));
     }
 
     public int blockGetAvailableThreadNum() {
@@ -46,16 +45,20 @@ public class TesseractTriggerDispatcher {
         threadPool.init();
     }
 
-
+    /**
+     * @author: nickle
+     * @description: 任务执行体
+     * @date: 2019-07-24 16:01
+     */
     private class TaskRunnable implements Runnable {
         private TesseractTrigger trigger;
         private boolean isOnce;
-        private SenderDelegate senderDelegate;
+        private TaskExecutorDelegate taskExecutorDelegate;
 
-        public TaskRunnable(TesseractTrigger trigger, boolean isOnce, SenderDelegate senderDelegate) {
+        public TaskRunnable(TesseractTrigger trigger, boolean isOnce, TaskExecutorDelegate taskExecutorDelegate) {
             this.trigger = trigger;
             this.isOnce = isOnce;
-            this.senderDelegate = senderDelegate;
+            this.taskExecutorDelegate = taskExecutorDelegate;
         }
 
 
@@ -65,25 +68,25 @@ public class TesseractTriggerDispatcher {
                 //获取job detail
                 TesseractJobDetail jobDetail = getJobDetail();
                 if (jobDetail == null) {
-                    senderDelegate.doFail("没有发现可运行job", trigger,jobDetail);
+                    taskExecutorDelegate.doFail("没有发现可运行job", trigger, jobDetail);
                     return;
                 }
                 //获取执行器
                 TesseractExecutor executor = executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
-                    senderDelegate.doFail("没有找到可用执行器", trigger,jobDetail);
+                    taskExecutorDelegate.doFail("没有找到可用执行器", trigger, jobDetail);
                     return;
                 }
                 //执行器下机器列表
                 List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
-                    senderDelegate.doFail("执行器下没有可用机器", trigger,jobDetail);
+                    taskExecutorDelegate.doFail("执行器下没有可用机器", trigger, jobDetail);
                     return;
                 }
                 //路由发送执行
-                senderDelegate.routerExecute(jobDetail, executorDetailList, trigger);
+                taskExecutorDelegate.routerExecute(jobDetail, executorDetailList, trigger);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("任务执行异常:{}", e.getMessage());
             }
         }
 

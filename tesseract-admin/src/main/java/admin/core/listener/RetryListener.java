@@ -2,7 +2,7 @@ package admin.core.listener;
 
 import admin.core.component.SenderDelegateBuilder;
 import admin.core.event.RetryEvent;
-import admin.core.scheduler.SenderDelegate;
+import admin.core.scheduler.TaskExecutorDelegate;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractJobDetail;
@@ -66,7 +66,7 @@ public class RetryListener {
                 .eq(TesseractFiredJob::getJobId, tesseractTrigger.getId());
         TesseractFiredJob firedJob = tesseractFiredJobService.getOne(queryWrapper);
         TesseractJobDetail jobDetail = tesseractJobDetailService.getById(firedJob.getJobId());
-        SenderDelegate senderDelegate = senderDelegateBuilder.getSenderDelegate();
+        TaskExecutorDelegate taskExecutorDelegate = senderDelegateBuilder.getTaskExecutorDelegate();
         QueryWrapper<TesseractExecutorDetail> executorDetailAueryWrapper = new QueryWrapper<>();
         TesseractExecutorDetail executorDetail = tesseractExecutorDetailService.getById(jobNotify.getExecutorDetailId());
         executorDetailAueryWrapper.lambda().eq(TesseractExecutorDetail::getExecutorId, executorDetail.getExecutorId());
@@ -83,10 +83,10 @@ public class RetryListener {
             if (executorDetailList.size() > 1) {
                 executorDetailList.remove(tesseractExecutorDetail);
             }
-            senderDelegate.routerExecute(jobDetail, executorDetailList, tesseractTrigger, tesseractLog);
+            taskExecutorDelegate.routerExecute(jobDetail, executorDetailList, tesseractTrigger, tesseractLog);
         } else {
             //发邮件
-            senderDelegate.doFail(tesseractLog);
+            taskExecutorDelegate.doFail(tesseractLog);
         }
     }
 
