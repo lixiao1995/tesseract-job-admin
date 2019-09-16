@@ -1,28 +1,29 @@
 package admin.core.scheduler;
 
+import admin.core.netty.server.TesseractJobServiceDelegator;
 import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
-import admin.service.ITesseractTriggerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
 import java.util.List;
 
+/**
+ * @author nickle
+ * @description 任务调度器
+ */
 @Slf4j
 public class SchedulerThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;
     private TesseractTriggerDispatcher tesseractTriggerDispatcher;
-    private ITesseractTriggerService tesseractTriggerService;
     private int timeWindowSize = 5 * 1000;
     private int sleepTime = 20 * 1000;
     private int accurateTime = 1 * 1000;
     private TesseractGroup tesseractGroup;
 
-
-    public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher, ITesseractTriggerService tesseractTriggerService) {
+    public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher) {
         this.tesseractTriggerDispatcher = tesseractTriggerDispatcher;
-        this.tesseractTriggerService = tesseractTriggerService;
         this.tesseractGroup = tesseractGroup;
         this.setName(String.format("SchedulerThread-%s", tesseractGroup.getName()));
     }
@@ -37,7 +38,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
         while (!isStop) {
             int blockGetAvailableThreadNum = tesseractTriggerDispatcher.blockGetAvailableThreadNum();
             log.info("可用线程数:{}", blockGetAvailableThreadNum);
-            List<TesseractTrigger> triggerList = tesseractTriggerService.findTriggerWithLock(tesseractGroup, blockGetAvailableThreadNum, System.currentTimeMillis(), timeWindowSize);
+            List<TesseractTrigger> triggerList = TesseractJobServiceDelegator.triggerService.findTriggerWithLock(tesseractGroup, blockGetAvailableThreadNum, System.currentTimeMillis(), timeWindowSize);
             log.info("扫描触发器数量:{}", triggerList.size());
             if (!CollectionUtils.isEmpty(triggerList)) {
                 //降序排序等待时间差
@@ -52,7 +53,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
                         }
                     }
                 }
-                tesseractTriggerDispatcher.dispatchTrigger(triggerList, false);
+                tesseractTriggerDispatcher.dispatchTrigger(triggerList);
                 continue;
             }
             try {
@@ -60,11 +61,6 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
             } catch (InterruptedException e) {
             }
         }
-    }
-
-    @Override
-    public void initThread() {
-
     }
 
     @Override

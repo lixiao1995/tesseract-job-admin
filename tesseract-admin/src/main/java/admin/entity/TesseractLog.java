@@ -53,4 +53,6 @@ public class TesseractLog implements Serializable {
     private String strategy;
 
     private Integer shardingIndex;
+
+    private Integer retryCount;
 }

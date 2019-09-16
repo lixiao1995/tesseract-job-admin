@@ -1,12 +1,12 @@
 package admin.core.scheduler;
 
-import admin.core.component.SenderDelegateBuilder;
+import admin.core.component.TesseractMailSender;
 import admin.core.netty.server.NettyServer;
 import admin.core.netty.server.TesseractJobServiceDelegator;
 import admin.core.scanner.ExecutorScanner;
 import admin.core.scanner.MissfireScanner;
-import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
+import admin.core.scheduler.service.ITaskService;
 import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import admin.service.*;
@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static admin.core.scheduler.TesseractBeanFactory.createSchedulerThread;
+
 @Slf4j
 public class TesseractScheduleBoot {
     @Autowired
@@ -44,17 +46,28 @@ public class TesseractScheduleBoot {
     private ITesseractGroupService tesseractGroupService;
 
     @Autowired
+    private ITesseractFiredJobService firedJobService;
+
+
+    @Autowired
     private ITesseractLogService tesseractLogService;
 
     @Autowired
-    private SenderDelegateBuilder senderDelegateBuilder;
+    private TesseractMailSender mailSender;
 
     @Autowired
     private ISerializerService serializerService;
 
     @Autowired
+    private ITaskService taskService;
+
+    @Autowired
     @Qualifier("retryEventBus")
-    EventBus retryEventBus;
+    private EventBus retryEventBus;
+
+    @Autowired
+    @Qualifier("mailEventBus")
+    private EventBus mailEventBus;
 
     @Value("${netty.port}")
     private int port;
@@ -77,41 +90,8 @@ public class TesseractScheduleBoot {
     private ExecutorScanner executorScanner;
     private MissfireScanner missfireScanner;
 
-    /**
-     * 单线程 不需要加锁
-     */
-    public void destroy() {
-        SCHEDULER_THREAD_MAP.values().forEach(schedulerThread -> {
-            schedulerThread.stopThread();
-            schedulerThread.getTesseractTriggerDispatcher().stop();
-        });
 
-        if (executorScanner != null) {
-            executorScanner.stopThread();
-        }
-
-        if (missfireScanner != null) {
-            missfireScanner.stopThread();
-        }
-    }
-
-    @EventListener(ContextRefreshedEvent.class)
-    public void start() {
-        SCHEDULER_THREAD_MAP.values().forEach(SchedulerThread::startThread);
-        if (executorScanner != null) {
-            executorScanner.startThread();
-        }
-        if (missfireScanner != null) {
-            missfireScanner.startThread();
-        }
-        //启动netty server
-        new Thread(() -> {
-            new NettyServer().start(port);
-        }).start();
-
-    }
-
-    /***********************************初始化*************************************/
+    /***********************************初始化 start*************************************/
 
     public void init() {
         tesseractScheduleBoot = this;
@@ -123,15 +103,19 @@ public class TesseractScheduleBoot {
      * 初始化service 代理
      */
     private void initServiceDelegator() {
-        Map<Class, Object> tesseractJobServiceMap = TesseractJobServiceDelegator.TESSERACT_JOB_SERVICE_MAP;
-        tesseractJobServiceMap.put(ITesseractTriggerService.class, tesseractTriggerService);
-        tesseractJobServiceMap.put(ITesseractExecutorDetailService.class, tesseractExecutorDetailService);
-        tesseractJobServiceMap.put(ITesseractJobDetailService.class, tesseractJobDetailService);
-        tesseractJobServiceMap.put(ITesseractExecutorService.class, tesseractExecutorService);
-        tesseractJobServiceMap.put(ITesseractGroupService.class, tesseractGroupService);
-        tesseractJobServiceMap.put(ISerializerService.class, serializerService);
-        tesseractJobServiceMap.put(ITesseractLogService.class, tesseractLogService);
-        tesseractJobServiceMap.put(ExecutorScanner.class, executorScanner);
+        TesseractJobServiceDelegator.triggerService = tesseractTriggerService;
+        TesseractJobServiceDelegator.jobDetailService = tesseractJobDetailService;
+        TesseractJobServiceDelegator.executorService = tesseractExecutorService;
+        TesseractJobServiceDelegator.executorDetailService = tesseractExecutorDetailService;
+        TesseractJobServiceDelegator.groupService = tesseractGroupService;
+        TesseractJobServiceDelegator.serializerService = serializerService;
+        TesseractJobServiceDelegator.logService = tesseractLogService;
+        TesseractJobServiceDelegator.executorScanner = executorScanner;
+        TesseractJobServiceDelegator.mailEventBus = mailEventBus;
+        TesseractJobServiceDelegator.retryEventBus = retryEventBus;
+        TesseractJobServiceDelegator.firedJobService = firedJobService;
+        TesseractJobServiceDelegator.taskService = taskService;
+        TesseractJobServiceDelegator.mailSender = mailSender;
     }
 
     /**
@@ -164,39 +148,48 @@ public class TesseractScheduleBoot {
         log.warn("没有调度组");
     }
 
+    /***********************************初始化 end*************************************/
+
+    /***********************************spring 相关 start*************************************/
     /**
-     * 创建调度线程
-     *
-     * @param tesseractGroup
-     * @return
+     * spring 容器关闭执行操作
      */
-    private SchedulerThread createSchedulerThread(TesseractGroup tesseractGroup) {
-        SchedulerThread schedulerThread = new SchedulerThread(tesseractGroup, createTesseractTriggerDispatcher(tesseractGroup.getName(), tesseractGroup.getThreadPoolNum()), tesseractTriggerService);
-        schedulerThread.setDaemon(true);
-        return schedulerThread;
+    public void destroy() {
+        SCHEDULER_THREAD_MAP.values().forEach(schedulerThread -> {
+            schedulerThread.stopThread();
+            schedulerThread.getTesseractTriggerDispatcher().stop();
+        });
+
+        if (executorScanner != null) {
+            executorScanner.stopThread();
+        }
+
+        if (missfireScanner != null) {
+            missfireScanner.stopThread();
+        }
     }
 
     /**
-     * 创建任务分发器
-     *
-     * @param groupName
-     * @param threadNum
-     * @return
+     * spring 容器刷新后操作
      */
-    private TesseractTriggerDispatcher createTesseractTriggerDispatcher(String groupName, Integer threadNum) {
-        DefaultSchedulerThreadPool threadPool = new DefaultSchedulerThreadPool(threadNum);
-        TesseractTriggerDispatcher tesseractTriggerDispatcher = new TesseractTriggerDispatcher();
-        tesseractTriggerDispatcher.setGroupName(groupName);
-        tesseractTriggerDispatcher.setExecutorDetailService(tesseractExecutorDetailService);
-        tesseractTriggerDispatcher.setExecutorService(tesseractExecutorService);
-        tesseractTriggerDispatcher.setTesseractJobDetailService(tesseractJobDetailService);
-        tesseractTriggerDispatcher.setThreadPool(threadPool);
-        tesseractTriggerDispatcher.setTaskExecutorDelegate(senderDelegateBuilder.getTaskExecutorDelegate());
-        tesseractTriggerDispatcher.setRetryEventBus(retryEventBus);
-        return tesseractTriggerDispatcher;
+    @EventListener(ContextRefreshedEvent.class)
+    public void start() {
+        SCHEDULER_THREAD_MAP.values().forEach(SchedulerThread::startThread);
+        if (executorScanner != null) {
+            executorScanner.startThread();
+        }
+        if (missfireScanner != null) {
+            missfireScanner.startThread();
+        }
+        //启动netty server
+        new Thread(() -> {
+            new NettyServer().start(port);
+        }).start();
     }
+    /***********************************spring 相关 end*************************************/
 
-    /***********************************静态工具方法*************************************/
+
+    /***********************************静态工具方法  start *************************************/
 
     /**
      * 删除组线程池并停止
@@ -232,7 +225,7 @@ public class TesseractScheduleBoot {
         WRITE_LOCK.lock();
         try {
             String groupName = tesseractGroup.getName();
-            SchedulerThread schedulerThread = tesseractScheduleBoot.createSchedulerThread(tesseractGroup);
+            SchedulerThread schedulerThread = createSchedulerThread(tesseractGroup);
             schedulerThread.startThread();
             SCHEDULER_THREAD_MAP.put(groupName, schedulerThread);
             //检测scanner是否创建，如果只有一个默认调度组将不会创建
@@ -261,7 +254,7 @@ public class TesseractScheduleBoot {
                 throw new TesseractException("找不到SchedulerThread");
             }
             TesseractTriggerDispatcher tesseractTriggerDispatcher = schedulerThread.getTesseractTriggerDispatcher();
-            tesseractTriggerDispatcher.dispatchTrigger(tesseractTriggerList, true);
+            tesseractTriggerDispatcher.dispatchTrigger(tesseractTriggerList);
         } finally {
             READ_LOCK.unlock();
         }
@@ -287,4 +280,6 @@ public class TesseractScheduleBoot {
             READ_LOCK.unlock();
         }
     }
+
+    /***********************************静态工具方法  end *************************************/
 }

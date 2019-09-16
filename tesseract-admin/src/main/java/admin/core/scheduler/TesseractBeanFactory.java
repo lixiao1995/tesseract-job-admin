@@ -1,7 +1,12 @@
 package admin.core.scheduler;
 
+import admin.core.scheduler.bean.CurrentTaskInfo;
+import admin.core.scheduler.bean.TaskContextInfo;
+import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
 import admin.entity.*;
 import tesseract.core.dto.TesseractExecutorRequest;
+
+import java.util.List;
 
 import static admin.constant.AdminConstant.LOG_FAIL;
 import static admin.constant.AdminConstant.SCHEDULER_NAME_MAP;
@@ -12,11 +17,15 @@ public class TesseractBeanFactory {
      *
      * @return
      */
-    public static TesseractLog createDefaultLog(Integer shardingIndex, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
+    public static TesseractLog createDefaultLog(CurrentTaskInfo currentTaskInfo) {
+        TesseractJobDetail jobDetail = currentTaskInfo.getTaskContextInfo().getJobDetail();
+        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        Integer shardingIndex = currentTaskInfo.getShardingIndex();
         TesseractLog tesseractLog = new TesseractLog();
         tesseractLog.setClassName(jobDetail.getClassName());
         tesseractLog.setCreateTime(System.currentTimeMillis());
         tesseractLog.setCreator(jobDetail.getCreator());
+        tesseractLog.setRetryCount(0);
         tesseractLog.setGroupId(trigger.getGroupId());
         tesseractLog.setGroupName(trigger.getGroupName());
         tesseractLog.setTriggerName(trigger.getName());
@@ -36,50 +45,92 @@ public class TesseractBeanFactory {
     /**
      * 构建请求
      *
-     * @param logId
-     * @param className
-     * @param executorDetailId
+     * @param currentTaskInfo
      * @return
      */
-    public static TesseractExecutorRequest createRequest(Long logId,
-                                                         Integer jobId,
-                                                         String className,
-                                                         Integer executorDetailId,
-                                                         Integer shardingIndex,
-                                                         TesseractTrigger trigger) {
+    public static TesseractExecutorRequest createRequest(CurrentTaskInfo currentTaskInfo) {
+        TesseractJobDetail jobDetail = currentTaskInfo.getTaskContextInfo().getJobDetail();
+        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        TesseractLog log = currentTaskInfo.getLog();
         TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
-        executorRequest.setJobId(jobId);
-        executorRequest.setClassName(className);
+        executorRequest.setJobId(jobDetail.getId());
+        executorRequest.setClassName(jobDetail.getClassName());
         executorRequest.setShardingIndex(trigger.getShardingNum());
-        executorRequest.setLogId(logId);
+        executorRequest.setLogId(log.getId());
         executorRequest.setTriggerId(trigger.getId());
-        executorRequest.setShardingIndex(shardingIndex);
-        executorRequest.setExecutorDetailId(executorDetailId);
+        executorRequest.setShardingIndex(currentTaskInfo.getShardingIndex());
+        executorRequest.setExecutorDetailId(currentTaskInfo.getCurrentExecutorDetail().getId());
         return executorRequest;
     }
 
     /**
      * 构建正在执行的任务bean
      *
-     * @param jobDetail
-     * @param executorDetail
-     * @param logId
+     * @param currentTaskInfo
      * @return
      */
-    public static TesseractFiredJob createFiredJob(TesseractJobDetail jobDetail,
-                                                   TesseractExecutorDetail executorDetail,
-                                                   Long logId,
-                                                   TesseractTrigger trigger) {
+    public static TesseractFiredJob createFiredJob(CurrentTaskInfo currentTaskInfo) {
+        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        TesseractJobDetail jobDetail = currentTaskInfo.getTaskContextInfo().getJobDetail();
+        TesseractExecutorDetail currentExecutorDetail = currentTaskInfo.getCurrentExecutorDetail();
+        TesseractLog log = currentTaskInfo.getLog();
         TesseractFiredJob tesseractFiredTrigger = new TesseractFiredJob();
         tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
         tesseractFiredTrigger.setTriggerName(trigger.getName());
         tesseractFiredTrigger.setTriggerId(trigger.getId());
         tesseractFiredTrigger.setJobId(jobDetail.getId());
         tesseractFiredTrigger.setClassName(jobDetail.getClassName());
-        tesseractFiredTrigger.setSocket(executorDetail.getSocket());
-        tesseractFiredTrigger.setExecutorDetailId(executorDetail.getId());
-        tesseractFiredTrigger.setLogId(logId);
+        tesseractFiredTrigger.setSocket(currentExecutorDetail.getSocket());
+        tesseractFiredTrigger.setExecutorDetailId(currentExecutorDetail.getId());
+        tesseractFiredTrigger.setLogId(log.getId());
         tesseractFiredTrigger.setRetryCount(0);
         return tesseractFiredTrigger;
+    }
+
+
+    /**
+     * 创建调度线程
+     *
+     * @param tesseractGroup
+     * @return
+     */
+    public static SchedulerThread createSchedulerThread(TesseractGroup tesseractGroup) {
+        TesseractTriggerDispatcher triggerDispatcher = createTesseractTriggerDispatcher(tesseractGroup.getName(), tesseractGroup.getThreadPoolNum());
+        SchedulerThread schedulerThread = new SchedulerThread(tesseractGroup, triggerDispatcher);
+        schedulerThread.setDaemon(true);
+        return schedulerThread;
+    }
+
+    /**
+     * 创建任务分发器
+     *
+     * @param groupName
+     * @param threadNum
+     * @return
+     */
+    public static TesseractTriggerDispatcher createTesseractTriggerDispatcher(String groupName, Integer threadNum) {
+        DefaultSchedulerThreadPool threadPool = new DefaultSchedulerThreadPool(threadNum);
+        TesseractTriggerDispatcher tesseractTriggerDispatcher = new TesseractTriggerDispatcher();
+        tesseractTriggerDispatcher.setGroupName(groupName);
+        tesseractTriggerDispatcher.setThreadPool(threadPool);
+        return tesseractTriggerDispatcher;
+    }
+
+
+    /**
+     * 创建任务调度上下文Bean
+     *
+     * @param jobDetail
+     * @param executorDetailList
+     * @param trigger
+     * @return
+     */
+    public static TaskContextInfo createTaskContextInfo(TesseractJobDetail jobDetail,
+                                                        List<TesseractExecutorDetail> executorDetailList, TesseractTrigger trigger) {
+        TaskContextInfo taskContextInfo = new TaskContextInfo();
+        taskContextInfo.setJobDetail(jobDetail);
+        taskContextInfo.setExecutorDetailList(executorDetailList);
+        taskContextInfo.setTrigger(trigger);
+        return taskContextInfo;
     }
 }

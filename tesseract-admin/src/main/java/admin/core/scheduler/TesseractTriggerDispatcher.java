@@ -1,10 +1,13 @@
 package admin.core.scheduler;
 
+import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
-import admin.entity.*;
-import admin.service.*;
+import admin.entity.TesseractExecutor;
+import admin.entity.TesseractExecutorDetail;
+import admin.entity.TesseractJobDetail;
+import admin.entity.TesseractTrigger;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.common.eventbus.EventBus;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -19,22 +22,15 @@ import java.util.List;
 @Slf4j
 @Data
 public class TesseractTriggerDispatcher {
-
     private String groupName;
-    private ITesseractJobDetailService tesseractJobDetailService;
-    private ITesseractExecutorDetailService executorDetailService;
-    private ITesseractExecutorService executorService;
     private ISchedulerThreadPool threadPool;
-    private TaskExecutorDelegate taskExecutorDelegate;
-    private EventBus retryEventBus;
-
 
     public ISchedulerThreadPool getThreadPool() {
         return threadPool;
     }
 
-    public void dispatchTrigger(List<TesseractTrigger> triggerList, boolean isOnce) {
-        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger, isOnce, taskExecutorDelegate)));
+    public void dispatchTrigger(List<TesseractTrigger> triggerList) {
+        triggerList.stream().forEach(trigger -> threadPool.runJob(new TaskRunnable(trigger)));
     }
 
     public int blockGetAvailableThreadNum() {
@@ -52,41 +48,40 @@ public class TesseractTriggerDispatcher {
      */
     private class TaskRunnable implements Runnable {
         private TesseractTrigger trigger;
-        private boolean isOnce;
-        private TaskExecutorDelegate taskExecutorDelegate;
 
-        public TaskRunnable(TesseractTrigger trigger, boolean isOnce, TaskExecutorDelegate taskExecutorDelegate) {
+        public TaskRunnable(TesseractTrigger trigger) {
             this.trigger = trigger;
-            this.isOnce = isOnce;
-            this.taskExecutorDelegate = taskExecutorDelegate;
         }
-
 
         @Override
         public void run() {
+            TaskContextInfo taskContextInfo = TesseractBeanFactory.createTaskContextInfo(null, null, trigger);
             try {
                 //获取job detail
                 TesseractJobDetail jobDetail = getJobDetail();
                 if (jobDetail == null) {
-                    taskExecutorDelegate.doFail("没有发现可运行job", trigger, jobDetail);
+                    TaskExecutorDelegate.doFail("没有发现可运行job", taskContextInfo);
                     return;
                 }
+                taskContextInfo.setJobDetail(jobDetail);
                 //获取执行器
-                TesseractExecutor executor = executorService.getById(trigger.getExecutorId());
+                TesseractExecutor executor = TesseractJobServiceDelegator.executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
-                    taskExecutorDelegate.doFail("没有找到可用执行器", trigger, jobDetail);
+                    TaskExecutorDelegate.doFail("没有找到可用执行器", taskContextInfo);
                     return;
                 }
                 //执行器下机器列表
                 List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
-                    taskExecutorDelegate.doFail("执行器下没有可用机器", trigger, jobDetail);
+                    TaskExecutorDelegate.doFail("执行器下没有可用机器", taskContextInfo);
                     return;
                 }
+                taskContextInfo.setExecutorDetailList(executorDetailList);
                 //路由发送执行
-                taskExecutorDelegate.routerExecute(jobDetail, executorDetailList, trigger);
+                log.info("任务上下文信息:{}", taskContextInfo);
+                TaskExecutorDelegate.routerExecute(taskContextInfo);
             } catch (Exception e) {
-                log.error("任务执行异常:{}", e.getMessage());
+                log.error("任务执行异常:{},上下文信息:{}", e.getMessage(), taskContextInfo);
             }
         }
 
@@ -100,7 +95,7 @@ public class TesseractTriggerDispatcher {
         private TesseractJobDetail getJobDetail() {
             QueryWrapper<TesseractJobDetail> jobQueryWrapper = new QueryWrapper<>();
             jobQueryWrapper.lambda().eq(TesseractJobDetail::getTriggerId, trigger.getId());
-            return tesseractJobDetailService.getOne(jobQueryWrapper);
+            return TesseractJobServiceDelegator.jobDetailService.getOne(jobQueryWrapper);
         }
 
 
@@ -113,7 +108,7 @@ public class TesseractTriggerDispatcher {
         private List<TesseractExecutorDetail> getExecutorDetail(Integer executorId) {
             QueryWrapper<TesseractExecutorDetail> executorDetailQueryWrapper = new QueryWrapper<>();
             executorDetailQueryWrapper.lambda().eq(TesseractExecutorDetail::getExecutorId, executorId);
-            return executorDetailService.list(executorDetailQueryWrapper);
+            return TesseractJobServiceDelegator.executorDetailService.list(executorDetailQueryWrapper);
         }
 
 

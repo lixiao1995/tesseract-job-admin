@@ -1,31 +1,27 @@
 package admin.core.scheduler;
 
 import admin.constant.AdminConstant;
-import admin.core.component.TesseractMailSender;
-import admin.core.event.RetryEvent;
-import admin.core.mail.TesseractMailTemplate;
+import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.scheduler.bean.CurrentTaskInfo;
+import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.router.impl.HashRouter;
-import admin.core.scheduler.service.ITaskService;
-import admin.entity.*;
-import admin.service.ITesseractFiredJobService;
-import admin.service.ITesseractGroupService;
-import admin.service.ITesseractLogService;
-import admin.service.ITesseractTriggerService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.common.eventbus.EventBus;
-import lombok.Builder;
+import admin.entity.TesseractExecutorDetail;
+import admin.entity.TesseractFiredJob;
+import admin.entity.TesseractLog;
+import admin.entity.TesseractTrigger;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 
 import static admin.constant.AdminConstant.*;
+import static admin.core.netty.server.TesseractJobServiceDelegator.*;
 import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 
@@ -36,44 +32,16 @@ import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
  */
 @Slf4j
 @Data
-@Builder
 public class TaskExecutorDelegate {
-
-    private ITesseractLogService tesseractLogService;
-
-    private ITesseractFiredJobService firedJobService;
-
-    private TesseractMailTemplate mailTemplate;
-
-    private EventBus mailEventBus;
-
-    private ITaskService taskService;
-
-    private ITesseractGroupService groupService;
-
-    private TesseractMailSender tesseractMailSender;
-
-    private EventBus retryEventBus;
-
-    private ITesseractTriggerService tesseractTriggerService;
-
-
-    public void routerExecute(TesseractJobDetail jobDetail,
-                              List<TesseractExecutorDetail> executorDetailList,
-                              TesseractTrigger trigger) {
-        routerExecute(jobDetail, executorDetailList, trigger, null);
-    }
 
     /**
      * 路由执行器
      *
-     * @param jobDetail          触发器对应任务
-     * @param executorDetailList 机器列表
+     * @param taskContextInfo 任务上下文
      */
-    public void routerExecute(TesseractJobDetail jobDetail,
-                              List<TesseractExecutorDetail> executorDetailList,
-                              TesseractTrigger trigger,
-                              TesseractLog log) {
+    public static void routerExecute(TaskContextInfo taskContextInfo) {
+        TesseractTrigger trigger = taskContextInfo.getTrigger();
+        List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
         //路由选择
         @NotNull Integer strategy = trigger.getStrategy();
         //广播
@@ -81,7 +49,11 @@ public class TaskExecutorDelegate {
             /**
              * 并行发送任务到所有机器执行
              */
-            executorDetailList.parallelStream().forEach(executorDetail -> buildRequestAndSend(jobDetail, executorDetail, null, trigger, log));
+            executorDetailList.parallelStream().forEach(executorDetail -> {
+                CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+                currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+                buildRequestAndSend(currentTaskInfo);
+            });
         } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
             //分片
             @NotNull Integer shardingNum = trigger.getShardingNum();
@@ -91,117 +63,150 @@ public class TaskExecutorDelegate {
                 if (i < size) {
                     count = 0;
                 }
-                buildRequestAndSend(jobDetail, executorDetailList.get(count), count++, trigger, log);
+                CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+                currentTaskInfo.setShardingIndex(count);
+                currentTaskInfo.setCurrentExecutorDetail(executorDetailList.get(count));
+                count++;
+                buildRequestAndSend(currentTaskInfo);
             }
         } else {
             //正常调用
-            TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy(), new HashRouter()).routerExecutor(executorDetailList);
-            buildRequestAndSend(jobDetail, executorDetail, null, trigger, log);
+            CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+            TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy()
+                    , new HashRouter()).routerExecutor(executorDetailList);
+            currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+            buildRequestAndSend(currentTaskInfo);
         }
     }
 
     /**
      * 构建请求并发送
      *
-     * @param jobDetail
-     * @param executorDetail
+     * @param currentTaskInfo
      */
-    private void buildRequestAndSend(TesseractJobDetail jobDetail,
-                                     TesseractExecutorDetail executorDetail,
-                                     Integer shardingIndex,
-                                     TesseractTrigger trigger,
-                                     TesseractLog log) {
-        TesseractLog tesseractLog;
-        if (log == null) {
-            tesseractLog = TesseractBeanFactory.createDefaultLog(shardingIndex, trigger, jobDetail);
-            tesseractLog.setSocket(executorDetail.getSocket());
-            tesseractLog.setMsg("执行中");
-            //设置结束时间为0 表示未结束
-            tesseractLog.setEndTime(0L);
-            tesseractLog.setStatus(AdminConstant.LOG_WAIT);
-            tesseractLog.setExecutorDetailId(executorDetail.getId());
-            tesseractLogService.save(tesseractLog);
-            //设置firedTrigger
-            TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(jobDetail, executorDetail, tesseractLog.getId(), trigger);
-            firedJobService.save(firedJob);
-        } else {
-            tesseractLog = log;
-        }
+    private static void buildRequestAndSend(CurrentTaskInfo currentTaskInfo) {
+        TesseractExecutorDetail currentExecutorDetail = currentTaskInfo.getCurrentExecutorDetail();
+        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(currentTaskInfo);
+        tesseractLog.setSocket(currentExecutorDetail.getSocket());
+        tesseractLog.setMsg("执行中");
+        //设置结束时间为0 表示未结束
+        tesseractLog.setEndTime(0L);
+        tesseractLog.setStatus(AdminConstant.LOG_WAIT);
+        tesseractLog.setExecutorDetailId(currentExecutorDetail.getId());
+        currentTaskInfo.setLog(tesseractLog);
+        logService.save(tesseractLog);
+        //设置firedTrigger
+        TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
+        firedJobService.save(firedJob);
 
         //构建请求发送
-        TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(tesseractLog.getId(),
-                jobDetail.getId(), jobDetail.getClassName(), executorDetail.getId(), shardingIndex, trigger);
-        doRequest(tesseractExecutorRequest, tesseractLog, executorDetail, trigger);
+        TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(currentTaskInfo);
+        currentTaskInfo.setExecutorRequest(tesseractExecutorRequest);
+        doRequest(currentTaskInfo);
     }
 
 
     /**
      * 发送调度请求
      *
-     * @param executorRequest
-     * @param tesseractLog
-     * @param executorDetail
+     * @param currentTaskInfo
      */
-    private void doRequest(TesseractExecutorRequest executorRequest,
-                           TesseractLog tesseractLog,
-                           TesseractExecutorDetail executorDetail,
-                           TesseractTrigger trigger) {
-        log.info("开始调度:{}", executorRequest);
+    private static void doRequest(CurrentTaskInfo currentTaskInfo) {
+        TesseractExecutorRequest executorRequest = currentTaskInfo.getExecutorRequest();
+        TesseractExecutorDetail currentExecutorDetail = currentTaskInfo.getCurrentExecutorDetail();
+        TesseractLog tesseractLog = currentTaskInfo.getLog();
         TesseractExecutorResponse response;
-        String socket = executorDetail.getSocket();
+        String socket = currentExecutorDetail.getSocket();
         try {
-            response = taskService.sendToExecutor(new URI(HTTP_PREFIX + socket + EXECUTE_MAPPING), executorRequest);
+            TaskExecutorDelegate.log.info("开始调度:{}", executorRequest);
+            response = TesseractJobServiceDelegator.taskService.sendToExecutor(new URI(HTTP_PREFIX + socket + EXECUTE_MAPPING), executorRequest);
         } catch (TesseractException e) {
-            log.error("发起调度异常", e);
-            taskService.errorHandle(socket);
+            TaskExecutorDelegate.log.error("发起调度异常", e);
+            TesseractJobServiceDelegator.taskService.errorHandle(socket);
             response = TesseractExecutorResponse.builder().body(e.getMsg()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
         } catch (Exception e) {
-            log.error("发起调度异常", e);
+            TaskExecutorDelegate.log.error("发起调度异常", e);
             response = TesseractExecutorResponse.builder().body(e.getMessage()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
         }
         //发送任务成功直接返回等待执行后更新日志状态
         if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
             return;
         }
-        //如果执行失败则更新日志状态并且移出执行表
-        tesseractLog.setStatus(AdminConstant.LOG_FAIL);
+        //执行失败逻辑
+        tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setEndTime(System.currentTimeMillis());
         Object body = response.getBody();
         if (body != null) {
             tesseractLog.setMsg(body.toString());
         }
-
-        //判断是否超过重试次数，如果超过重试次数则移出执行表，如果没超过，则+1
-        QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
-        firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());
-        TesseractFiredJob tesseractFiredJob = firedJobService.getOne(firedJobQueryWrapper);
-        if (trigger.getRetryCount() > tesseractFiredJob.getRetryCount()) {
-            tesseractFiredJob.setRetryCount(tesseractFiredJob.getRetryCount() + 1);
-            firedJobService.updateById(tesseractFiredJob);
-            //发布重试事件
-            TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
-            tesseractAdminJobNotify.setExecutorDetailId(executorDetail.getId());
-            tesseractAdminJobNotify.setLogId(tesseractLog.getId());
-            RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify, trigger, tesseractLog);
-            retryEventBus.post(retryEvent);
-        }
-        //失败执行
-        doFail(tesseractLog);
+        retry(currentTaskInfo);
     }
 
+    /**
+     * 失败重试：
+     * 1、移除当前失败执行器，小于重试次数，更新日志为失败且发送邮件
+     * 2、大于重试次数，更新日志为失败且发送邮件，移除fire job
+     *
+     * @param currentTaskInfo
+     */
+    private static void retry(CurrentTaskInfo currentTaskInfo) {
+        List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
+        TesseractLog tesseractLog = currentTaskInfo.getLog();
+        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
+        tesseractLog.setRetryCount(firedJob.getRetryCount());
+        //如果执行机器大于1且小于重试次数则开始重试
+        if (executorDetailList.size() > 1 && firedJob.getRetryCount() < trigger.getRetryCount()) {
+            removeExecutorDetail(executorDetailList, currentTaskInfo.getCurrentExecutorDetail());
+            doFailWithoutFireJob(currentTaskInfo);
+            firedJob.setRetryCount(firedJob.getRetryCount() + 1);
+            firedJobService.updateById(firedJob);
+        } else {
+            doFailWithFireJob(currentTaskInfo);
+        }
+    }
+
+    /**
+     * 移除指定的执行器
+     */
+    private static void removeExecutorDetail(List<TesseractExecutorDetail> executorDetailList, TesseractExecutorDetail needRemoveDetail) {
+        Iterator<TesseractExecutorDetail> iterator = executorDetailList.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next() == needRemoveDetail) {
+                iterator.remove();
+            }
+        }
+    }
 
     /**
      * 保存失败日志并产生报警邮件
      * 1、更改日志状态
      * 2、发送邮件
      *
-     * @param msg
+     * @param msg             报错信息
+     * @param taskContextInfo 触发器任务上下文
      */
-    public void doFail(String msg, TesseractTrigger trigger, TesseractJobDetail jobDetail) {
-        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(trigger.getShardingNum(), trigger, jobDetail);
+    public static void doFail(String msg, TaskContextInfo taskContextInfo) {
+        CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+        TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(currentTaskInfo);
         tesseractLog.setMsg(msg);
-        tesseractLogService.save(tesseractLog);
-        tesseractMailSender.logSendMail(tesseractLog);
+        tesseractLog.setStatus(LOG_FAIL);
+        logService.save(tesseractLog);
+        mailSender.logSendMail(tesseractLog);
+    }
+
+    /**
+     * 保存失败日志并产生报警邮件
+     * 1、保存日志状态
+     * 2、发送邮件
+     *
+     * @param currentTaskInfo 当前执行的任务上下文
+     */
+    private static void doFailWithoutFireJob(CurrentTaskInfo currentTaskInfo) {
+        log.info("执行任务失败:{},开始记录日志并发送邮件", currentTaskInfo);
+        TesseractLog tesseractLog = currentTaskInfo.getLog();
+        logService.updateById(tesseractLog);
+        mailSender.logSendMail(tesseractLog);
     }
 
     /**
@@ -210,22 +215,11 @@ public class TaskExecutorDelegate {
      * 2、发送邮件
      * 3、更改firedJob
      *
-     * @param tesseractLog
+     * @param currentTaskInfo
      */
-    public void doFail(TesseractLog tesseractLog) {
-        tesseractLog.setStatus(LOG_FAIL);
-        tesseractLogService.updateById(tesseractLog);
-        log.info("tesseractLog:{}", tesseractLog);
-        tesseractMailSender.logSendMail(tesseractLog);
-
-        QueryWrapper<TesseractFiredJob> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());
-        TesseractFiredJob tesseractFiredJob = firedJobService.getOne(queryWrapper);
-        TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
-        if (tesseractTrigger.getRetryCount() <= tesseractFiredJob.getRetryCount()) {
-            firedJobService.remove(queryWrapper);
-        }
+    public static void doFailWithFireJob(CurrentTaskInfo currentTaskInfo) {
+        TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
+        firedJobService.removeById(firedJob);
+        doFailWithoutFireJob(currentTaskInfo);
     }
-
-
 }

@@ -1,17 +1,14 @@
 package admin.config;
 
-import admin.core.component.SenderDelegateBuilder;
 import admin.core.listener.MailListener;
-import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.TesseractScheduleBoot;
-import admin.service.*;
+import admin.core.scheduler.service.ITaskService;
+import admin.core.scheduler.service.impl.TaskServiceImpl;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import admin.core.scheduler.service.ITaskService;
-import admin.core.scheduler.service.impl.TaskServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +58,7 @@ public class AdminConfig {
      * @return
      */
     @Bean
-    public ITaskService iAdminFeignService() {
+    public ITaskService taskService() {
         return new TaskServiceImpl();
     }
 
@@ -83,35 +80,6 @@ public class AdminConfig {
         return asyncEventBus;
     }
 
-    /**
-     * eventBus
-     *
-     * @return
-     */
-    @Bean
-    public EventBus retryEventBus() {
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("retryEventBus-pool-%d").build();
-        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(5, 10,
-                60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(100), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
-        AsyncEventBus asyncEventBus = new AsyncEventBus("retryEventBus", threadPoolExecutor);
-        ITesseractTriggerService tesseractTriggerService = applicationContext.getBean(ITesseractTriggerService.class);
-        ITesseractFiredJobService tesseractFiredJobService = applicationContext.getBean(ITesseractFiredJobService.class);
-        ITesseractJobDetailService tesseractJobDetailService = applicationContext.getBean(ITesseractJobDetailService.class);
-        ITesseractExecutorDetailService tesseractExecutorDetailService = applicationContext.getBean(ITesseractExecutorDetailService.class);
-        SenderDelegateBuilder senderDelegateBuilder = applicationContext.getBean(SenderDelegateBuilder.class);
-        ITesseractLogService tesseractLogService = applicationContext.getBean(ITesseractLogService.class);
-        asyncEventBus.register(
-                new RetryListener(
-                        tesseractTriggerService,
-                        tesseractFiredJobService,
-                        tesseractJobDetailService,
-                        tesseractExecutorDetailService,
-                        senderDelegateBuilder,
-                        tesseractLogService));
-        return asyncEventBus;
-    }
 
     @Bean("tesseractConfiguration")
     public FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean() {
