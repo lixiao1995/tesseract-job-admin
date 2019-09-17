@@ -40,6 +40,12 @@ public class CurrentTaskInfo {
      */
     private Integer shardingIndex;
 
+    /**
+     * 是否是重试任务
+     */
+    private boolean isRetry;
+
+
     public CurrentTaskInfo(TaskContextInfo taskContextInfo) {
         this.taskContextInfo = taskContextInfo;
     }

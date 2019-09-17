@@ -55,7 +55,6 @@ public class TesseractBeanFactory {
         TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
         executorRequest.setJobId(jobDetail.getId());
         executorRequest.setClassName(jobDetail.getClassName());
-        executorRequest.setShardingIndex(trigger.getShardingNum());
         executorRequest.setLogId(log.getId());
         executorRequest.setTriggerId(trigger.getId());
         executorRequest.setShardingIndex(currentTaskInfo.getShardingIndex());

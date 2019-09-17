@@ -41,7 +41,6 @@ public class TaskExecutorDelegate {
      */
     public static void routerExecute(TaskContextInfo taskContextInfo) {
         TesseractTrigger trigger = taskContextInfo.getTrigger();
-        List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
         //路由选择
         @NotNull Integer strategy = trigger.getStrategy();
         if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
@@ -86,6 +85,10 @@ public class TaskExecutorDelegate {
             }
             CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
             currentTaskInfo.setShardingIndex(count);
+            //轮询发送给执行器执行
+            if (count >= size) {
+                count = 0;
+            }
             currentTaskInfo.setCurrentExecutorDetail(executorDetailList.get(count));
             count++;
             buildRequestAndSend(currentTaskInfo);
@@ -107,6 +110,7 @@ public class TaskExecutorDelegate {
 
     /**
      * 构建请求并发送
+     * note:每个任务一个日志，重试的任务也是独立的日志，只不过重试的任务fireTrigger不变
      *
      * @param currentTaskInfo
      */
@@ -121,10 +125,11 @@ public class TaskExecutorDelegate {
         tesseractLog.setExecutorDetailId(currentExecutorDetail.getId());
         currentTaskInfo.setLog(tesseractLog);
         logService.save(tesseractLog);
-        //设置firedTrigger
-        TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
-        firedJobService.save(firedJob);
-
+        //如果不是重试任务，设置firedTrigger
+        if (!currentTaskInfo.isRetry()) {
+            TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
+            firedJobService.save(firedJob);
+        }
         //构建请求发送
         TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(currentTaskInfo);
         currentTaskInfo.setExecutorRequest(tesseractExecutorRequest);
@@ -183,15 +188,43 @@ public class TaskExecutorDelegate {
         //如果执行机器大于1且小于重试次数则开始重试
         tesseractLog.setRetryCount(firedJob.getRetryCount());
         if (executorDetailList.size() > 1 && firedJob.getRetryCount() < trigger.getRetryCount()) {
-            removeExecutorDetail(executorDetailList, currentTaskInfo.getCurrentExecutorDetail());
-            doFailWithoutFireJob(currentTaskInfo);
-            firedJob.setRetryCount(firedJob.getRetryCount() + 1);
-            firedJobService.updateById(firedJob);
-            //重试
-            buildRequestAndSend(currentTaskInfo);
+            doRetry(currentTaskInfo);
         } else {
             doFailWithFireJob(currentTaskInfo);
         }
+    }
+
+    /**
+     * 开始重试,重试步骤:
+     * 1、记录当前日志并发送失败邮件
+     * 2、从当前列表中移除当前列表执行器
+     * 3、更新正在执行的trigger的重试次数
+     * 4、根据调度策略判断是否启动重试并选择执行机器
+     */
+    private static void doRetry(CurrentTaskInfo currentTaskInfo) {
+        doFailWithoutFireJob(currentTaskInfo);
+        List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
+        TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
+        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        //广播策略不重试
+        if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_BROADCAST)) {
+            return;
+        }
+        //移除失败机器
+        removeExecutorDetail(executorDetailList, currentTaskInfo.getCurrentExecutorDetail());
+        //更新正在执行触发器的重试次数
+        firedJob.setRetryCount(firedJob.getRetryCount() + 1);
+        firedJobService.updateById(firedJob);
+        if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_SHARDING)) {
+            //分片仅重试当前分片索引,通过hash策略随机选择一台机器重试
+            TesseractExecutorDetail tesseractExecutorDetail = SCHEDULE_ROUTER_MAP.get(SCHEDULER_STRATEGY_HASH).routerExecutor(executorDetailList);
+            currentTaskInfo.setLog(null);
+            currentTaskInfo.setExecutorRequest(null);
+            currentTaskInfo.setCurrentExecutorDetail(tesseractExecutorDetail);
+            buildRequestAndSend(currentTaskInfo);
+        }
+
+
     }
 
     /**
