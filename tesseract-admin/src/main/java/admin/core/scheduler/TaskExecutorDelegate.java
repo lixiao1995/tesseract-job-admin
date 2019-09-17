@@ -54,7 +54,7 @@ public class TaskExecutorDelegate {
     }
 
     /**
-     * 正常调用，除去：广播和分片
+     * 正常调用
      *
      * @param taskContextInfo
      */
@@ -222,9 +222,9 @@ public class TaskExecutorDelegate {
             currentTaskInfo.setExecutorRequest(null);
             currentTaskInfo.setCurrentExecutorDetail(tesseractExecutorDetail);
             buildRequestAndSend(currentTaskInfo);
+        } else {
+            executeGeneral(currentTaskInfo.getTaskContextInfo());
         }
-
-
     }
 
     /**
