@@ -42,7 +42,7 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // 发送调度请求
-        ISerializerService serializerService = TesseractJobServiceDelegator.getSerializerService();
+        ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
         TesseractExecutorResponse response = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, request, CommonConstant.EXECUTE_MAPPING);
         byte[] serialize = serializerService.serialize(response);
         FullHttpResponse httpResponse = HttpUtils.buildFullHttpResponse(serialize, null);

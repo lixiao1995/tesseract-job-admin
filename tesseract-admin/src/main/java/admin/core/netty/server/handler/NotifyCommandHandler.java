@@ -5,7 +5,6 @@ import admin.service.ITesseractLogService;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import tesseract.core.dto.TesseractAdminJobNotify;
-import tesseract.core.dto.TesseractHeartbeatRequest;
 import tesseract.core.netty.HandleBean;
 import tesseract.core.netty.ICommandHandler;
 import tesseract.core.serializer.ISerializerService;
@@ -19,11 +18,11 @@ import tesseract.core.util.CommonUtils;
 public class NotifyCommandHandler implements ICommandHandler {
     @Override
     public void handleCommand(HandleBean handleBean, Channel channel) {
-        ISerializerService serializerService = TesseractJobServiceDelegator.getSerializerService();
+        ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
         TesseractAdminJobNotify tesseractAdminJobNotify =
                 (TesseractAdminJobNotify) serializerService.deserialize(CommonUtils.byteBufToByteArr((ByteBuf) handleBean.getData()));
         //客户端日志回调
-        ITesseractLogService tesseractLogService = TesseractJobServiceDelegator.getTesseractLogService();
+        ITesseractLogService tesseractLogService = TesseractJobServiceDelegator.logService;
         tesseractLogService.notify(tesseractAdminJobNotify);
     }
 }

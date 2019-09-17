@@ -44,7 +44,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
         if (iCommandHandler == null) {
             log.error("找不到处理器,path:{}", path);
-            byte[] serialize = TesseractJobServiceDelegator.getSerializerService().serialize(TesseractExecutorResponse.FAIL);
+            byte[] serialize = TesseractJobServiceDelegator.serializerService.serialize(TesseractExecutorResponse.FAIL);
             FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
             ctx.writeAndFlush(fullHttpResponse).sync();
             return;

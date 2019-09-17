@@ -24,13 +24,13 @@ import java.net.InetSocketAddress;
 public class RegistryCommandHandler implements ICommandHandler {
     @Override
     public void handleCommand(HandleBean handleBean, Channel channel) throws Exception {
-        ISerializerService serializerService = TesseractJobServiceDelegator.getSerializerService();
+        ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
         TesseractAdminRegistryRequest tesseractAdminRegistryRequest =
                 (TesseractAdminRegistryRequest) serializerService.deserialize(CommonUtils.byteBufToByteArr((ByteBuf) handleBean.getData()));
         InetSocketAddress socketAddress = (InetSocketAddress) channel.remoteAddress();
         tesseractAdminRegistryRequest.setIp(socketAddress.getHostName());
         tesseractAdminRegistryRequest.setPort(socketAddress.getPort());
-        TesseractAdminRegistryResDTO registry = TesseractJobServiceDelegator.getTesseractExecutorService().registry(tesseractAdminRegistryRequest);
+        TesseractAdminRegistryResDTO registry = TesseractJobServiceDelegator.executorService.registry(tesseractAdminRegistryRequest);
         TesseractExecutorResponse success = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, registry, CommonConstant.REGISTRY_MAPPING);
         byte[] serialize = serializerService.serialize(success);
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
