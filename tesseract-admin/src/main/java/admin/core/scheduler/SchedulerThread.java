@@ -17,10 +17,22 @@ import java.util.List;
 public class SchedulerThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;
     private TesseractTriggerDispatcher tesseractTriggerDispatcher;
-    private int timeWindowSize = 5 * 1000;
-    private int sleepTime = 20 * 1000;
-    private int accurateTime = 1 * 1000;
     private TesseractGroup tesseractGroup;
+
+    /**
+     * 时间窗口，获取距下次触发时间5s内的触发器
+     */
+    private int timeWindowSize = 5 * 1000;
+
+    /**
+     * 调度间隔时间
+     */
+    private int sleepTime = 20 * 1000;
+
+    /**
+     * 触发容错时间
+     */
+    private int accurateTime = 1 * 1000;
 
     public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher) {
         this.tesseractTriggerDispatcher = tesseractTriggerDispatcher;
@@ -45,6 +57,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
                 TesseractTrigger tesseractTrigger = triggerList.get(0);
                 Long nextTriggerTime = tesseractTrigger.getNextTriggerTime();
                 long time = nextTriggerTime - System.currentTimeMillis();
+                // 距离最近触发时间1s以上的，等待到触发时间再继续执行
                 if (time > accurateTime) {
                     synchronized (this) {
                         try {
@@ -56,6 +69,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
                 tesseractTriggerDispatcher.dispatchTrigger(triggerList);
                 continue;
             }
+            // 下一次发起调度是20s之后
             try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
