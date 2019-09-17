@@ -44,39 +44,65 @@ public class TaskExecutorDelegate {
         List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
         //路由选择
         @NotNull Integer strategy = trigger.getStrategy();
-        //广播
         if (SCHEDULER_STRATEGY_BROADCAST.equals(strategy)) {
-            /**
-             * 并行发送任务到所有机器执行
-             */
-            executorDetailList.parallelStream().forEach(executorDetail -> {
-                CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
-                currentTaskInfo.setCurrentExecutorDetail(executorDetail);
-                buildRequestAndSend(currentTaskInfo);
-            });
+            executeBroadcast(taskContextInfo);
         } else if (SCHEDULER_STRATEGY_SHARDING.equals(strategy)) {
-            //分片
-            @NotNull Integer shardingNum = trigger.getShardingNum();
-            int size = executorDetailList.size();
-            int count = 0;
-            for (int i = 0; i < shardingNum; i++) {
-                if (i < size) {
-                    count = 0;
-                }
-                CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
-                currentTaskInfo.setShardingIndex(count);
-                currentTaskInfo.setCurrentExecutorDetail(executorDetailList.get(count));
-                count++;
-                buildRequestAndSend(currentTaskInfo);
-            }
+            executeSharding(taskContextInfo);
         } else {
             //正常调用
+            executeGeneral(taskContextInfo);
+        }
+    }
+
+    /**
+     * 正常调用，除去：广播和分片
+     *
+     * @param taskContextInfo
+     */
+    private static void executeGeneral(TaskContextInfo taskContextInfo) {
+        TesseractTrigger trigger = taskContextInfo.getTrigger();
+        List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
+        CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+        TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy()
+                , new HashRouter()).routerExecutor(executorDetailList);
+        currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+        buildRequestAndSend(currentTaskInfo);
+    }
+
+    /**
+     * 分片逻辑
+     *
+     * @param taskContextInfo
+     */
+    private static void executeSharding(TaskContextInfo taskContextInfo) {
+        TesseractTrigger trigger = taskContextInfo.getTrigger();
+        List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
+        @NotNull Integer shardingNum = trigger.getShardingNum();
+        int size = executorDetailList.size();
+        int count = 0;
+        for (int i = 0; i < shardingNum; i++) {
+            if (i < size) {
+                count = 0;
+            }
             CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
-            TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy()
-                    , new HashRouter()).routerExecutor(executorDetailList);
-            currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+            currentTaskInfo.setShardingIndex(count);
+            currentTaskInfo.setCurrentExecutorDetail(executorDetailList.get(count));
+            count++;
             buildRequestAndSend(currentTaskInfo);
         }
+    }
+
+    /**
+     * 执行广播，并行发送任务到所有机器执行
+     *
+     * @param taskContextInfo
+     */
+    private static void executeBroadcast(TaskContextInfo taskContextInfo) {
+        taskContextInfo.getExecutorDetailList().parallelStream().forEach(executorDetail -> {
+            CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+            currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+            buildRequestAndSend(currentTaskInfo);
+        });
     }
 
     /**
@@ -154,13 +180,15 @@ public class TaskExecutorDelegate {
         TesseractLog tesseractLog = currentTaskInfo.getLog();
         TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
-        tesseractLog.setRetryCount(firedJob.getRetryCount());
         //如果执行机器大于1且小于重试次数则开始重试
+        tesseractLog.setRetryCount(firedJob.getRetryCount());
         if (executorDetailList.size() > 1 && firedJob.getRetryCount() < trigger.getRetryCount()) {
             removeExecutorDetail(executorDetailList, currentTaskInfo.getCurrentExecutorDetail());
             doFailWithoutFireJob(currentTaskInfo);
             firedJob.setRetryCount(firedJob.getRetryCount() + 1);
             firedJobService.updateById(firedJob);
+            //重试
+            buildRequestAndSend(currentTaskInfo);
         } else {
             doFailWithFireJob(currentTaskInfo);
         }
