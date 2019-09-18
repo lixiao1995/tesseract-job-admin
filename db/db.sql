@@ -133,7 +133,7 @@ create table tesseract_log
     executor_detail_id int          not null COMMENT '关联执行器',
     strategy           varchar(30)  not null,
     sharding_index     tinyint      not null,
-    retry_count        int unsigned not null '重试次数',
+    retry_count        int unsigned not null COMMENT '重试次数',
     index (create_time),
     index (executor_detail_id)
 ) engine = InnoDB
