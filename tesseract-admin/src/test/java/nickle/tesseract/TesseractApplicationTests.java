@@ -3,7 +3,7 @@ package nickle.tesseract;
 import admin.TesseractAdminApplication;
 import admin.controller.TesseractLogController;
 import admin.core.mail.TesseractMailTemplate;
-import admin.core.scanner.MissfireScanner;
+import admin.core.scheduler.scanner.MissfireScanner;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
 import admin.core.scheduler.service.ITaskService;

@@ -1,4 +1,4 @@
-package admin.core.scanner;
+package admin.core.scheduler.scanner;
 
 import admin.service.ITesseractTriggerService;
 import lombok.extern.slf4j.Slf4j;
