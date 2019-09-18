@@ -42,7 +42,5 @@ public class TesseractJobServiceDelegator {
 
     public static EventBus mailEventBus;
 
-    public static EventBus retryEventBus;
-
     public static TesseractMailSender mailSender;
 }

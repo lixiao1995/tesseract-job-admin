@@ -61,9 +61,6 @@ public class TesseractScheduleBoot {
     @Autowired
     private ITaskService taskService;
 
-    @Autowired
-    @Qualifier("retryEventBus")
-    private EventBus retryEventBus;
 
     @Autowired
     @Qualifier("mailEventBus")
@@ -112,7 +109,6 @@ public class TesseractScheduleBoot {
         TesseractJobServiceDelegator.logService = tesseractLogService;
         TesseractJobServiceDelegator.executorScanner = executorScanner;
         TesseractJobServiceDelegator.mailEventBus = mailEventBus;
-        TesseractJobServiceDelegator.retryEventBus = retryEventBus;
         TesseractJobServiceDelegator.firedJobService = firedJobService;
         TesseractJobServiceDelegator.taskService = taskService;
         TesseractJobServiceDelegator.mailSender = mailSender;
