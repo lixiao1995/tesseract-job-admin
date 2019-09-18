@@ -5,8 +5,6 @@ import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 import freemarker.template.Configuration;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -34,10 +32,7 @@ public class GeneralTest {
 
     @Test
     public void test() throws Exception {
-        List<VirtualMachineDescriptor> list = VirtualMachine.list();
-        list.stream().forEach(virtualMachineDescriptor -> {
-            System.out.println(virtualMachineDescriptor);
-        });
+
     }
 
     @Test
@@ -84,9 +79,9 @@ public class GeneralTest {
         LoadFactorRouter loadFactorRouter = new LoadFactorRouter();
         List<TesseractExecutorDetail> tesseractExecutorDetailList = Lists.newArrayList();
         TesseractExecutorDetail tesseractExecutorDetail = new TesseractExecutorDetail();
-        tesseractExecutorDetail.setLoadFactor(100D);
+        //tesseractExecutorDetail.setLoadFactor(100D);
         TesseractExecutorDetail tesseractExecutorDetail1 = new TesseractExecutorDetail();
-        tesseractExecutorDetail1.setLoadFactor(200D);
+        //tesseractExecutorDetail1.setLoadFactor(200D);
         tesseractExecutorDetailList.add(tesseractExecutorDetail);
         tesseractExecutorDetailList.add(tesseractExecutorDetail1);
         loadFactorRouter.routerExecutor(tesseractExecutorDetailList);
