@@ -4,6 +4,7 @@ import admin.core.netty.server.handler.HeartBeatCommandHandler;
 import admin.core.netty.server.handler.NotifyCommandHandler;
 import admin.core.netty.server.handler.RegistryCommandHandler;
 import com.google.common.collect.Maps;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -19,6 +20,7 @@ import java.util.Map;
 import static tesseract.core.constant.CommonConstant.*;
 
 @Slf4j
+@ChannelHandler.Sharable
 public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
     private static final Map<String, ICommandHandler> COMMAND_HANDLER_MAP = Maps.newHashMap();
 
@@ -38,7 +40,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
-        log.info("接收到请求:{}", fullHttpRequest);
+        //log.info("接收到请求:{}", fullHttpRequest);
         String uri = fullHttpRequest.uri();
         String path = HttpUtils.buildURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);

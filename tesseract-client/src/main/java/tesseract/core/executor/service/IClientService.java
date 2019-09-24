@@ -1,4 +1,4 @@
-package tesseract.service;
+package tesseract.core.executor.service;
 
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractAdminRegistryRequest;

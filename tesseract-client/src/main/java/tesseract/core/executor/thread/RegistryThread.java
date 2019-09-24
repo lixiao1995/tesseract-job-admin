@@ -3,17 +3,17 @@ package tesseract.core.executor.thread;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
-import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.dto.TesseractAdminJobDetailDTO;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
+import tesseract.core.executor.ClientServiceDelegator;
 import tesseract.core.lifecycle.IThreadLifycycle;
-import tesseract.service.IClientService;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
+import static tesseract.core.executor.ClientServiceDelegator.clientJobDetailList;
 
 /**
  * 注册任务
@@ -23,17 +23,11 @@ import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 @Slf4j
 public class RegistryThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;
-    private IClientService clientFeignService;
-    private List<ClientJobDetail> clientJobDetailList;
-    private String adminServerAddress;
     private HeartbeatThread heartbeatThread;
     public volatile boolean isPause = false;
 
-    public RegistryThread(IClientService clientFeignService, List<ClientJobDetail> clientJobDetailList, String adminServerAddress) {
+    public RegistryThread() {
         super("RegistryThread");
-        this.clientFeignService = clientFeignService;
-        this.clientJobDetailList = clientJobDetailList;
-        this.adminServerAddress = adminServerAddress;
     }
 
     public void setHeartbeatThread(HeartbeatThread heartbeatThread) {
@@ -87,7 +81,8 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
             }
             TesseractAdminRegistryRequest tesseractAdminRegistryRequest = buildRequest();
             log.info("注册中:{}", tesseractAdminRegistryRequest);
-            clientFeignService.registry(new URI(adminServerAddress + REGISTRY_MAPPING), tesseractAdminRegistryRequest);
+            ClientServiceDelegator.clientFeignService.registry(
+                    new URI(ClientServiceDelegator.adminServerAddress + REGISTRY_MAPPING), tesseractAdminRegistryRequest);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("注册失败:{}", e.getMessage());
@@ -101,6 +96,7 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
      */
     private TesseractAdminRegistryRequest buildRequest() {
         TesseractAdminRegistryRequest tesseractAdminRegistryRequest = new TesseractAdminRegistryRequest();
+        tesseractAdminRegistryRequest.setPort(ClientServiceDelegator.nettyServerPort);
         List<TesseractAdminJobDetailDTO> detailDTOList = Collections.synchronizedList(Lists.newArrayList());
         if (!CollectionUtils.isEmpty(clientJobDetailList)) {
             clientJobDetailList.parallelStream().forEach(clientJobDetail -> {

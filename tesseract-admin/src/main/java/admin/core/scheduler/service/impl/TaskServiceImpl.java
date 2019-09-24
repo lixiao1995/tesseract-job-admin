@@ -3,17 +3,18 @@ package admin.core.scheduler.service.impl;
 import admin.core.netty.server.TesseractJobServiceDelegator;
 import admin.core.scheduler.service.ITaskService;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.FullHttpRequest;
 import lombok.extern.slf4j.Slf4j;
-import tesseract.core.constant.CommonConstant;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
+import tesseract.core.netty.NettyClient;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.core.util.HttpUtils;
-import tesseract.exception.TesseractException;
 
 import java.net.URI;
-import java.util.Map;
+
+import static admin.core.netty.server.TesseractJobServiceDelegator.CHANNEL_MAP;
 
 /**
  * <p>Title TaskServiceImpl </p>
@@ -29,24 +30,17 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request) throws InterruptedException {
         String socket = uri.getHost() + ":" + uri.getPort();
-        Map<String, Channel> channelMap = TesseractJobServiceDelegator.CHANNEL_MAP;
-        if (!channelMap.containsKey(socket)) {
-            log.error("sendToExecutor, channelMap not contain key:{}", socket);
-            throw new TesseractException("没有可用channel");
+        NettyClient nettyClient = CHANNEL_MAP.get(socket);
+        if (nettyClient == null) {
+            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new ChannelInboundHandlerAdapter());
+            CHANNEL_MAP.put(socket, nettyClient);
         }
-
-        Channel channel = channelMap.get(socket);
-        if (!channel.isActive()) {
-            log.error("sendToExecutor, channel is not active!");
-            throw new TesseractException("当前channel不可用");
-        }
-
+        Channel channel = nettyClient.getActiveChannel();
         // 发送调度请求
         ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
-        TesseractExecutorResponse response = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, request, CommonConstant.EXECUTE_MAPPING);
-        byte[] serialize = serializerService.serialize(response);
-        FullHttpResponse httpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
-        channel.writeAndFlush(httpResponse).sync();
+        byte[] serialize = serializerService.serialize(request);
+        FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, null);
+        channel.writeAndFlush(httpRequest).sync();
         return TesseractExecutorResponse.SUCCESS;
     }
 

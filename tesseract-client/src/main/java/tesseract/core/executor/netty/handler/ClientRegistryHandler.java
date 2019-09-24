@@ -1,4 +1,4 @@
-package tesseract.service.netty.handler;
+package tesseract.core.executor.netty.handler;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;

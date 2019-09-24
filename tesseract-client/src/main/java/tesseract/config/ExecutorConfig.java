@@ -2,12 +2,11 @@ package tesseract.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import tesseract.core.executor.TesseractExecutor;
+import tesseract.core.executor.service.IClientService;
+import tesseract.core.executor.service.NettyClientServiceImpl;
 import tesseract.core.serializer.HessianSerializerService;
 import tesseract.core.serializer.ISerializerService;
-import tesseract.service.IClientService;
-import tesseract.service.netty.NettyClientService;
 
 @Configuration
 public class ExecutorConfig {
@@ -19,7 +18,7 @@ public class ExecutorConfig {
 
     @Bean
     public IClientService clientService() {
-        return new NettyClientService(new HessianSerializerService());
+        return new NettyClientServiceImpl();
     }
 
     @Bean

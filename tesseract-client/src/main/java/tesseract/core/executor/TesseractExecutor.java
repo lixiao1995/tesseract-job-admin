@@ -11,13 +11,15 @@ import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.executor.thread.HangThread;
+import tesseract.core.executor.netty.NettyClientCommandDispatcher;
+import tesseract.core.executor.netty.NettyClientTaskHandler;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
 import tesseract.core.handler.JobHandler;
+import tesseract.core.netty.NettyClient;
+import tesseract.core.netty.NettyServer;
 import tesseract.core.serializer.ISerializerService;
-import tesseract.service.IClientService;
-import tesseract.service.netty.NettyHttpClient;
+import tesseract.core.executor.service.IClientService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,6 +42,10 @@ public class TesseractExecutor {
     private List<ClientJobDetail> clientJobDetailList;
     @Autowired
     private ISerializerService serializerService;
+
+    @Value("${tesseract.netty.server.port}")
+    private Integer nettyServerPort;
+
     /**
      * 线程池
      */
@@ -56,10 +62,6 @@ public class TesseractExecutor {
      * 心跳线程
      */
     public static HeartbeatThread heartbeatThread;
-    /**
-     * 使用netty 需要一个线程来hold住jvm
-     */
-    public static HangThread hangThread;
 
     /**
      * 开始执行任务，扔到线程池后发送成功执行通知，执行完毕后发送异步执行成功通知
@@ -83,10 +85,37 @@ public class TesseractExecutor {
      */
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
+        initServiceDelegator();
+        initThread();
+        initNettyServer();
+        initNettyClient();
+    }
+
+    /**
+     * 初始化连接到server的netty client
+     */
+    private void initNettyClient() {
+        URI uri = URI.create(adminServerAddress);
+        NettyClient nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new NettyClientCommandDispatcher());
+        ClientServiceDelegator.nettyClient = nettyClient;
+    }
+
+    /**
+     * 初始化Netty Sever
+     */
+    private void initNettyServer() {
+        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientTaskHandler());
+        Thread thread = new Thread(() -> nettyServer.startServer());
+        thread.start();
+    }
+
+    /**
+     * 初始化 注册线程和心跳线程
+     */
+    public void initThread() {
         if (!CollectionUtils.isEmpty(clientJobDetailList)) {
-            heartbeatThread = new HeartbeatThread(clientFeignService, adminServerAddress);
-            registryThread = new RegistryThread(clientFeignService, clientJobDetailList, adminServerAddress);
-            hangThread = new HangThread();
+            heartbeatThread = new HeartbeatThread();
+            registryThread = new RegistryThread();
             heartbeatThread.setDaemon(true);
             registryThread.setDaemon(true);
             heartbeatThread.setTesseractExecutor(this);
@@ -94,11 +123,20 @@ public class TesseractExecutor {
             registryThread.setHeartbeatThread(heartbeatThread);
             registryThread.startThread();
             heartbeatThread.startThread();
-            hangThread.startThread();
         }
-        //初始化序列化
-        NettyHttpClient.serializerService = this.serializerService;
-        NettyHttpClient.tesseractExecutor = this;
+    }
+
+
+    /**
+     * 初始化服务代理
+     */
+    private void initServiceDelegator() {
+        ClientServiceDelegator.adminServerAddress = adminServerAddress;
+        ClientServiceDelegator.clientFeignService = clientFeignService;
+        ClientServiceDelegator.clientJobDetailList = clientJobDetailList;
+        ClientServiceDelegator.nettyServerPort = nettyServerPort;
+        ClientServiceDelegator.serializerService = serializerService;
+        ClientServiceDelegator.tesseractExecutor = this;
     }
 
     public void destroy() {
@@ -108,10 +146,6 @@ public class TesseractExecutor {
         if (heartbeatThread != null) {
             heartbeatThread.stopThread();
         }
-        if (hangThread != null) {
-            hangThread.stopThread();
-        }
-        NettyHttpClient.close();
     }
 
 //    /**

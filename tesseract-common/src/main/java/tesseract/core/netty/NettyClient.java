@@ -1,4 +1,4 @@
-package tesseract.service.netty;
+package tesseract.core.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -8,35 +8,25 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import tesseract.core.executor.TesseractExecutor;
-import tesseract.core.serializer.ISerializerService;
-import tesseract.exception.TesseractException;
 
 @Slf4j
-public class NettyHttpClient {
-    private static volatile Channel channel;
-    private static EventLoopGroup eventLoopGroup;
-    public static ISerializerService serializerService;
-    public static TesseractExecutor tesseractExecutor;
+@Data
+public class NettyClient {
+    private EventLoopGroup eventLoopGroup;
+    private ChannelInboundHandlerAdapter handlerAdapter;
+    private String host;
+    private int port;
+    private Channel channel;
 
-    public static Channel getChannel(String host, int port) {
-        if (channel == null || !channel.isActive()) {
-            synchronized (NettyHttpClient.class) {
-                if (channel == null || !channel.isActive()) {
-                    try {
-                        connect(host, port);
-                    } catch (Exception e) {
-                        log.error(e.getMessage());
-                        throw new TesseractException("创建channel出错");
-                    }
-                }
-            }
-        }
-        return channel;
+    public NettyClient(String host, int port, ChannelInboundHandlerAdapter handlerAdapter) {
+        this.host = host;
+        this.port = port;
+        this.handlerAdapter = handlerAdapter;
     }
 
-    public static void close() {
+    public void close() {
         if (channel.isActive()) {
             channel.close();
         }
@@ -45,7 +35,18 @@ public class NettyHttpClient {
         }
     }
 
-    private static void connect(String host, int port) throws Exception {
+    public Channel getActiveChannel() {
+        if (channel == null || !channel.isActive()) {
+            try {
+                this.connect();
+            } catch (Exception e) {
+                log.error("初始化channel出错,host:{},port:{}", host, port);
+            }
+        }
+        return this.channel;
+    }
+
+    private void connect() throws Exception {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
         b.group(workerGroup);
@@ -57,10 +58,11 @@ public class NettyHttpClient {
                 ch.pipeline().addLast(new HttpResponseDecoder());
                 ch.pipeline().addLast(new HttpRequestEncoder());
                 ch.pipeline().addLast(new HttpObjectAggregator(5 * 1024));
-                ch.pipeline().addLast(new NettyClientCommandDispatcher(serializerService));
+                ch.pipeline().addLast(handlerAdapter);
             }
         });
         ChannelFuture f = b.connect(host, port).sync();
-        channel = f.channel();
+        this.channel = f.channel();
     }
+
 }

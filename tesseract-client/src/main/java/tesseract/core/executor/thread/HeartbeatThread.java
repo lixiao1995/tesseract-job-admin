@@ -2,9 +2,9 @@ package tesseract.core.executor.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractHeartbeatRequest;
+import tesseract.core.executor.ClientServiceDelegator;
 import tesseract.core.executor.TesseractExecutor;
 import tesseract.core.lifecycle.IThreadLifycycle;
-import tesseract.service.IClientService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,16 +17,12 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;
     private volatile boolean isPause = true;
 
-    private IClientService clientFeignService;
-    private String adminServerAddress;
     private RegistryThread registryThread;
     private Integer heartIntervalTime = 10 * 1000;
     private TesseractExecutor tesseractExecutor;
 
-    public HeartbeatThread(IClientService clientFeignService, String adminServerAddress) {
+    public HeartbeatThread() {
         super("HeartbeatThread");
-        this.clientFeignService = clientFeignService;
-        this.adminServerAddress = adminServerAddress;
     }
 
     public void setTesseractExecutor(TesseractExecutor tesseractExecutor) {
@@ -92,8 +88,10 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
             tesseractHeartbeatRequest.setMaximumPoolSize(maximumPoolSize);
             tesseractHeartbeatRequest.setPoolSize(poolSize);
             tesseractHeartbeatRequest.setQueueSize(queueSize);
+            tesseractHeartbeatRequest.setPort(ClientServiceDelegator.nettyServerPort);
 //            tesseractHeartbeatRequest.setSocket(String.format(SOCKET_FORMATTER, ip, port));
-            clientFeignService.heartbeat(new URI(adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
+            ClientServiceDelegator.clientFeignService.heartbeat(new
+                    URI(ClientServiceDelegator.adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
         } catch (URISyntaxException e) {
             log.error("uri信息错误，请检查配置");
         } catch (Exception e) {

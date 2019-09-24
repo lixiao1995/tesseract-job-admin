@@ -5,7 +5,7 @@ import admin.core.scheduler.scanner.ExecutorScanner;
 import admin.core.scheduler.service.ITaskService;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
-import io.netty.channel.Channel;
+import tesseract.core.netty.NettyClient;
 import tesseract.core.serializer.ISerializerService;
 
 import java.util.Map;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class TesseractJobServiceDelegator {
 
-    public static final Map<String, Channel> CHANNEL_MAP = new ConcurrentHashMap<>();
+    public static final Map<String, NettyClient> CHANNEL_MAP = new ConcurrentHashMap<>();
 
     public static ITesseractExecutorService executorService;
 

@@ -1,7 +1,8 @@
 package admin.core.scheduler;
 
 import admin.core.component.TesseractMailSender;
-import admin.core.netty.server.NettyServer;
+import admin.core.netty.server.NettyServerCommandDispatcher;
+import tesseract.core.netty.NettyServer;
 import admin.core.netty.server.TesseractJobServiceDelegator;
 import admin.core.scheduler.scanner.ExecutorScanner;
 import admin.core.scheduler.scanner.MissfireScanner;
@@ -66,7 +67,7 @@ public class TesseractScheduleBoot {
     @Qualifier("mailEventBus")
     private EventBus mailEventBus;
 
-    @Value("${netty.port}")
+    @Value("${tesseract.netty.server.port}")
     private int port;
 
 
@@ -178,9 +179,7 @@ public class TesseractScheduleBoot {
             missfireScanner.startThread();
         }
         //启动netty server
-        new Thread(() -> {
-            new NettyServer().start(port);
-        }).start();
+        new Thread(() -> new NettyServer(port, new NettyServerCommandDispatcher()).startServer()).start();
     }
     /***********************************spring 相关 end*************************************/
 

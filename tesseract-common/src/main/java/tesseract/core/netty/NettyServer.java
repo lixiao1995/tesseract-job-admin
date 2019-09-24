@@ -1,7 +1,8 @@
-package admin.core.netty.server;
+package tesseract.core.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,16 +11,23 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.exception.TesseractException;
 
 /**
  * netty http服务器
+ *
+ * @author nickle
  */
 @Slf4j
+@AllArgsConstructor
 public class NettyServer {
-    public void start(int port) {
-        log.info("netty server start");
+    private int port;
+    private ChannelInboundHandlerAdapter dispatcher;
+
+    public void startServer() {
+        log.info("netty 服务启动,端口：{}", port);
         ServerBootstrap b = new ServerBootstrap();
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -34,7 +42,7 @@ public class NettyServer {
                                 .addLast("decoder", new HttpRequestDecoder())
                                 .addLast("encoder", new HttpResponseEncoder())
                                 .addLast("aggregator", new HttpObjectAggregator(512 * 1024))
-                                .addLast("nettyCommandDispatcher", new NettyServerCommandDispatcher());
+                                .addLast("nettyCommandDispatcher", dispatcher);
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)

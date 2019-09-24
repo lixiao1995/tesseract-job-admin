@@ -23,4 +23,10 @@ public class CommonUtils {
         int port = socketAddress.getPort();
         return hostName + ":" + port;
     }
+
+    public static String buildSocket(Channel channel, int port) {
+        InetSocketAddress socketAddress = (InetSocketAddress) channel.remoteAddress();
+        String hostName = socketAddress.getHostName();
+        return hostName + ":" + port;
+    }
 }

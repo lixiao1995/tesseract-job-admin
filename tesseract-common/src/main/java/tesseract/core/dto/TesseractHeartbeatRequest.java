@@ -14,13 +14,15 @@ public class TesseractHeartbeatRequest implements Serializable {
 
     private String socket;
 
-    Integer activeCount;
+    private Integer port;
 
-    Integer corePoolSize;
+    private Integer activeCount;
 
-    Integer maximumPoolSize;
+    private Integer corePoolSize;
 
-    Integer poolSize;
+    private Integer maximumPoolSize;
 
-    Integer queueSize;
+    private Integer poolSize;
+
+    private Integer queueSize;
 }

@@ -27,7 +27,7 @@ public class HeartBeatCommandHandler implements ICommandHandler {
         ITesseractExecutorDetailService tesseractExecutorDetailService = TesseractJobServiceDelegator.executorDetailService;
         TesseractHeartbeatRequest heartBeatRequest =
                 (TesseractHeartbeatRequest) serializerService.deserialize(CommonUtils.byteBufToByteArr((ByteBuf) handleBean.getData()));
-        heartBeatRequest.setSocket(CommonUtils.buildSocket(channel));
+        heartBeatRequest.setSocket(CommonUtils.buildSocket(channel, heartBeatRequest.getPort()));
         TesseractExecutorResponse response;
         try {
             tesseractExecutorDetailService.heartBeat(heartBeatRequest);

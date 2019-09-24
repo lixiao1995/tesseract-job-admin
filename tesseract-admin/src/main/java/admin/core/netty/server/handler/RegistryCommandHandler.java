@@ -29,14 +29,11 @@ public class RegistryCommandHandler implements ICommandHandler {
                 (TesseractAdminRegistryRequest) serializerService.deserialize(CommonUtils.byteBufToByteArr((ByteBuf) handleBean.getData()));
         InetSocketAddress socketAddress = (InetSocketAddress) channel.remoteAddress();
         tesseractAdminRegistryRequest.setIp(socketAddress.getHostName());
-        tesseractAdminRegistryRequest.setPort(socketAddress.getPort());
+        tesseractAdminRegistryRequest.setPort(tesseractAdminRegistryRequest.getPort());
         TesseractAdminRegistryResDTO registry = TesseractJobServiceDelegator.executorService.registry(tesseractAdminRegistryRequest);
         TesseractExecutorResponse success = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, registry, CommonConstant.REGISTRY_MAPPING);
         byte[] serialize = serializerService.serialize(success);
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
-        // 注册channel
-        String socket = tesseractAdminRegistryRequest.getIp() + ":" + tesseractAdminRegistryRequest.getPort();
-        TesseractJobServiceDelegator.CHANNEL_MAP.put(socket, channel);
         channel.writeAndFlush(fullHttpResponse).sync();
     }
 }
