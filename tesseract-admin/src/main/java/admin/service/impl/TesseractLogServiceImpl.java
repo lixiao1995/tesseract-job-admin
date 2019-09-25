@@ -90,7 +90,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         //更新日志状态
         this.updateById(tesseractLog);
     }
-    
+
 
     @Override
     public IPage<TesseractLog> listByPage(Integer currentPage, Integer pageSize, TesseractLog condition,
