@@ -20,9 +20,9 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
     private TesseractGroup tesseractGroup;
 
     /**
-     * 时间窗口，获取距下次触发时间5s内的触发器
+     * 时间窗口，获取距下次触发时间xs内的触发器
      */
-    private int timeWindowSize = 5 * 1000;
+    private int timeWindowSize = 0 * 1000;
 
     /**
      * 调度间隔时间
@@ -46,7 +46,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("SchedulerThread {} start", tesseractGroup.getName());
+        log.info("SchedulerThread-{} start", tesseractGroup.getName());
         while (!isStop) {
             int blockGetAvailableThreadNum = tesseractTriggerDispatcher.blockGetAvailableThreadNum();
             log.info("可用线程数:{}", blockGetAvailableThreadNum);
@@ -85,6 +85,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
     @Override
     public void stopThread() {
         this.isStop = true;
+        this.tesseractTriggerDispatcher.stop();
         this.interrupt();
     }
 }

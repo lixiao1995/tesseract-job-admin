@@ -79,7 +79,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Transactional
     @Override
     public List<TesseractTrigger> findTriggerWithLock(TesseractGroup tesseractGroup, int batchSize, long time, Integer timeWindowSize) {
-        lockService.lock(tesseractGroup.getName(), TRIGGER_LOCK_NAME);
+        lockService.lock(TRIGGER_LOCK_NAME, tesseractGroup.getName());
         QueryWrapper<TesseractTrigger> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .le(TesseractTrigger::getNextTriggerTime, time + timeWindowSize)
@@ -102,7 +102,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 trigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
                 trigger.setPrevTriggerTime(currentTimeMillis);
             });
-            log.info("下一次执行时间:{}", new Date(triggerList.get(0).getNextTriggerTime()));
+            log.info("下一次执行时间{}", new Date(triggerList.get(0).getNextTriggerTime()));
             this.updateBatchById(triggerList);
         }
         return triggerList;
@@ -147,8 +147,8 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean resovleMissfireTrigger(Integer pageSize, Long time) {
-        lockService.lock(MISSFIRE_LOCK_NAME, MISSFIRE_LOCK_NAME);
+    public boolean resovleMissfireTrigger(TesseractGroup tesseractGroup, Integer pageSize, Long time) {
+        lockService.lock(TRIGGER_LOCK_NAME, tesseractGroup.getName());
         boolean flag = false;
         QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
         triggerQueryWrapper.lambda()
@@ -172,7 +172,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 }
                 tmpTriggerList.add(trigger);
                 //更新触发器调度时间为当前时间
-                trigger.setNextTriggerTime(System.currentTimeMillis());
+                trigger.setNextTriggerTime(System.currentTimeMillis() / 1000);
             });
             //发送邮件
             map.entrySet().parallelStream().forEach(entry -> {
@@ -202,9 +202,9 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 throw new TesseractException("没有找到组信息，将无法发送邮件。组id:" + groupId);
             }
             HashMap<String, Object> model = Maps.newHashMap();
-            triggerList.parallelStream().forEach(tesseractTrigger ->{
-                tesseractTrigger.setPrevTriggerTime(tesseractTrigger.getPrevTriggerTime()*1000);
-                tesseractTrigger.setNextTriggerTime(tesseractTrigger.getNextTriggerTime()*1000);
+            triggerList.parallelStream().forEach(tesseractTrigger -> {
+                tesseractTrigger.setPrevTriggerTime(tesseractTrigger.getPrevTriggerTime() * 1000);
+                tesseractTrigger.setNextTriggerTime(tesseractTrigger.getNextTriggerTime() * 1000);
             });
             model.put("triggerList", triggerList);
             model.put("groupName", tesseractGroup.getName());

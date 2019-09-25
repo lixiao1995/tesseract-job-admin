@@ -14,6 +14,7 @@ public class CommonUtils {
     public static byte[] byteBufToByteArr(ByteBuf byteBuf) {
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
+        byteBuf.release();
         return bytes;
     }
 

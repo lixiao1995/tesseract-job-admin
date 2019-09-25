@@ -3,10 +3,9 @@ package nickle.tesseract;
 import admin.TesseractAdminApplication;
 import admin.controller.TesseractLogController;
 import admin.core.mail.TesseractMailTemplate;
-import admin.core.scheduler.scanner.MissfireScanner;
+import admin.core.scheduler.service.ITaskService;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
-import admin.core.scheduler.service.ITaskService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,10 +67,4 @@ public class TesseractApplicationTests {
         System.out.println(mailTemplate.getConfiguration().getTemplate("logTemplate.html"));
     }
 
-    @Test
-    public void testMissFireThread() throws InterruptedException {
-        MissfireScanner missfireScanner = new MissfireScanner(tesseractTriggerService);
-        missfireScanner.startThread();
-        missfireScanner.join();
-    }
 }

@@ -29,12 +29,16 @@ public class MailListener {
     @AllowConcurrentEvents
     public void sendMail(MailEvent mailEvent) throws Exception {
         //建立邮件消息
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-        helper.setFrom(from);
-        helper.setTo(mailEvent.getTo());
-        helper.setSubject(mailEvent.getSubject());
-        helper.setText(mailEvent.getBody(), true);
-        mailSender.send(mimeMessage);
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(from);
+            helper.setTo(mailEvent.getTo());
+            helper.setSubject(mailEvent.getSubject());
+            helper.setText(mailEvent.getBody(), true);
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            log.error("发送邮件异常");
+        }
     }
 }

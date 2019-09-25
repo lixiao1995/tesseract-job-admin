@@ -21,12 +21,12 @@ public interface ITesseractTriggerService extends IService<TesseractTrigger> {
      * <p>获取触发器</p>
      *
      * @param tesseractGroup 触发器组
-     * @param batchSize 页数
-     * @param time 下次触发时间
+     * @param batchSize      页数
+     * @param time           下次触发时间
      * @param timeWindowSize 时间窗口
+     * @return list
      * @author wangzhe01@Koolearn-inc.com
      * @date 2019/9/16 18:15
-     * @return list
      */
     List<TesseractTrigger> findTriggerWithLock(TesseractGroup tesseractGroup, int batchSize, long time, Integer timeWindowSize);
 
@@ -46,5 +46,5 @@ public interface ITesseractTriggerService extends IService<TesseractTrigger> {
     void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception;
 
 
-    boolean resovleMissfireTrigger(Integer pageSize, Long time);
+    boolean resovleMissfireTrigger(TesseractGroup tesseractGroup, Integer pageSize, Long time);
 }

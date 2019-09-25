@@ -1,7 +1,6 @@
 package tesseract.core.executor.netty;
 
 import com.google.common.collect.Maps;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -13,12 +12,18 @@ import tesseract.core.executor.netty.handler.ClientHeartBeatHandler;
 import tesseract.core.executor.netty.handler.ClientRegistryHandler;
 import tesseract.core.netty.HandleBean;
 import tesseract.core.netty.ICommandHandler;
+import tesseract.core.util.CommonUtils;
 
 import java.util.Map;
 
 import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 
+/**
+ * 客户端命令分发器，用于接收服务器回复信息冰并分发
+ *
+ * @author nickle
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
@@ -39,9 +44,7 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpResponse httpResponse = (FullHttpResponse) msg;
-        ByteBuf content = httpResponse.content();
-        byte[] bytes = new byte[content.readableBytes()];
-        content.readBytes(bytes);
+        byte[] bytes = CommonUtils.byteBufToByteArr(httpResponse.content());
         TesseractExecutorResponse executorResponse = (TesseractExecutorResponse) ClientServiceDelegator.serializerService.deserialize(bytes);
         String handlerPath = executorResponse.getHandlerPath();
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(handlerPath);

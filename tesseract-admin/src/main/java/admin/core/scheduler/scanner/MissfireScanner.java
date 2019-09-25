@@ -1,6 +1,7 @@
 package admin.core.scheduler.scanner;
 
-import admin.service.ITesseractTriggerService;
+import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
@@ -15,22 +16,22 @@ import tesseract.core.lifecycle.IThreadLifycycle;
 public class MissfireScanner extends Thread implements IThreadLifycycle {
 
 
-    private ITesseractTriggerService triggerService;
     private volatile boolean isStop = false;
     private Long scanIntervalTime = 30 * 1000L;
     private Integer missfireTriggerBatchSize = 50;
     private Long missfireTime = scanIntervalTime;
+    private TesseractGroup tesseractGroup;
 
-    public MissfireScanner(ITesseractTriggerService triggerService) {
-        super("MissfireScanner");
-        this.triggerService = triggerService;
+    public MissfireScanner(TesseractGroup tesseractGroup) {
+        super(String.format("MissfireScanner-%s", tesseractGroup.getName()));
+        this.tesseractGroup = tesseractGroup;
     }
 
     @Override
     public void run() {
-        log.info("MissfireScanner start");
+        log.info("MissfireScanner-{} start", tesseractGroup.getName());
         while (!isStop) {
-            boolean hasMore = triggerService.resovleMissfireTrigger(missfireTriggerBatchSize, System.currentTimeMillis() - missfireTime);
+            boolean hasMore = TesseractJobServiceDelegator.triggerService.resovleMissfireTrigger(tesseractGroup, missfireTriggerBatchSize, System.currentTimeMillis() - missfireTime);
             if (hasMore) {
                 continue;
             }

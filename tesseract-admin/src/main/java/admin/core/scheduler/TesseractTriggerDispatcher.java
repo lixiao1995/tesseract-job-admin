@@ -60,6 +60,7 @@ public class TesseractTriggerDispatcher {
                 //获取job detail
                 TesseractJobDetail jobDetail = getJobDetail();
                 if (jobDetail == null) {
+                    log.error("没有发现可运行job");
                     TaskExecutorDelegate.doFail("没有发现可运行job", taskContextInfo);
                     return;
                 }
@@ -67,12 +68,14 @@ public class TesseractTriggerDispatcher {
                 //获取执行器
                 TesseractExecutor executor = TesseractJobServiceDelegator.executorService.getById(trigger.getExecutorId());
                 if (executor == null) {
+                    log.error("没有找到可用执行器");
                     TaskExecutorDelegate.doFail("没有找到可用执行器", taskContextInfo);
                     return;
                 }
                 //执行器下机器列表
                 List<TesseractExecutorDetail> executorDetailList = getExecutorDetail(executor.getId());
                 if (CollectionUtils.isEmpty(executorDetailList)) {
+                    log.error("执行器下没有可用机器");
                     TaskExecutorDelegate.doFail("执行器下没有可用机器", taskContextInfo);
                     return;
                 }
@@ -81,6 +84,7 @@ public class TesseractTriggerDispatcher {
                 log.info("任务上下文信息:{}", taskContextInfo);
                 TaskExecutorDelegate.routerExecute(taskContextInfo);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("任务执行异常:{},上下文信息:{}", e.getMessage(), taskContextInfo);
             }
         }

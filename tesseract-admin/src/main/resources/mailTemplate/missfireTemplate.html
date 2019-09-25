@@ -11,23 +11,19 @@
     <ul>
         <li>
             <span>触发器名称</span>
-            <span class="content">${trigger.name!}</span>
+            <span class="content">${(trigger.name)!'null'}</span>
         </li>
         <li>
             <span>下一次触发时间</span>
-            <span class="content">${trigger.nextTriggerTime?number_to_datetime}</span>
+            <span class="content">${(trigger.nextTriggerTime?number_to_datetime)!'null'}</span>
         </li>
-        <!--<li>-->
-            <!--<span>上一次触发时间</span>-->
-            <!--<span class="content">${trigger.prevTriggerTime?number_to_datetime}</span>-->
-        <!--</li>-->
         <li>
             <span>组名称</span>
-            <span class="content">${trigger.groupName}</span>
+            <span class="content">${(trigger.groupName)!'null'}</span>
         </li>
         <li>
             <span>执行器名称</span>
-            <span class="content">${trigger.executorName}</span>
+            <span class="content">${(trigger.executorName)!'null'}</span>
         </li>
     </ul>
 </div>

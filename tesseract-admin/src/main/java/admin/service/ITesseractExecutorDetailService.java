@@ -1,6 +1,7 @@
 package admin.service;
 
 import admin.entity.TesseractExecutorDetail;
+import admin.entity.TesseractGroup;
 import com.baomidou.mybatisplus.extension.service.IService;
 import tesseract.core.dto.TesseractHeartbeatRequest;
 
@@ -15,7 +16,7 @@ import tesseract.core.dto.TesseractHeartbeatRequest;
 public interface ITesseractExecutorDetailService extends IService<TesseractExecutorDetail> {
     void heartBeat(TesseractHeartbeatRequest heartBeatRequest);
 
-    boolean clearInvalidMachine(Integer pageSize, Long time) throws Exception;
+    boolean clearInvalidMachine(TesseractGroup tesseractGroup,Integer pageSize, Long time) throws Exception;
 
 
 }

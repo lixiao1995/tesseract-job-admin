@@ -1,8 +1,9 @@
 package admin.core.scheduler.scanner;
 
+import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
-import admin.service.ITesseractExecutorDetailService;
 
 import static admin.constant.AdminConstant.SCAN_INTERVAL_TIME;
 
@@ -13,14 +14,12 @@ import static admin.constant.AdminConstant.SCAN_INTERVAL_TIME;
  */
 @Slf4j
 public class ExecutorScanner extends Thread implements IThreadLifycycle {
-
-    private ITesseractExecutorDetailService executorDetailService;
-
+    private TesseractGroup tesseractGroup;
     private volatile boolean isStop = false;
 
-    public ExecutorScanner(ITesseractExecutorDetailService executorDetailService) {
-        super("ExecutorScanner");
-        this.executorDetailService = executorDetailService;
+    public ExecutorScanner(TesseractGroup tesseractGroup) {
+        super(String.format("ExecutorScanner-%s", tesseractGroup.getName()));
+        this.tesseractGroup = tesseractGroup;
     }
 
     /**
@@ -32,10 +31,10 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
      */
     @Override
     public void run() {
-        log.info("ExecutorScanner start");
+        log.info("ExecutorScanner-{} start", tesseractGroup.getName());
         while (!isStop) {
             try {
-                boolean hasMore = executorDetailService.clearInvalidMachine(10, System.currentTimeMillis() - SCAN_INTERVAL_TIME);
+                boolean hasMore = TesseractJobServiceDelegator.executorDetailService.clearInvalidMachine(tesseractGroup, 10, System.currentTimeMillis() - SCAN_INTERVAL_TIME);
                 if (hasMore) {
                     continue;
                 }

@@ -1,8 +1,11 @@
 package admin.core.scheduler;
 
 import admin.core.scheduler.bean.CurrentTaskInfo;
+import admin.core.scheduler.bean.ScheduleGroupInfo;
 import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.pool.DefaultSchedulerThreadPool;
+import admin.core.scheduler.scanner.ExecutorScanner;
+import admin.core.scheduler.scanner.MissfireScanner;
 import admin.entity.*;
 import tesseract.core.dto.TesseractExecutorRequest;
 
@@ -22,13 +25,24 @@ public class TesseractBeanFactory {
         TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
         Integer shardingIndex = currentTaskInfo.getShardingIndex();
         TesseractLog tesseractLog = new TesseractLog();
-        tesseractLog.setClassName(jobDetail.getClassName());
+        if (jobDetail != null) {
+            tesseractLog.setClassName(jobDetail.getClassName());
+            tesseractLog.setCreator(jobDetail.getCreator());
+        } else {
+            tesseractLog.setClassName("");
+            tesseractLog.setCreator("");
+        }
+        if (trigger != null) {
+            tesseractLog.setGroupId(trigger.getGroupId());
+            tesseractLog.setGroupName(trigger.getGroupName());
+            tesseractLog.setTriggerName(trigger.getName());
+        } else {
+            tesseractLog.setGroupId(0);
+            tesseractLog.setGroupName("");
+            tesseractLog.setTriggerName("");
+        }
         tesseractLog.setCreateTime(System.currentTimeMillis());
-        tesseractLog.setCreator(jobDetail.getCreator());
         tesseractLog.setRetryCount(0);
-        tesseractLog.setGroupId(trigger.getGroupId());
-        tesseractLog.setGroupName(trigger.getGroupName());
-        tesseractLog.setTriggerName(trigger.getName());
         tesseractLog.setEndTime(System.currentTimeMillis());
         tesseractLog.setExecutorDetailId(0);
         tesseractLog.setStatus(LOG_FAIL);
@@ -86,6 +100,19 @@ public class TesseractBeanFactory {
         return tesseractFiredTrigger;
     }
 
+    /**
+     * 创建线程组信息
+     *
+     * @param tesseractGroup
+     * @return
+     */
+    public static ScheduleGroupInfo createScheduleGroupInfo(TesseractGroup tesseractGroup) {
+        SchedulerThread schedulerThread = createSchedulerThread(tesseractGroup);
+        ExecutorScanner executorScanner = createExecutorScanner(tesseractGroup);
+        MissfireScanner missfireScanner = createMissfireScanner(tesseractGroup);
+        ScheduleGroupInfo scheduleGroupInfo = new ScheduleGroupInfo(executorScanner, missfireScanner, schedulerThread);
+        return scheduleGroupInfo;
+    }
 
     /**
      * 创建调度线程
@@ -98,6 +125,30 @@ public class TesseractBeanFactory {
         SchedulerThread schedulerThread = new SchedulerThread(tesseractGroup, triggerDispatcher);
         schedulerThread.setDaemon(true);
         return schedulerThread;
+    }
+
+    /**
+     * 创建执行器扫描线程
+     *
+     * @param tesseractGroup
+     * @return
+     */
+    public static ExecutorScanner createExecutorScanner(TesseractGroup tesseractGroup) {
+        ExecutorScanner missfireScanner = new ExecutorScanner(tesseractGroup);
+        missfireScanner.setDaemon(true);
+        return missfireScanner;
+    }
+
+    /**
+     * 创建missfire扫描线程
+     *
+     * @param tesseractGroup
+     * @return
+     */
+    public static MissfireScanner createMissfireScanner(TesseractGroup tesseractGroup) {
+        MissfireScanner missfireScanner = new MissfireScanner(tesseractGroup);
+        missfireScanner.setDaemon(true);
+        return missfireScanner;
     }
 
     /**

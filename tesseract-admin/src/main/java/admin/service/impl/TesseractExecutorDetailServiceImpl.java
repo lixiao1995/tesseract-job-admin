@@ -1,19 +1,20 @@
 package admin.service.impl;
 
 import admin.core.component.TesseractMailSender;
-import admin.core.event.MailEvent;
-import admin.core.mail.TesseractMailTemplate;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractFiredJob;
+import admin.entity.TesseractGroup;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractExecutorDetailMapper;
-import admin.service.*;
+import admin.service.ITesseractExecutorDetailService;
+import admin.service.ITesseractFiredJobService;
+import admin.service.ITesseractLockService;
+import admin.service.ITesseractLogService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,6 @@ import tesseract.exception.TesseractException;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static admin.constant.AdminConstant.EXECUTOR_LOCK_NAME;
 import static admin.constant.AdminConstant.LOG_FAIL;
@@ -74,8 +73,8 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean clearInvalidMachine(Integer pageSize, Long time) {
-        lockService.lock(EXECUTOR_LOCK_NAME, EXECUTOR_LOCK_NAME);
+    public boolean clearInvalidMachine(TesseractGroup tesseractGroup, Integer pageSize, Long time) {
+        lockService.lock(EXECUTOR_LOCK_NAME, tesseractGroup.getName());
         boolean flag = false;
         List<TesseractExecutorDetail> executorDetailList;
         QueryWrapper<TesseractExecutorDetail> detailQueryWrapper = new QueryWrapper<>();

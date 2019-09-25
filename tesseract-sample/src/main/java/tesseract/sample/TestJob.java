@@ -6,9 +6,8 @@ import tesseract.core.context.ExecutorContext;
 import tesseract.core.handler.JobHandler;
 
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
-@TesseractJob(triggerName = "testTrigger")
+@TesseractJob(triggerName = "testTrigger-1")
 @Component
 public class TestJob implements JobHandler {
 

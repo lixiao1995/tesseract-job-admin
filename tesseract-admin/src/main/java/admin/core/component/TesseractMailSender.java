@@ -85,15 +85,19 @@ public class TesseractMailSender {
 
     /**
      * 失败后发送报警邮件
+     *
      * @param tesseractLog
      */
     public void logSendMail(TesseractLog tesseractLog) {
         TesseractGroup group = groupService.getById(tesseractLog.getGroupId());
         QueryWrapper<TesseractFiredJob> detailQueryWrapper = new QueryWrapper<>();
-        detailQueryWrapper.lambda().eq(TesseractFiredJob::getLogId,tesseractLog.getId());
+        detailQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractLog.getId());
         TesseractFiredJob tesseractFiredJob = tesseractFiredJobService.getOne(detailQueryWrapper);
-        TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
-        HashMap < String, Object > model = Maps.newHashMap();
+        TesseractTrigger tesseractTrigger = null;
+        if (tesseractFiredJob != null) {
+            tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
+        }
+        HashMap<String, Object> model = Maps.newHashMap();
         model.put("log", tesseractLog);
         model.put("tesseractFiredJob", tesseractFiredJob);
         model.put("tesseractTrigger", tesseractTrigger);
@@ -109,6 +113,7 @@ public class TesseractMailSender {
 
     /**
      * 失败后发送报警邮件
+     *
      * @param tesseractLogId
      */
     public void logSendMail(Long tesseractLogId) {
@@ -118,12 +123,12 @@ public class TesseractMailSender {
 
     /**
      * 任务失败发送报警邮件
+     *
      * @param tesseractAdminJobNotify
      */
     public void missionFailedSendMail(TesseractAdminJobNotify tesseractAdminJobNotify) {
         logSendMail(tesseractAdminJobNotify.getLogId());
     }
-
 
 
 }

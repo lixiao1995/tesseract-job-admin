@@ -59,6 +59,6 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("客户端断开连接:{},异常信息:{}", ctx.channel(), cause.getMessage());
+        log.error("发生异常:{},\r异常信息:{}", ctx.channel(), cause.getMessage());
     }
 }

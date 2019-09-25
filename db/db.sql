@@ -170,7 +170,7 @@ values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
 values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, 'liangxuekai@koolearn-inc.com');
 
-/*
+
 truncate table tesseract_job_detail;
 truncate table tesseract_log;
 truncate table tesseract_trigger;
@@ -184,14 +184,14 @@ BEGIN
     WHILE var <= loop_times DO
     insert into tesseract_trigger(id, name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num
     , retry_count, status, creator, description, executor_id, executor_name, create_time, update_time, group_name, group_id)
-    values (var, concat('testTrigger-', var), 1562512500000, 0, '0 0/5 * * * ?', 0, 0, 0, 1, 'admin', 'test', 1,
-            'testExecutor',1562512500000, 1562512500000,'testGroup',1);
-
+    values (var, concat('testTrigger-',var), 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 1, 'admin', 'test', 1,
+            'testExecutor',1562512500000, 1562512500000,'dev1',2);
+    insert into tesseract_job_detail(id, trigger_id, class_name, create_time, creator)
+    values (var,var,'tesseract.sample.TestJob',1562512500000,'test');
     SET var = var + 1;
     END WHILE;
     commit;
 END
 //
 DELIMITER ;
-call insert_trigger(20000000);
-*/
+call insert_trigger(2000);

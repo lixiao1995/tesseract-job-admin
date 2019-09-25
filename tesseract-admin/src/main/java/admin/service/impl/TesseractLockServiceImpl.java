@@ -29,7 +29,7 @@ public class TesseractLockServiceImpl extends ServiceImpl<TesseractLockMapper, T
     public TesseractLock lock(String lockName, String groupName) {
         String key = lockName + groupName;
         //检测表内是否存在锁字段,采用缓存减少对数据库的访问
-        if (checkMap.get(key) == null) {
+        while (checkMap.get(key) == null) {
             QueryWrapper<TesseractLock> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(TesseractLock::getGroupName, groupName).eq(TesseractLock::getName, lockName);
             TesseractLock tesseractLock = getOne(queryWrapper);
@@ -41,11 +41,13 @@ public class TesseractLockServiceImpl extends ServiceImpl<TesseractLockMapper, T
                 //并发条件下采用数据库唯一索引来解决创建多个锁
                 try {
                     this.save(tesseractLock);
+                    checkMap.put(key, true);
                 } catch (Exception e) {
                     log.warn("锁创建异常:{}", e.getMessage());
                 }
+            } else {
+                checkMap.put(key, true);
             }
-            checkMap.put(key, true);
         }
         return this.baseMapper.lock(groupName, lockName);
     }
