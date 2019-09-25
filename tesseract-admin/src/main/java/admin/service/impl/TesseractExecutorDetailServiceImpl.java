@@ -27,8 +27,7 @@ import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 
-import static admin.constant.AdminConstant.EXECUTOR_LOCK_NAME;
-import static admin.constant.AdminConstant.LOG_FAIL;
+import static admin.constant.AdminConstant.*;
 import static tesseract.core.constant.CommonConstant.EXECUTOR_DETAIL_NOT_FIND;
 
 /**
@@ -119,7 +118,8 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
      */
     private void modifyLogStatus(List<Integer> detailIdList) {
         QueryWrapper<TesseractLog> logQueryWrapper = new QueryWrapper<>();
-        logQueryWrapper.lambda().in(TesseractLog::getExecutorDetailId, detailIdList);
+        logQueryWrapper.lambda().eq(TesseractLog::getStatus, LOG_WAIT)
+                .in(TesseractLog::getExecutorDetailId, detailIdList);
         TesseractLog log = new TesseractLog();
         log.setStatus(LOG_FAIL);
         log.setMsg("机器失去心跳");
