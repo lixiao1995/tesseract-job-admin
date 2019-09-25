@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import tesseract.exception.TesseractException;
 
 @Slf4j
 @Data
@@ -40,7 +41,7 @@ public class NettyClient {
             try {
                 this.connect();
             } catch (Exception e) {
-                log.error("初始化channel出错,host:{},port:{}", host, port);
+                throw new TesseractException("初始化channel出错");
             }
         }
         return this.channel;

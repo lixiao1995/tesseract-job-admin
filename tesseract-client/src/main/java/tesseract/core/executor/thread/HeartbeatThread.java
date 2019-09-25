@@ -92,11 +92,10 @@ public class HeartbeatThread extends Thread implements IThreadLifycycle {
 //            tesseractHeartbeatRequest.setSocket(String.format(SOCKET_FORMATTER, ip, port));
             ClientServiceDelegator.clientFeignService.heartbeat(new
                     URI(ClientServiceDelegator.adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
-        } catch (URISyntaxException e) {
-            log.error("uri信息错误，请检查配置");
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("心跳失败:{}", e.getMessage());
+            log.error("心跳失败:{},将开始重新注册", e.getMessage());
+            registryThread.interruptThread();
+            this.pauseThread();
         }
     }
 

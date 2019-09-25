@@ -11,15 +11,13 @@ import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.executor.netty.NettyClientCommandDispatcher;
 import tesseract.core.executor.netty.NettyClientTaskHandler;
+import tesseract.core.executor.service.IClientService;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
 import tesseract.core.handler.JobHandler;
-import tesseract.core.netty.NettyClient;
 import tesseract.core.netty.NettyServer;
 import tesseract.core.serializer.ISerializerService;
-import tesseract.core.executor.service.IClientService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -88,16 +86,6 @@ public class TesseractExecutor {
         initServiceDelegator();
         initThread();
         initNettyServer();
-        initNettyClient();
-    }
-
-    /**
-     * 初始化连接到server的netty client
-     */
-    private void initNettyClient() {
-        URI uri = URI.create(adminServerAddress);
-        NettyClient nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new NettyClientCommandDispatcher());
-        ClientServiceDelegator.nettyClient = nettyClient;
     }
 
     /**

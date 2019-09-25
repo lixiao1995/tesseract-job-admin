@@ -40,7 +40,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
-        //log.info("接收到请求:{}", fullHttpRequest);
+        log.info("接收到请求:{}", fullHttpRequest);
         String uri = fullHttpRequest.uri();
         String path = HttpUtils.buildURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
@@ -55,5 +55,10 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
         handleBean.setData(fullHttpRequest.content());
         handleBean.setUrl(uri);
         iCommandHandler.handleCommand(handleBean, ctx.channel());
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("客户端断开连接:{},异常信息:{}", ctx.channel(), cause.getMessage());
     }
 }

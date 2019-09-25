@@ -1,10 +1,12 @@
 package tesseract.core.executor;
 
 import tesseract.core.annotation.ClientJobDetail;
+import tesseract.core.executor.netty.NettyClientCommandDispatcher;
+import tesseract.core.executor.service.IClientService;
 import tesseract.core.netty.NettyClient;
 import tesseract.core.serializer.ISerializerService;
-import tesseract.core.executor.service.IClientService;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -26,4 +28,17 @@ public class ClientServiceDelegator {
     public static NettyClient nettyClient;
 
     public static TesseractExecutor tesseractExecutor;
+
+    /**
+     * 只有一个注册线程调用，线程安全
+     *
+     * @return
+     */
+    public static NettyClient getNettyClient() {
+        if (nettyClient == null) {
+            URI uri = URI.create(adminServerAddress);
+            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new NettyClientCommandDispatcher());
+        }
+        return nettyClient;
+    }
 }
