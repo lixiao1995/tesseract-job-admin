@@ -40,7 +40,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
-        log.info("接收到请求:{}", fullHttpRequest);
+//        log.info("接收到请求:{}", fullHttpRequest);
         String uri = fullHttpRequest.uri();
         String path = HttpUtils.buildURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);

@@ -18,10 +18,6 @@ public class ClientHeartBeatHandler implements ICommandHandler {
     @Override
     public void handleCommand(HandleBean handleBean, Channel channel) throws Exception {
         TesseractExecutorResponse executorResponse = (TesseractExecutorResponse) handleBean.getData();
-        if (executorResponse.getStatus() != TesseractExecutorResponse.SUCCESS_STATUS) {
-            log.error("服务器响应错误:{}", executorResponse);
-            return;
-        }
         if (executorResponse.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
             log.info("心跳成功");
             return;

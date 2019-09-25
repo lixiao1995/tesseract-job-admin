@@ -41,6 +41,7 @@ public class NettyClient {
             try {
                 this.connect();
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new TesseractException("初始化channel出错");
             }
         }

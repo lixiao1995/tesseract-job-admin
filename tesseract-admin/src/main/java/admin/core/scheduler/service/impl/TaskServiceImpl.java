@@ -1,10 +1,9 @@
 package admin.core.scheduler.service.impl;
 
 import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.netty.server.handler.TesseractTaskExecutorHandler;
 import admin.core.scheduler.service.ITaskService;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -35,13 +34,7 @@ public class TaskServiceImpl implements ITaskService {
         String socket = uri.getHost() + ":" + uri.getPort();
         NettyClient nettyClient = CHANNEL_MAP.get(socket);
         if (nettyClient == null) {
-            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new ChannelInboundHandlerAdapter() {
-                @Override
-                public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                    log.error(cause.toString());
-                    CHANNEL_MAP.remove(socket);
-                }
-            });
+            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket));
             CHANNEL_MAP.put(socket, nettyClient);
         }
         Channel channel = nettyClient.getActiveChannel();

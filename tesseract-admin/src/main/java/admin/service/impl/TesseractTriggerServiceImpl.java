@@ -172,8 +172,10 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 }
                 tmpTriggerList.add(trigger);
                 //更新触发器调度时间为当前时间
-                trigger.setNextTriggerTime(System.currentTimeMillis() / 1000);
+                long currentTimeMillis = System.currentTimeMillis();
+                trigger.setNextTriggerTime(currentTimeMillis);
             });
+            System.out.println(triggerList);
             //发送邮件
             map.entrySet().parallelStream().forEach(entry -> {
                 Integer groupId = entry.getKey();
@@ -184,6 +186,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 }
             });
             this.updateBatchById(triggerList);
+            System.out.println(triggerList);
         }
         return flag;
     }
@@ -202,10 +205,10 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
                 throw new TesseractException("没有找到组信息，将无法发送邮件。组id:" + groupId);
             }
             HashMap<String, Object> model = Maps.newHashMap();
-            triggerList.parallelStream().forEach(tesseractTrigger -> {
-                tesseractTrigger.setPrevTriggerTime(tesseractTrigger.getPrevTriggerTime() * 1000);
-                tesseractTrigger.setNextTriggerTime(tesseractTrigger.getNextTriggerTime() * 1000);
-            });
+//            triggerList.parallelStream().forEach(tesseractTrigger -> {
+//                tesseractTrigger.setPrevTriggerTime(tesseractTrigger.getPrevTriggerTime() * 1000);
+//                tesseractTrigger.setNextTriggerTime(tesseractTrigger.getNextTriggerTime() * 1000);
+//            });
             model.put("triggerList", triggerList);
             model.put("groupName", tesseractGroup.getName());
             String body = mailTemplate.buildMailBody(MISSFIRE_TEMPLATE_NAME, model);

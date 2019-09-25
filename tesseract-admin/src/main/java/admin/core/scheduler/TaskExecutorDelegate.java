@@ -129,6 +129,7 @@ public class TaskExecutorDelegate {
         if (!currentTaskInfo.isRetry()) {
             TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
             firedJobService.save(firedJob);
+            currentTaskInfo.setFiredJob(firedJob);
         }
         //构建请求发送
         TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(currentTaskInfo);
@@ -202,6 +203,7 @@ public class TaskExecutorDelegate {
      * 4、根据调度策略判断是否启动重试并选择执行机器
      */
     private static void doRetry(CurrentTaskInfo currentTaskInfo) {
+        log.info("进入重试逻辑");
         doFailWithoutFireJob(currentTaskInfo);
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
