@@ -188,11 +188,10 @@ public class TaskExecutorDelegate {
     private static void retry(CurrentTaskInfo currentTaskInfo) {
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractLog tesseractLog = currentTaskInfo.getLog();
-        TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
-        //如果执行机器大于1且小于重试次数则开始重试
+        //机器数大于1 则重试
         tesseractLog.setRetryCount(firedJob.getRetryCount());
-        if (executorDetailList.size() > 1 && firedJob.getRetryCount() < trigger.getRetryCount()) {
+        if (executorDetailList.size() > 1) {
             doRetry(currentTaskInfo);
         } else {
             doFailWithFireJob(currentTaskInfo);
