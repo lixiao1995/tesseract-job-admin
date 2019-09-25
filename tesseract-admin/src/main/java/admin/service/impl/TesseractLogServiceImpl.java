@@ -2,10 +2,8 @@
 package admin.service.impl;
 
 import admin.core.component.TesseractMailSender;
-import admin.core.event.RetryEvent;
 import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
-import admin.entity.TesseractTrigger;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.DO.StatisticsLogDO;
 import admin.security.SecurityUserContextHolder;
@@ -82,16 +80,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             tesseractLog.setMsg(exception);
             firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractAdminJobNotify.getLogId());
             TesseractFiredJob tesseractFiredJob = firedJobService.getOne(firedJobQueryWrapper);
-            TesseractTrigger tesseractTrigger = tesseractTriggerService.getById(tesseractFiredJob.getTriggerId());
-            if (tesseractTrigger.getRetryCount() > tesseractFiredJob.getRetryCount()) {
-                tesseractFiredJob.setRetryCount(tesseractFiredJob.getRetryCount() + 1);
-                firedJobService.updateById(tesseractFiredJob);
-                //执行失败重试
-                retry(tesseractAdminJobNotify, tesseractTrigger, tesseractLog);
-            } else {
-                firedJobService.remove(firedJobQueryWrapper);
-            }
-
+            firedJobService.remove(firedJobQueryWrapper);
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
             tesseractLog.setMsg("执行成功");
@@ -101,20 +90,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         //更新日志状态
         this.updateById(tesseractLog);
     }
-
-    /**
-     * 失败重试
-     *
-     * @param tesseractAdminJobNotify
-     */
-    private void retry(TesseractAdminJobNotify tesseractAdminJobNotify,
-                       TesseractTrigger tesseractTrigger,
-                       TesseractLog tesseractLog) {
-        RetryEvent retryEvent = new RetryEvent(tesseractAdminJobNotify, tesseractTrigger, tesseractLog);
-        retryEventBus.post(retryEvent);
-//        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
-
-    }
+    
 
     @Override
     public IPage<TesseractLog> listByPage(Integer currentPage, Integer pageSize, TesseractLog condition,
