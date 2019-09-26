@@ -23,4 +23,7 @@ public class TesseractExecutorRequest implements Serializable {
 
 
     private Integer executorDetailId;
+
+
+    private Integer fireJobId;
 }

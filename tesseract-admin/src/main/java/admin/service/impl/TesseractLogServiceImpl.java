@@ -2,15 +2,15 @@
 package admin.service.impl;
 
 import admin.core.component.TesseractMailSender;
-import admin.entity.TesseractFiredJob;
-import admin.entity.TesseractLog;
+import admin.core.scheduler.TaskExecutorDelegate;
+import admin.core.scheduler.bean.CurrentTaskInfo;
+import admin.core.scheduler.bean.TaskContextInfo;
+import admin.entity.*;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.DO.StatisticsLogDO;
 import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
-import admin.service.ITesseractFiredJobService;
-import admin.service.ITesseractLogService;
-import admin.service.ITesseractTriggerService;
+import admin.service.*;
 import admin.util.AdminUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,7 +19,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,7 @@ import org.springframework.util.StringUtils;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.exception.TesseractException;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -56,12 +56,16 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     private TesseractMailSender tesseractMailSender;
 
     @Autowired
-    private EventBus retryEventBus;
+    private ITesseractJobDetailService jobDetailService;
 
     @Autowired
     private ITesseractTriggerService tesseractTriggerService;
 
+    @Autowired
+    private ITesseractExecutorDetailService executorDetailService;
+
     private int statisticsDays = 7;
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -73,22 +77,82 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
             log.error("获取日志为空:{}", tesseractAdminJobNotify);
             throw new TesseractException("获取日志为空" + tesseractAdminJobNotify);
         }
-        QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
         if (!StringUtils.isEmpty(exception)) {
             tesseractMailSender.missionFailedSendMail(tesseractAdminJobNotify);
             tesseractLog.setStatus(LOG_FAIL);
             tesseractLog.setMsg(exception);
-            firedJobQueryWrapper.lambda().eq(TesseractFiredJob::getLogId, tesseractAdminJobNotify.getLogId());
-            TesseractFiredJob tesseractFiredJob = firedJobService.getOne(firedJobQueryWrapper);
-            firedJobService.remove(firedJobQueryWrapper);
+            retry(tesseractAdminJobNotify, tesseractLog);
         } else {
             tesseractLog.setStatus(LOG_SUCCESS);
             tesseractLog.setMsg("执行成功");
-            firedJobService.remove(firedJobQueryWrapper);
+            firedJobService.removeById(tesseractAdminJobNotify.getFireJobId());
         }
         tesseractLog.setEndTime(System.currentTimeMillis());
         //更新日志状态
         this.updateById(tesseractLog);
+    }
+
+    /**
+     * 执行重试逻辑
+     */
+    private void retry(TesseractAdminJobNotify tesseractAdminJobNotify, TesseractLog tesseractLog) {
+        Integer fireJobId = tesseractAdminJobNotify.getFireJobId();
+        if (fireJobId == null) {
+            log.error("fire job id 为null,{}", tesseractAdminJobNotify);
+            return;
+        }
+        TesseractFiredJob firedJob = firedJobService.getById(fireJobId);
+        if (firedJob == null) {
+            log.error("fire job 为null,{}", tesseractAdminJobNotify);
+            return;
+        }
+        Integer triggerId = firedJob.getTriggerId();
+        TesseractTrigger trigger = tesseractTriggerService.getById(triggerId);
+        @NotNull Integer retryCount = trigger.getRetryCount();
+        if (firedJob.getRetryCount() < retryCount) {
+            //重试
+            TaskContextInfo taskContextInfo = buildTaskContextInfo(tesseractAdminJobNotify, trigger);
+            CurrentTaskInfo currentTaskInfo = buildCurrentTaskInfo(tesseractAdminJobNotify, taskContextInfo, firedJob, tesseractLog);
+            TaskExecutorDelegate.retry(currentTaskInfo);
+            return;
+        }
+        log.info("达到重试次数");
+    }
+
+    /**
+     * 构建CurrentTaskInfo
+     *
+     * @return
+     */
+    public CurrentTaskInfo buildCurrentTaskInfo(TesseractAdminJobNotify tesseractAdminJobNotify
+            , TaskContextInfo taskContextInfo, TesseractFiredJob firedJob, TesseractLog tesseractLog) {
+        TesseractExecutorDetail executorDetail = executorDetailService.getById(tesseractAdminJobNotify.getJobDetailId());
+        CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
+        currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+        currentTaskInfo.setFiredJob(firedJob);
+        currentTaskInfo.setLog(tesseractLog);
+        currentTaskInfo.setRetry(true);
+        currentTaskInfo.setShardingIndex(tesseractAdminJobNotify.getShardingIndex());
+        return currentTaskInfo;
+    }
+
+    /**
+     * 构建task context info
+     *
+     * @param tesseractAdminJobNotify
+     * @param trigger
+     * @return
+     */
+    private TaskContextInfo buildTaskContextInfo(TesseractAdminJobNotify tesseractAdminJobNotify, TesseractTrigger trigger) {
+        TesseractJobDetail jobDetail = jobDetailService.getById(tesseractAdminJobNotify.getJobDetailId());
+        TaskContextInfo taskContextInfo = new TaskContextInfo();
+        QueryWrapper<TesseractExecutorDetail> executorDetailQueryWrapper = new QueryWrapper<>();
+        executorDetailQueryWrapper.lambda().eq(TesseractExecutorDetail::getExecutorId, trigger.getExecutorId());
+        List<TesseractExecutorDetail> list = executorDetailService.list(executorDetailQueryWrapper);
+        taskContextInfo.setExecutorDetailList(list);
+        taskContextInfo.setJobDetail(jobDetail);
+        taskContextInfo.setTrigger(trigger);
+        return taskContextInfo;
     }
 
 

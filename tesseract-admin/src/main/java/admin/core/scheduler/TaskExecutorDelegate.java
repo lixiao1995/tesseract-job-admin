@@ -129,7 +129,7 @@ public class TaskExecutorDelegate {
         }
         logService.save(tesseractLog);
         currentTaskInfo.setLog(tesseractLog);
-        //如果不是重试任务，设置firedTrigger
+        //如果不是重试任务，设置firedTrigger.重试任务 已经拥有fire job
         if (!currentTaskInfo.isRetry()) {
             TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
             firedJobService.save(firedJob);
@@ -168,7 +168,7 @@ public class TaskExecutorDelegate {
         if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
             return;
         }
-        //执行失败逻辑
+        //执行失败逻辑，执行到这一步必定是网络问题如，netty client失败，uri异常等
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setEndTime(System.currentTimeMillis());
         Object body = response.getBody();
@@ -185,7 +185,7 @@ public class TaskExecutorDelegate {
      *
      * @param currentTaskInfo
      */
-    private static void retry(CurrentTaskInfo currentTaskInfo) {
+    public static void retry(CurrentTaskInfo currentTaskInfo) {
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractLog tesseractLog = currentTaskInfo.getLog();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();

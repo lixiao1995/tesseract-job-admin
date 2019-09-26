@@ -17,7 +17,13 @@ public class TesseractAdminJobNotify implements Serializable {
 
     private Long logId;
 
+    private Integer jobDetailId;
+
     private Integer executorDetailId;
 
+    private Integer fireJobId;
+
     private String exception;
+
+    private Integer shardingIndex;
 }
