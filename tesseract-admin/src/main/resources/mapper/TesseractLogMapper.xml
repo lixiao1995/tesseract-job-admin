@@ -22,22 +22,32 @@
 
     <select id="statisticsFailLog" resultType="admin.pojo.DO.StatisticsLogDO">
         select from_unixtime(create_time/1000,'%Y-%m-%d') as dataStr,count(*) as num
-        from tesseract_log where (create_time between #{startTime} and #{endTime} ) and status=0 and group_id=#{groupId}
+        from tesseract_log where (create_time between #{startTime} and #{endTime} ) and status=0
+        <if test="groupId != null">
+            and group_id=#{groupId}
+        </if>
         group by
         from_unixtime(create_time/1000,'%Y-%m-%d')
     </select>
 
     <select id="statisticsSuccessLogLine" resultType="admin.pojo.DO.StatisticsLogDO">
-        select  from_unixtime(create_time/1000,'%Y-%m-%d') as dataStr,count(*) as num
-        from tesseract_log where (create_time between #{startTime} and #{endTime} ) and status=1 and group_id=#{groupId}
+        select from_unixtime(create_time/1000,'%Y-%m-%d') as dataStr,count(*) as num
+        from tesseract_log where (create_time between #{startTime} and #{endTime} ) and status=1
+        <if test="groupId != null">
+            and group_id=#{groupId}
+        </if>
         group by
         from_unixtime(create_time/1000,'%Y-%m-%d')
     </select>
 
     <select id="statisticsSuccessLogPie" resultType="admin.pojo.DO.StatisticsLogDO">
         select case status when 0 then '失败' when 1 then '成功' when 2 then '等待执行' when 3 then '未收到执行器确认' end as dataStr,
-        count(*)  as num
-         from tesseract_log  where group_id=#{groupId} group by status;
+        count(*) as num
+        from tesseract_log
+        <if test="groupId != null">
+            where group_id=#{groupId}
+        </if>
+        group by status;
     </select>
 
 

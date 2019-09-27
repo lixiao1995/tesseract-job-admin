@@ -32,8 +32,8 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static admin.constant.AdminConstant.LOG_FAIL;
-import static admin.constant.AdminConstant.LOG_SUCCESS;
+import static admin.constant.AdminConstant.*;
+import static tesseract.core.util.CommonUtils.checkListItem;
 
 /**
  * <p>
@@ -127,8 +127,12 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         Date endDate = new Date();
         startDate.setTime(endTime);
         log.info("startTime:{},endTime:{}", startDate, endDate);
-        List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime, user.getGroupId());
-        List<StatisticsLogDO> successStatisticsLogDOList = this.getBaseMapper().statisticsSuccessLogLine(startTime, endTime, user.getGroupId());
+        Integer groupId = null;
+        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+            groupId = user.getGroupId();
+        }
+        List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime, groupId);
+        List<StatisticsLogDO> successStatisticsLogDOList = this.getBaseMapper().statisticsSuccessLogLine(startTime, endTime, groupId);
         Map<String, Collection<Integer>> map = Maps.newHashMap();
         Collection<Integer> failCountList = AdminUtils.buildStatisticsList(failStatisticsLogDOList, statisticsDays);
         Collection<Integer> successCountList = AdminUtils.buildStatisticsList(successStatisticsLogDOList, statisticsDays);
@@ -141,7 +145,11 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     public List<Map<String, Object>> statisticsLogPie() {
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         List<Map<String, Object>> list = Lists.newArrayList();
-        List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie(user.getGroupId());
+        Integer groupId = null;
+        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+            groupId = user.getGroupId();
+        }
+        List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie(groupId);
         statisticsLogDOList.forEach(statisticsLogDO -> {
             HashMap<String, Object> hashMap = Maps.newHashMap();
             hashMap.put("name", statisticsLogDO.getDataStr());
