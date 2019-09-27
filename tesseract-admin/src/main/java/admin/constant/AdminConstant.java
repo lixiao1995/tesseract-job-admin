@@ -71,12 +71,12 @@ public class AdminConstant {
     /**
      * 扫描失效机器周期
      */
-    public static final Long SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME = 30 * 1000L;
+    public static final Long SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME = 15 * 1000L;
 
     /**
      * 扫描 MISFIRED JOB 周期
      */
-    public static final Long SCAN_MISFIRE_JOB_INTERVAL_TIME = 30 * 1000L;
+    public static final Long SCAN_MISFIRE_JOB_INTERVAL_TIME = 15 * 1000L;
 
     /**
      * 触发器状态

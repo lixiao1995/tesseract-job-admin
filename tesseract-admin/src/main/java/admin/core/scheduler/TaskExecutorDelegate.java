@@ -78,12 +78,12 @@ public class TaskExecutorDelegate {
         TesseractTrigger trigger = taskContextInfo.getTrigger();
         List<TesseractExecutorDetail> executorDetailList = taskContextInfo.getExecutorDetailList();
         @NotNull Integer shardingNum = trigger.getShardingNum();
+        if (shardingNum == 0) {
+            throw new TesseractException("分片数不能等于0");
+        }
         int size = executorDetailList.size();
         int count = 0;
         for (int i = 0; i < shardingNum; i++) {
-            if (i < size) {
-                count = 0;
-            }
             CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
             currentTaskInfo.setShardingIndex(count);
             //轮询发送给执行器执行

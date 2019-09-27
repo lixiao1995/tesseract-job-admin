@@ -32,21 +32,26 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request) throws InterruptedException {
         String socket = uri.getHost() + ":" + uri.getPort();
-        NettyClient nettyClient = CHANNEL_MAP.get(socket);
-        if (nettyClient == null) {
-            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
-            CHANNEL_MAP.put(socket, nettyClient);
+        try {
+            NettyClient nettyClient = CHANNEL_MAP.get(socket);
+            if (nettyClient == null) {
+                nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
+                CHANNEL_MAP.put(socket, nettyClient);
+            }
+            Channel channel = nettyClient.getActiveChannel();
+            // 发送调度请求
+            ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
+            byte[] serialize = serializerService.serialize(request);
+            FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
+                fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
+                fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+                fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
+            });
+            channel.writeAndFlush(httpRequest).sync();
+        } catch (Exception e) {
+            CHANNEL_MAP.remove(socket);
+            throw e;
         }
-        Channel channel = nettyClient.getActiveChannel();
-        // 发送调度请求
-        ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
-        byte[] serialize = serializerService.serialize(request);
-        FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
-            fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
-            fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
-        });
-        channel.writeAndFlush(httpRequest).sync();
         return TesseractExecutorResponse.SUCCESS;
     }
 
