@@ -47,7 +47,8 @@ create table tesseract_fired_job
     socket             varchar(255) not null COMMENT '执行机器：ip:端口',
     create_time        bigint       not null COMMENT '创建时间',
     log_id             int unsigned not null COMMENT '关联日志id',
-    retry_count        int unsigned not null COMMENT '重试次数'
+    retry_count        int unsigned not null COMMENT '重试次数',
+    sharding_index     tinyint  not null COMMENT '分片索引'
 ) engine = InnoDB
   default charset = utf8;
 
@@ -182,12 +183,13 @@ BEGIN
     DECLARE var INT DEFAULT 1;
     start transaction ;
     WHILE var <= loop_times DO
-    insert into tesseract_trigger(id, name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num
-    , retry_count, status, creator, description, executor_id, executor_name, create_time, update_time, group_name, group_id)
-    values (var, concat('testTrigger-',var), 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 1, 'admin', 'test', 1,
-            'testExecutor',1562512500000, 1562512500000,'dev1',2);
+    insert into tesseract_trigger( id, name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num
+                                 , retry_count, status, creator, description, executor_id, executor_name, create_time
+                                 , update_time, group_name, group_id)
+    values (var, concat('testTrigger-', var), 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 1, 'admin', 'test', 1,
+            'testExecutor', 1562512500000, 1562512500000, 'dev1', 2);
     insert into tesseract_job_detail(id, trigger_id, class_name, create_time, creator)
-    values (var,var,'tesseract.sample.TestJob',1562512500000,'test');
+    values (var, var, 'tesseract.sample.TestJob', 1562512500000, 'test');
     SET var = var + 1;
     END WHILE;
     commit;

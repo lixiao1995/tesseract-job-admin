@@ -1,6 +1,7 @@
 package admin.config;
 
 import admin.core.listener.MailListener;
+import admin.core.listener.RetryListener;
 import admin.core.mail.TesseractMailTemplate;
 import admin.core.scheduler.TesseractScheduleBoot;
 import admin.core.scheduler.service.ITaskService;
@@ -63,7 +64,7 @@ public class AdminConfig {
     }
 
     /**
-     * eventBus
+     * mailEventBus
      *
      * @return
      */
@@ -78,6 +79,18 @@ public class AdminConfig {
         AsyncEventBus asyncEventBus = new AsyncEventBus("mailEventBus", threadPoolExecutor);
         asyncEventBus.register(new MailListener(mailSender, from));
         return asyncEventBus;
+    }
+
+    /**
+     * retryEventBus
+     *
+     * @return
+     */
+    @Bean
+    public EventBus retryEventBus() {
+        EventBus eventBus = new EventBus("mailEventBus");
+        eventBus.register(new RetryListener());
+        return eventBus;
     }
 
 

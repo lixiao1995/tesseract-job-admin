@@ -1,12 +1,8 @@
 package admin.core.event;
 
-import admin.entity.TesseractJobDetail;
-import admin.entity.TesseractLog;
-import admin.entity.TesseractTrigger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tesseract.core.dto.TesseractAdminJobNotify;
 
 /**
  * @projectName: tesseract-job-admin
@@ -23,7 +19,5 @@ import tesseract.core.dto.TesseractAdminJobNotify;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RetryEvent {
-    private TesseractAdminJobNotify jobNotify;
-    private TesseractTrigger tesseractTrigger;
-    private TesseractLog tesseractLog;
+    private Integer fireJobId;
 }

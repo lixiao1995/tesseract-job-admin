@@ -98,6 +98,7 @@ public class TesseractBeanFactory {
         tesseractFiredTrigger.setSocket(currentExecutorDetail.getSocket());
         tesseractFiredTrigger.setExecutorDetailId(currentExecutorDetail.getId());
         tesseractFiredTrigger.setLogId(log.getId());
+        tesseractFiredTrigger.setShardingIndex(currentTaskInfo.getShardingIndex());
         tesseractFiredTrigger.setRetryCount(0);
         return tesseractFiredTrigger;
     }

@@ -1,6 +1,7 @@
 package admin.constant;
 
 import admin.core.scheduler.router.IScheduleRouter;
+import admin.core.scheduler.router.impl.FirstRouter;
 import admin.core.scheduler.router.impl.HashRouter;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.core.scheduler.router.impl.PollingRouter;
@@ -45,6 +46,7 @@ public class AdminConstant {
     public static final Integer SCHEDULER_STRATEGY_LOADFACTOR = 2;
     public static final Integer SCHEDULER_STRATEGY_BROADCAST = 3;
     public static final Integer SCHEDULER_STRATEGY_SHARDING = 4;
+    public static final Integer SCHEDULER_STRATEGY_FIRST = 5;
 
     public static final Map<Integer, String> SCHEDULER_NAME_MAP = new HashMap<Integer, String>() {
         {
@@ -53,6 +55,7 @@ public class AdminConstant {
             put(SCHEDULER_STRATEGY_LOADFACTOR, "负载均衡");
             put(SCHEDULER_STRATEGY_BROADCAST, "广播");
             put(SCHEDULER_STRATEGY_SHARDING, "分片");
+            put(SCHEDULER_STRATEGY_FIRST, "选取第一个");
         }
     };
 
@@ -61,13 +64,19 @@ public class AdminConstant {
             put(SCHEDULER_STRATEGY_HASH, new HashRouter());
             put(SCHEDULER_STRATEGY_POLLING, new PollingRouter());
             put(SCHEDULER_STRATEGY_LOADFACTOR, new LoadFactorRouter());
+            put(SCHEDULER_STRATEGY_FIRST, new FirstRouter());
         }
     };
 
     /**
-     * 调度时间
+     * 扫描失效机器周期
      */
-    public static final Long SCAN_INTERVAL_TIME = 15 * 1000L;
+    public static final Long SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME = 30 * 1000L;
+
+    /**
+     * 扫描 MISFIRED JOB 周期
+     */
+    public static final Long SCAN_MISFIRE_JOB_INTERVAL_TIME = 30 * 1000L;
 
     /**
      * 触发器状态

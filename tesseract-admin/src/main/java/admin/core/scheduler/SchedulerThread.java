@@ -27,7 +27,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
     /**
      * 调度间隔时间
      */
-    private int sleepTime = 20 * 1000;
+    private int sleepTime = 5 * 1000;
 
     /**
      * 触发容错时间

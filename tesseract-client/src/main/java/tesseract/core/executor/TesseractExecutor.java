@@ -180,9 +180,6 @@ public class TesseractExecutor {
             TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
             tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
             tesseractAdminJobNotify.setFireJobId(tesseractExecutorRequest.getFireJobId());
-            tesseractAdminJobNotify.setJobDetailId(tesseractExecutorRequest.getJobId());
-            tesseractAdminJobNotify.setExecutorDetailId(tesseractExecutorRequest.getExecutorDetailId());
-            tesseractAdminJobNotify.setShardingIndex(tesseractExecutorRequest.getShardingIndex());
             try {
                 Class<?> aClass = Class.forName(className);
                 JobHandler jobHandler = (JobHandler) aClass.newInstance();

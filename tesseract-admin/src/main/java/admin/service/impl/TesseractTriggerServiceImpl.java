@@ -89,21 +89,25 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         Page<TesseractTrigger> page = new Page<>(1, batchSize);
         IPage<TesseractTrigger> listPage = page(page, queryWrapper);
         List<TesseractTrigger> triggerList = listPage.getRecords();
+        List<TesseractTrigger> updateTriggerList = Lists.newArrayList();
         if (!CollectionUtils.isEmpty(triggerList)) {
             triggerList.parallelStream().forEach(trigger -> {
                 //构建cron计算器
-                CronExpression cronExpression = null;
+                CronExpression cronExpression;
                 try {
                     cronExpression = new CronExpression(trigger.getCron());
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    log.error("创建CronExpression出错:{},异常信息:{}", trigger, e.getMessage());
+                    return;
                 }
-                long currentTimeMillis = System.currentTimeMillis();
-                trigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
-                trigger.setPrevTriggerTime(currentTimeMillis);
+                TesseractTrigger updateTrigger = new TesseractTrigger();
+                updateTrigger.setId(trigger.getId());
+                updateTrigger.setNextTriggerTime(cronExpression.getTimeAfter(new Date()).getTime());
+                updateTrigger.setPrevTriggerTime(System.currentTimeMillis());
+                updateTriggerList.add(updateTrigger);
             });
-            log.info("下一次执行时间{}", new Date(triggerList.get(0).getNextTriggerTime()));
-            this.updateBatchById(triggerList);
+            log.info("下一次执行时间{}", new Date(updateTriggerList.get(0).getNextTriggerTime()));
+            this.updateBatchById(updateTriggerList);
         }
         return triggerList;
     }
@@ -153,6 +157,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         QueryWrapper<TesseractTrigger> triggerQueryWrapper = new QueryWrapper<>();
         triggerQueryWrapper.lambda()
                 .eq(TesseractTrigger::getStatus, TRGGER_STATUS_STARTING)
+                .eq(TesseractTrigger::getGroupId, tesseractGroup.getId())
                 //下次触发时间小于等于当前时间减掉校验时间
                 .le(TesseractTrigger::getNextTriggerTime, time);
         Page<TesseractTrigger> triggerPage = new Page<>(1, pageSize);

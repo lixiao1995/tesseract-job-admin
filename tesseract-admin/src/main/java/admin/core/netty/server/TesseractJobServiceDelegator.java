@@ -1,7 +1,6 @@
 package admin.core.netty.server;
 
-import admin.core.component.TesseractMailSender;
-import admin.core.scheduler.scanner.ExecutorScanner;
+import admin.core.mail.TesseractMailSender;
 import admin.core.scheduler.service.ITaskService;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
@@ -37,8 +36,6 @@ public class TesseractJobServiceDelegator {
     public static ITesseractFiredJobService firedJobService;
 
     public static ITesseractGroupService groupService;
-
-    public static ExecutorScanner executorScanner;
 
     public static EventBus mailEventBus;
 

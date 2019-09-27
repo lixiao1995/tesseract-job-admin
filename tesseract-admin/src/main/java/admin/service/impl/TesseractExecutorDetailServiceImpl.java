@@ -1,8 +1,7 @@
 package admin.service.impl;
 
-import admin.core.component.TesseractMailSender;
+import admin.core.mail.TesseractMailSender;
 import admin.entity.TesseractExecutorDetail;
-import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractGroup;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractExecutorDetailMapper;
@@ -14,7 +13,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +22,6 @@ import tesseract.core.dto.TesseractHeartbeatRequest;
 import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
 import java.util.List;
 
 import static admin.constant.AdminConstant.*;
@@ -75,40 +72,23 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
     public boolean clearInvalidMachine(TesseractGroup tesseractGroup, Integer pageSize, Long time) {
         lockService.lock(EXECUTOR_LOCK_NAME, tesseractGroup.getName());
         boolean flag = false;
-        List<TesseractExecutorDetail> executorDetailList;
         QueryWrapper<TesseractExecutorDetail> detailQueryWrapper = new QueryWrapper<>();
-        detailQueryWrapper.lambda().le(TesseractExecutorDetail::getUpdateTime, time);
+        detailQueryWrapper.lambda().le(TesseractExecutorDetail::getUpdateTime, time)
+                .eq(TesseractExecutorDetail::getGroupId, tesseractGroup.getId());
         Page<TesseractExecutorDetail> page = new Page<>(1, pageSize);
-        executorDetailList = page(page, detailQueryWrapper).getRecords();
+        List<TesseractExecutorDetail> executorDetailList = page(page, detailQueryWrapper).getRecords();
         log.info("失效的机器:{}", executorDetailList);
         if (!CollectionUtils.isEmpty(executorDetailList)) {
             flag = true;
-            //删除机器
             List<Integer> detailIdList = Lists.newArrayList();
-            HashMap<Integer, List<TesseractExecutorDetail>> hashMap = Maps.newHashMap();
-            //按group拆开发送邮件
-            executorDetailList.stream().forEach(executorDetail -> {
-                Integer groupId = executorDetail.getGroupId();
-                List<TesseractExecutorDetail> tmpList = hashMap.get(groupId);
-                if (tmpList == null) {
-                    tmpList = Lists.newArrayList();
-                    hashMap.put(groupId, tmpList);
-                }
-                tmpList.add(executorDetail);
-                detailIdList.add(executorDetail.getId());
-            });
-            //删除detail表中数据
-            this.removeByIds(detailIdList);
-            //移出fired job
-            QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
-            firedJobQueryWrapper.lambda().in(TesseractFiredJob::getExecutorDetailId, detailIdList);
-            firedJobService.remove(firedJobQueryWrapper);
+            executorDetailList.forEach(executorDetail -> detailIdList.add(executorDetail.getId()));
             //修改日志状态
             modifyLogStatus(detailIdList);
             //发送报警邮件
-//            sendMail(hashMap);
-            tesseractMailSender.executorDetailListExceptionSendMail(hashMap);
-
+            tesseractMailSender.executorDetailListExceptionSendMail(tesseractGroup.getId(), executorDetailList);
+            //暂时不执行重试，有可能机器还在执行任务,仅移除正在执行fired job
+            this.removeByIds(detailIdList);
+            removeFiredJob(detailIdList);
         }
         return flag;
     }
@@ -124,6 +104,13 @@ public class TesseractExecutorDetailServiceImpl extends ServiceImpl<TesseractExe
         log.setStatus(LOG_FAIL);
         log.setMsg("机器失去心跳");
         logService.update(log, logQueryWrapper);
+    }
+
+    /**
+     * 移除机器的fired job
+     */
+    private void removeFiredJob(List<Integer> detailIdList) {
+        firedJobService.removeByIds(detailIdList);
     }
 
 }

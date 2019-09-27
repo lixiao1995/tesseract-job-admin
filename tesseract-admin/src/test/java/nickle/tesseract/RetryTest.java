@@ -1,12 +1,10 @@
 package nickle.tesseract;
 
 import admin.TesseractAdminApplication;
-import admin.core.event.RetryEvent;
 import admin.entity.TesseractJobDetail;
 import admin.entity.TesseractTrigger;
 import admin.service.ITesseractJobDetailService;
 import admin.service.ITesseractTriggerService;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +42,6 @@ public class RetryTest {
     public void demo1() {
         TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
         tesseractAdminJobNotify.setLogId(1L);
-        tesseractAdminJobNotify.setExecutorDetailId(1);
 //        applicationContext.publishEvent(new RetryEvent(tesseractAdminJobNotify));
         while (true) {
 

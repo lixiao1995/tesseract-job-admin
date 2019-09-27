@@ -65,6 +65,7 @@ public class TaskExecutorDelegate {
         TesseractExecutorDetail executorDetail = SCHEDULE_ROUTER_MAP.getOrDefault(trigger.getStrategy()
                 , new HashRouter()).routerExecutor(executorDetailList);
         currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+        currentTaskInfo.setShardingIndex(-1);
         buildRequestAndSend(currentTaskInfo);
     }
 
@@ -104,6 +105,7 @@ public class TaskExecutorDelegate {
         taskContextInfo.getExecutorDetailList().parallelStream().forEach(executorDetail -> {
             CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
             currentTaskInfo.setCurrentExecutorDetail(executorDetail);
+            currentTaskInfo.setShardingIndex(-1);
             buildRequestAndSend(currentTaskInfo);
         });
     }
@@ -134,6 +136,11 @@ public class TaskExecutorDelegate {
             TesseractFiredJob firedJob = TesseractBeanFactory.createFiredJob(currentTaskInfo);
             firedJobService.save(firedJob);
             currentTaskInfo.setFiredJob(firedJob);
+        } else {
+            //如果是重试任务，重绑定fire job的 log id，此时log为新生成
+            TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
+            firedJob.setLogId(tesseractLog.getId());
+            firedJobService.updateById(firedJob);
         }
         //构建请求发送
         TesseractExecutorRequest tesseractExecutorRequest = TesseractBeanFactory.createRequest(currentTaskInfo);
@@ -175,7 +182,10 @@ public class TaskExecutorDelegate {
         if (body != null) {
             tesseractLog.setMsg(body.toString());
         }
-        retry(currentTaskInfo);
+        /**
+         * 循环执行，直到所有机器不可用，非任务执行异常
+         */
+        retry(currentTaskInfo, false);
     }
 
     /**
@@ -185,14 +195,10 @@ public class TaskExecutorDelegate {
      *
      * @param currentTaskInfo
      */
-    public static void retry(CurrentTaskInfo currentTaskInfo) {
+    public static void retry(CurrentTaskInfo currentTaskInfo, boolean incrRetryCount) {
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
-        TesseractLog tesseractLog = currentTaskInfo.getLog();
-        TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
-        //机器数大于1 则重试
-        tesseractLog.setRetryCount(firedJob.getRetryCount());
         if (executorDetailList.size() > 1) {
-            doRetry(currentTaskInfo);
+            doRetry(currentTaskInfo, incrRetryCount);
         } else {
             doFailWithFireJob(currentTaskInfo);
         }
@@ -205,24 +211,26 @@ public class TaskExecutorDelegate {
      * 3、更新正在执行的trigger的重试次数
      * 4、根据调度策略判断是否启动重试并选择执行机器
      */
-    private static void doRetry(CurrentTaskInfo currentTaskInfo) {
+    private static void doRetry(CurrentTaskInfo currentTaskInfo, boolean incrRetryCount) {
         log.info("进入重试逻辑");
-        doFailWithoutFireJob(currentTaskInfo);
+        TesseractLog tesseractLog = currentTaskInfo.getLog();
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
         TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
         //广播策略不重试
         if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_BROADCAST)) {
+            doFailWithoutFireJob(currentTaskInfo);
             return;
         }
         //移除失败机器
         removeExecutorDetail(executorDetailList, currentTaskInfo.getCurrentExecutorDetail());
         //更新正在执行触发器的重试次数
-        firedJob.setRetryCount(firedJob.getRetryCount() + 1);
-        firedJobService.updateById(firedJob);
-        currentTaskInfo.setRetry(true);
-        currentTaskInfo.setLog(null);
-        currentTaskInfo.setExecutorRequest(null);
+        if (incrRetryCount) {
+            firedJob.setRetryCount(firedJob.getRetryCount() + 1);
+            tesseractLog.setRetryCount(firedJob.getRetryCount() + 1);
+            firedJobService.updateById(firedJob);
+        }
+        doFailWithoutFireJob(currentTaskInfo);
         if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_SHARDING)) {
             //分片仅重试当前分片索引,通过hash策略随机选择一台机器重试
             TesseractExecutorDetail tesseractExecutorDetail = SCHEDULE_ROUTER_MAP.get(SCHEDULER_STRATEGY_HASH).routerExecutor(executorDetailList);
@@ -232,6 +240,9 @@ public class TaskExecutorDelegate {
                     , new HashRouter()).routerExecutor(executorDetailList);
             currentTaskInfo.setCurrentExecutorDetail(executorDetail);
         }
+        currentTaskInfo.setRetry(true);
+        currentTaskInfo.setLog(null);
+        currentTaskInfo.setExecutorRequest(null);
         buildRequestAndSend(currentTaskInfo);
     }
 
@@ -241,8 +252,10 @@ public class TaskExecutorDelegate {
     private static void removeExecutorDetail(List<TesseractExecutorDetail> executorDetailList, TesseractExecutorDetail needRemoveDetail) {
         Iterator<TesseractExecutorDetail> iterator = executorDetailList.iterator();
         while (iterator.hasNext()) {
-            if (iterator.next() == needRemoveDetail) {
+            if (iterator.next().getId().equals(needRemoveDetail.getId())) {
                 iterator.remove();
+                log.info("重试移除机器:{}", needRemoveDetail);
+                return;
             }
         }
     }

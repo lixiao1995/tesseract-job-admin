@@ -5,6 +5,8 @@ import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
+import static admin.constant.AdminConstant.SCAN_MISFIRE_JOB_INTERVAL_TIME;
+
 /**
  * 〈扫描错过时间未触发的触发器产生报警〉
  *
@@ -17,26 +19,26 @@ public class MissfireScanner extends Thread implements IThreadLifycycle {
 
 
     private volatile boolean isStop = false;
-    private Long scanIntervalTime = 30 * 1000L;
-    private Integer missfireTriggerBatchSize = 50;
-    private Long missfireTime = scanIntervalTime;
+
+    private Integer misfireTriggerBatchSize = 50;
     private TesseractGroup tesseractGroup;
 
     public MissfireScanner(TesseractGroup tesseractGroup) {
-        super(String.format("MissfireScanner-%s", tesseractGroup.getName()));
+        super(String.format("MisfireScanner-%s", tesseractGroup.getName()));
         this.tesseractGroup = tesseractGroup;
     }
 
     @Override
     public void run() {
-        log.info("MissfireScanner-{} start", tesseractGroup.getName());
+        log.info("MisfireScanner-{} start", tesseractGroup.getName());
         while (!isStop) {
-            boolean hasMore = TesseractJobServiceDelegator.triggerService.resovleMissfireTrigger(tesseractGroup, missfireTriggerBatchSize, System.currentTimeMillis() - missfireTime);
+            boolean hasMore = TesseractJobServiceDelegator.triggerService.resovleMissfireTrigger(tesseractGroup,
+                    misfireTriggerBatchSize, System.currentTimeMillis() - SCAN_MISFIRE_JOB_INTERVAL_TIME);
             if (hasMore) {
                 continue;
             }
             try {
-                Thread.sleep(scanIntervalTime);
+                Thread.sleep(SCAN_MISFIRE_JOB_INTERVAL_TIME);
             } catch (InterruptedException e) {
             }
         }

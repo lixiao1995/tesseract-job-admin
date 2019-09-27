@@ -5,7 +5,7 @@ import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
-import static admin.constant.AdminConstant.SCAN_INTERVAL_TIME;
+import static admin.constant.AdminConstant.SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME;
 
 /**
  * 失效执行器扫描线程
@@ -34,7 +34,8 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
         log.info("ExecutorScanner-{} start", tesseractGroup.getName());
         while (!isStop) {
             try {
-                boolean hasMore = TesseractJobServiceDelegator.executorDetailService.clearInvalidMachine(tesseractGroup, 10, System.currentTimeMillis() - SCAN_INTERVAL_TIME);
+                boolean hasMore = TesseractJobServiceDelegator.executorDetailService.clearInvalidMachine(tesseractGroup,
+                        10, System.currentTimeMillis() - SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME);
                 if (hasMore) {
                     continue;
                 }
@@ -42,7 +43,7 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
                 log.error("发生异常:{}", e.getMessage());
             }
             try {
-                Thread.sleep(SCAN_INTERVAL_TIME);
+                Thread.sleep(SCAN_INVALID_EXECUTOR_DETAIL_INTERVAL_TIME);
             } catch (InterruptedException e) {
             }
         }

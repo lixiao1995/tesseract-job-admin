@@ -1,12 +1,7 @@
-package admin.core.component;
+package admin.core.mail;
 
 import admin.core.event.MailEvent;
-import admin.core.mail.TesseractMailTemplate;
-import admin.entity.TesseractExecutorDetail;
-import admin.entity.TesseractFiredJob;
-import admin.entity.TesseractGroup;
-import admin.entity.TesseractLog;
-import admin.entity.TesseractTrigger;
+import admin.entity.*;
 import admin.service.ITesseractFiredJobService;
 import admin.service.ITesseractGroupService;
 import admin.service.ITesseractLogService;
@@ -20,8 +15,6 @@ import tesseract.core.dto.TesseractAdminJobNotify;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static admin.util.AdminUtils.epochMiliToString;
 
@@ -63,23 +56,18 @@ public class TesseractMailSender {
 
 
     /**
-     * executorDetai发送报警邮件
+     * executorDetail发送报警邮件
      *
-     * @param executorDetailMap key：group id value：组下的detail
+     * @param executorDetailList 组下的detail
      */
-    public void executorDetailListExceptionSendMail(Map<Integer, List<TesseractExecutorDetail>> executorDetailMap) {
-        Set<Map.Entry<Integer, List<TesseractExecutorDetail>>> entries = executorDetailMap.entrySet();
-        entries.parallelStream().forEach(entry -> {
-            Integer groupId = entry.getKey();
-            List<TesseractExecutorDetail> executorDetailList = entry.getValue();
-            HashMap<String, Object> model = Maps.newHashMap();
-            model.put("executorDetailList", executorDetailList);
-            MailEvent mailEvent = new MailEvent();
-            mailEvent.setBody(mailTemplate.buildMailBody(EXECUTOR_TEMPLATE_NAME, model));
-            mailEvent.setSubject(EXECUTOR_SUBJECT);
-            mailEvent.setTo(groupService.getById(groupId).getMail());
-            mailEventBus.post(mailEvent);
-        });
+    public void executorDetailListExceptionSendMail(Integer groupId, List<TesseractExecutorDetail> executorDetailList) {
+        HashMap<String, Object> model = Maps.newHashMap();
+        model.put("executorDetailList", executorDetailList);
+        MailEvent mailEvent = new MailEvent();
+        mailEvent.setBody(mailTemplate.buildMailBody(EXECUTOR_TEMPLATE_NAME, model));
+        mailEvent.setSubject(EXECUTOR_SUBJECT);
+        mailEvent.setTo(groupService.getById(groupId).getMail());
+        mailEventBus.post(mailEvent);
     }
 
 
