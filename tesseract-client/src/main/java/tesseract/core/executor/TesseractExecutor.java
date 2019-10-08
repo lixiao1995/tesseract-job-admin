@@ -84,8 +84,8 @@ public class TesseractExecutor {
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
         initServiceDelegator();
-        initThread();
         initNettyServer();
+        initThread();
     }
 
     /**
