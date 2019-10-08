@@ -116,7 +116,6 @@ public class TesseractScheduleBoot {
         List<TesseractGroup> groupList = tesseractGroupService.list();
         if (!CollectionUtils.isEmpty(groupList)) {
             for (TesseractGroup group : groupList) {
-                //默认调度组不需要调度任何程序
                 if (group.getThreadPoolNum() == 0) {
                     continue;
                 }
