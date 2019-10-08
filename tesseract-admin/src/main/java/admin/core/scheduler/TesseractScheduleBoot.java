@@ -123,6 +123,7 @@ public class TesseractScheduleBoot {
                 ScheduleGroupInfo scheduleGroupInfo = createScheduleGroupInfo(group);
                 SCHEDULE_GROUP_INFO_MAP.put(groupName, scheduleGroupInfo);
             }
+            log.info("组调度器初始化完成:{}", SCHEDULE_GROUP_INFO_MAP);
             return;
         }
         log.warn("没有调度组");
@@ -135,6 +136,7 @@ public class TesseractScheduleBoot {
      * spring 容器关闭执行操作
      */
     public void destroy() {
+        log.info("调度线程停止");
         SCHEDULE_GROUP_INFO_MAP.values().forEach(scheduleGroupInfo -> {
             scheduleGroupInfo.stopThreadGroup();
         });
@@ -145,6 +147,7 @@ public class TesseractScheduleBoot {
      */
     @EventListener(ContextRefreshedEvent.class)
     public void start() {
+        log.info("调度线程开始");
         SCHEDULE_GROUP_INFO_MAP.values().forEach(scheduleGroupInfo -> {
             scheduleGroupInfo.startThreadGroup();
         });
