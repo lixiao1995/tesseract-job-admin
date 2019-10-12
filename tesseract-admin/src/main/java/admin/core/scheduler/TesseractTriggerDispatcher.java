@@ -1,6 +1,6 @@
 package admin.core.scheduler;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
 import admin.entity.TesseractExecutor;

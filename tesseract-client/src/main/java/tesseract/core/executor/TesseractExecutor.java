@@ -11,7 +11,8 @@ import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.executor.netty.NettyClientTaskHandler;
+import tesseract.core.dto.TesseractStopTaskRequest;
+import tesseract.core.executor.netty.client.NettyClientCommandDispatcher;
 import tesseract.core.executor.service.IClientService;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
@@ -87,6 +88,16 @@ public class TesseractExecutor {
         return TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS).body("成功进入队列").build();
     }
 
+    /**
+     * 停止任务
+     *
+     * @return
+     */
+    public void stopTask(TesseractStopTaskRequest tesseractStopTaskRequest) {
+
+    }
+
+
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return threadPoolExecutor;
     }
@@ -107,7 +118,7 @@ public class TesseractExecutor {
      * 初始化Netty Sever
      */
     private void initNettyServer() {
-        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientTaskHandler());
+        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientCommandDispatcher());
         Thread thread = new Thread(() -> nettyServer.startServer());
         thread.start();
     }

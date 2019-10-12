@@ -1,12 +1,10 @@
 package admin.core.scheduler.service.impl;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.netty.server.handler.TesseractTaskExecutorHandler;
 import admin.core.scheduler.service.ITaskService;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
@@ -16,7 +14,7 @@ import tesseract.core.util.HttpUtils;
 
 import java.net.URI;
 
-import static admin.core.netty.server.TesseractJobServiceDelegator.CHANNEL_MAP;
+import static admin.core.TesseractJobServiceDelegator.CHANNEL_MAP;
 
 /**
  * <p>Title TaskServiceImpl </p>
@@ -41,12 +39,9 @@ public class TaskServiceImpl implements ITaskService {
             Channel channel = nettyClient.getActiveChannel();
             // 发送调度请求
             ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
+            //todo request 这里应该实现分发 request 需指定 mapping
             byte[] serialize = serializerService.serialize(request);
-            FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
-                fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
-                fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
-            });
+            FullHttpRequest httpRequest = HttpUtils.buildDefaultFullHttpRequest(uri, serialize);
             channel.writeAndFlush(httpRequest).sync();
         } catch (Exception e) {
             CHANNEL_MAP.remove(socket);

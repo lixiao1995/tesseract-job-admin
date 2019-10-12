@@ -1,7 +1,7 @@
 package tesseract.core.executor;
 
 import tesseract.core.annotation.ClientJobDetail;
-import tesseract.core.executor.netty.NettyClientCommandDispatcher;
+import tesseract.core.executor.netty.client.NettyClientCommandDispatcher;
 import tesseract.core.executor.service.IClientService;
 import tesseract.core.netty.NettyClient;
 import tesseract.core.serializer.ISerializerService;

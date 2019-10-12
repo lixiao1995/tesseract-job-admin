@@ -2,9 +2,14 @@ package tesseract.core.constant;
 
 public class CommonConstant {
     /**
-     * 执行
+     * 执行器执行
      */
     public static final String EXECUTE_MAPPING = "/execute";
+
+    /**
+     * 执行器停止
+     */
+    public static final String STOP_MAPPING = "/stop";
 
     /**
      * 注册
@@ -36,7 +41,6 @@ public class CommonConstant {
      * formatter
      */
     public static final String SOCKET_FORMATTER = "%s:%d";
-
 
 
 }

@@ -161,6 +161,10 @@ VALUES (9, 'btn', 'btn', 6, '权限管理', '', '/permission/btn/index', '/permi
 INSERT INTO `tesseract_menu_resource`
 VALUES (10, 'user', 'user', 6, '权限管理', '', '/permission/user/index', '/permission/user/index', 'documentation', '用户管理',
         0, '', 10, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
+INSERT INTO `tesseract_menu_resource`
+VALUES (11, 'runTrigger', 'runTrigger', 0, '', '', '/runTrigger/index', '/runTrigger/index', 'documentation', '运行列表', 0, '', 3,
+        1, 'admin',
+        1, 'admin', 0, NULL, NULL, 0);
 
 # 角色菜单
 INSERT INTO `tesseract_role_resources`
@@ -183,6 +187,8 @@ INSERT INTO `tesseract_role_resources`
 VALUES (9, 1, 9);
 INSERT INTO `tesseract_role_resources`
 VALUES (10, 1, 10);
+INSERT INTO `tesseract_role_resources`
+VALUES (11, 1, 11);
 
 # 按钮
 INSERT INTO `tesseract_btn_resource`
@@ -289,3 +295,11 @@ VALUES (39, 1, 3, 10);
 INSERT INTO `tesseract_role_btn`
 VALUES (40, 1, 4, 10);
 
+INSERT INTO `tesseract_role_btn`
+VALUES (41, 1, 1, 11);
+INSERT INTO `tesseract_role_btn`
+VALUES (42, 1, 2, 11);
+INSERT INTO `tesseract_role_btn`
+VALUES (43, 1, 3, 11);
+INSERT INTO `tesseract_role_btn`
+VALUES (44, 1, 4, 11);

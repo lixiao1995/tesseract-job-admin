@@ -62,4 +62,13 @@ public class TesseractFiredJob implements Serializable {
     @ApiModelProperty(value = "分片索引")
     private Integer shardingIndex;
 
+    @ApiModelProperty(value = "组id")
+    private Integer groupId;
+
+    @ApiModelProperty(value = "组名")
+    private String groupName;
+
+    @ApiModelProperty(value = "创建人")
+    private String creator;
+
 }

@@ -1,4 +1,4 @@
-package admin.core.netty.server;
+package admin.core;
 
 import admin.core.mail.TesseractMailSender;
 import admin.core.scheduler.service.ITaskService;

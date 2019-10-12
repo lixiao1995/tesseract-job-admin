@@ -15,8 +15,8 @@ public class HttpUtils {
     public static FullHttpResponse buildFullHttpResponse(byte[] content, Consumer<FullHttpResponse> callback) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK
                 , Unpooled.copiedBuffer(content));
-        response.headers().add(HttpHeaderNames.CONTENT_TYPE,HttpHeaderValues.BINARY);
-        response.headers().add(HttpHeaderNames.CONTENT_LENGTH,content.length);
+        response.headers().add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.BINARY);
+        response.headers().add(HttpHeaderNames.CONTENT_LENGTH, content.length);
         if (callback != null) {
             callback.accept(response);
         }
@@ -31,6 +31,16 @@ public class HttpUtils {
         }
         return httpRequest;
     }
+
+    public static FullHttpRequest buildDefaultFullHttpRequest(URI uri, byte[] content) {
+        FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, content, (fullHttpRequest) -> {
+            fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
+            fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
+        });
+        return httpRequest;
+    }
+
 
     public static String buildURLPath(String url) {
         return url.substring(url.lastIndexOf("/"));

@@ -48,7 +48,10 @@ create table tesseract_fired_job
     create_time        bigint       not null COMMENT '创建时间',
     log_id             int unsigned not null COMMENT '关联日志id',
     retry_count        int unsigned not null COMMENT '重试次数',
-    sharding_index     tinyint  not null COMMENT '分片索引'
+    sharding_index     tinyint      not null COMMENT '分片索引',
+    group_id           int unsigned not null COMMENT '关联组',
+    group_name         varchar(30)  not null COMMENT '组名称',
+    creator            varchar(255) not null COMMENT '创建者',
 ) engine = InnoDB
   default charset = utf8;
 
@@ -169,7 +172,8 @@ insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron,
 values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
        , 1562512500000, 1562512500000, 2, 'dev1');
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
-values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, 'liangxuekai@koolearn-inc.com');
+values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, '');
+
 
 
 truncate table tesseract_job_detail;

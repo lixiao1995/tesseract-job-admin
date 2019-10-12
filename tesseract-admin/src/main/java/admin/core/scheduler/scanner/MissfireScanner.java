@@ -1,6 +1,6 @@
 package admin.core.scheduler.scanner;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
