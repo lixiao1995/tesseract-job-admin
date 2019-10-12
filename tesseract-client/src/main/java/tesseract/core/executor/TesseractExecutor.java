@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,7 +69,21 @@ public class TesseractExecutor {
      * @return
      */
     public TesseractExecutorResponse execute(TesseractExecutorRequest tesseractExecutorRequest) {
-        threadPoolExecutor.execute(new WorkRunnable(tesseractExecutorRequest, clientFeignService, this.adminServerAddress));
+        try {
+            threadPoolExecutor.execute(new WorkRunnable(tesseractExecutorRequest, clientFeignService, this.adminServerAddress));
+        } catch (RejectedExecutionException e) {
+            String msg = "执行队列已满";
+            log.error(msg);
+            try {
+                TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
+                tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
+                tesseractAdminJobNotify.setFireJobId(tesseractExecutorRequest.getFireJobId());
+                tesseractAdminJobNotify.setException(msg);
+                clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
+            } catch (Exception ex) {
+                log.error("回调异常:{}", ex.getMessage());
+            }
+        }
         return TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS).body("成功进入队列").build();
     }
 
