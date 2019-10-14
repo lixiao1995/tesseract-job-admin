@@ -1,7 +1,7 @@
 package admin.core.scheduler;
 
 import admin.constant.AdminConstant;
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.scheduler.bean.CurrentTaskInfo;
 import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.router.impl.HashRouter;
@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static admin.constant.AdminConstant.*;
-import static admin.core.netty.server.TesseractJobServiceDelegator.*;
+import static admin.core.TesseractJobServiceDelegator.*;
 import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 

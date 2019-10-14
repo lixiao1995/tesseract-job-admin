@@ -1,6 +1,6 @@
 package admin.core.netty.server.handler;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.service.ITesseractLogService;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

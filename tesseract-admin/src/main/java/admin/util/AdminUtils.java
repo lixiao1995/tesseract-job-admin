@@ -86,8 +86,10 @@ public class AdminUtils {
                 if (!"serialVersionUID".equals(name) && value != null) {
                     //添加进查询条件
                     //String 采用like处理
-                    if (value instanceof String && !"".equals(((String) value).trim())) {
-                        queryWrapper.like(StringUtils.camelToUnderline(name), value);
+                    if (value instanceof String) {
+                        if (!"".equals(((String) value).trim())) {
+                            queryWrapper.like(StringUtils.camelToUnderline(name), value);
+                        }
                     } else {
                         queryWrapper.eq(StringUtils.camelToUnderline(name), value);
                     }

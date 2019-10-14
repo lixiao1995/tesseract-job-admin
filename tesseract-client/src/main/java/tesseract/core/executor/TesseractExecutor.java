@@ -1,5 +1,6 @@
 package tesseract.core.executor;
 
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,8 @@ import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.executor.netty.NettyClientTaskHandler;
+import tesseract.core.dto.TesseractStopTaskRequest;
+import tesseract.core.executor.netty.server.NettyClientCommandDispatcher;
 import tesseract.core.executor.service.IClientService;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
@@ -22,6 +24,7 @@ import tesseract.core.serializer.ISerializerService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -54,13 +57,20 @@ public class TesseractExecutor {
             800, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1000)
             , r -> new Thread(r, String.format(THREAD_NAME_FORMATTER, ATOMIC_INTEGER.getAndIncrement())));
 
-    /***********************************************threads*****************************************/
-    //注册线程
+    /**
+     * 注册线程
+     */
     public static RegistryThread registryThread;
+
     /**
      * 心跳线程
      */
     public static HeartbeatThread heartbeatThread;
+
+    /**
+     * 保存任务和线程关联，用于停止任务
+     */
+    private static final Map<Integer, Thread> TASK_THREAD_MAP = Maps.newConcurrentMap();
 
     /**
      * 开始执行任务，扔到线程池后发送成功执行通知，执行完毕后发送异步执行成功通知
@@ -87,6 +97,21 @@ public class TesseractExecutor {
         return TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS).body("成功进入队列").build();
     }
 
+    /**
+     * 停止任务
+     *
+     * @return
+     */
+    public void stopTask(TesseractStopTaskRequest tesseractStopTaskRequest) {
+        Thread thread = TASK_THREAD_MAP.get(tesseractStopTaskRequest);
+        if (thread == null) {
+            log.error("任务已结束");
+            return;
+        }
+        thread.interrupt();
+    }
+
+
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return threadPoolExecutor;
     }
@@ -107,7 +132,7 @@ public class TesseractExecutor {
      * 初始化Netty Sever
      */
     private void initNettyServer() {
-        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientTaskHandler());
+        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientCommandDispatcher());
         Thread thread = new Thread(() -> nettyServer.startServer());
         thread.start();
     }
@@ -191,10 +216,12 @@ public class TesseractExecutor {
 
         @Override
         public void run() {
+            Integer fireJobId = tesseractExecutorRequest.getFireJobId();
+            TASK_THREAD_MAP.put(fireJobId, Thread.currentThread());
             String className = tesseractExecutorRequest.getClassName();
             TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
             tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
-            tesseractAdminJobNotify.setFireJobId(tesseractExecutorRequest.getFireJobId());
+            tesseractAdminJobNotify.setFireJobId(fireJobId);
             try {
                 Class<?> aClass = Class.forName(className);
                 JobHandler jobHandler = (JobHandler) aClass.newInstance();
@@ -212,6 +239,8 @@ public class TesseractExecutor {
                 } catch (InterruptedException ex) {
                     log.error("中断异常");
                 }
+            } finally {
+                TASK_THREAD_MAP.remove(fireJobId);
             }
         }
     }

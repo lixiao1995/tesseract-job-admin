@@ -2,7 +2,7 @@ package admin.core.scheduler;
 
 import admin.core.mail.TesseractMailSender;
 import admin.core.netty.server.NettyServerCommandDispatcher;
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.scheduler.bean.ScheduleGroupInfo;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
 import admin.core.scheduler.service.ITaskService;
