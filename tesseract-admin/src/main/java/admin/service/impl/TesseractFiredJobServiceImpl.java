@@ -2,6 +2,7 @@ package admin.service.impl;
 
 import admin.constant.AdminConstant;
 import admin.core.TesseractJobServiceDelegator;
+import admin.core.mail.TesseractMailSender;
 import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractFiredJobMapper;
@@ -50,6 +51,8 @@ import static tesseract.core.constant.CommonConstant.STOP_MAPPING;
 public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobMapper, TesseractFiredJob> implements ITesseractFiredJobService {
     @Autowired
     private ITesseractLogService logService;
+    @Autowired
+    private TesseractMailSender mailSender;
 
     @Override
     public FiredTriggerVO findFiredTrigger(Long currentPage, Long pageSize, TesseractFiredJob condition) {
@@ -96,6 +99,7 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         log.setMsg("用户:" + user.getUsername() + " 取消");
         logService.updateById(log);
         notifyExecutor(firedJob);
+        mailSender.logSendMail(log.getId());
     }
 
     private void notifyExecutor(TesseractFiredJob firedJob) throws URISyntaxException, InterruptedException {
