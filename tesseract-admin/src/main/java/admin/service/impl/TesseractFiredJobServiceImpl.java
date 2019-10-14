@@ -83,12 +83,8 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
     public void stopFiredJob(Integer firedTriggerId) throws Exception {
         log.info("停止firedTriggerId:{}", firedTriggerId);
         TesseractFiredJob firedJob = this.getById(firedTriggerId);
-        if (firedJob == null) {
-            throw new TesseractException("任务已执行完毕，请刷新后重试");
-        }
-        boolean isDelete = this.removeById(firedTriggerId);
-        if (!isDelete) {
-            throw new TesseractException("任务已执行完毕，请刷新后重试");
+        if (firedJob == null || !this.removeById(firedTriggerId)) {
+            throw new TesseractException("任务已执行完毕");
         }
         TesseractLog log = logService.getById(firedJob.getLogId());
         if (log == null) {
