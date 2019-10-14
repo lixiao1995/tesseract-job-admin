@@ -22,7 +22,8 @@ public class ClientHeartBeatHandler implements ICommandHandler {
             log.info("心跳成功");
             return;
         }
-        log.info("心跳失败，将重新注册", executorResponse);
+        log.info("心跳失败2s后将重新注册", executorResponse);
+        Thread.sleep(2000);
         TesseractExecutor.heartbeatThread.pauseThread();
         TesseractExecutor.registryThread.interruptThread();
     }

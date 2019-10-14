@@ -93,8 +93,12 @@ public class TesseractBeanFactory {
         tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
         tesseractFiredTrigger.setTriggerName(trigger.getName());
         tesseractFiredTrigger.setTriggerId(trigger.getId());
+        tesseractFiredTrigger.setGroupId(trigger.getGroupId());
+        tesseractFiredTrigger.setGroupName(trigger.getGroupName());
         tesseractFiredTrigger.setJobId(jobDetail.getId());
         tesseractFiredTrigger.setClassName(jobDetail.getClassName());
+        tesseractFiredTrigger.setCreator(trigger.getCreator());
+        tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
         tesseractFiredTrigger.setSocket(currentExecutorDetail.getSocket());
         tesseractFiredTrigger.setExecutorDetailId(currentExecutorDetail.getId());
         tesseractFiredTrigger.setLogId(log.getId());

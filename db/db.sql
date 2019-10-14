@@ -51,7 +51,7 @@ create table tesseract_fired_job
     sharding_index     tinyint      not null COMMENT '分片索引',
     group_id           int unsigned not null COMMENT '关联组',
     group_name         varchar(30)  not null COMMENT '组名称',
-    creator            varchar(255) not null COMMENT '创建者',
+    creator            varchar(255) not null COMMENT '创建者'
 ) engine = InnoDB
   default charset = utf8;
 
@@ -169,7 +169,7 @@ values (1, 'super_admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7
 insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num, retry_count
                              , status, creator, description, executor_id, executor_name, create_time, update_time
                              , group_id, group_name)
-values ( 'testTrigger', 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
+values ( 'testTrigger-1', 1562512500000, 0, '*/15 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
        , 1562512500000, 1562512500000, 2, 'dev1');
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
 values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, '');

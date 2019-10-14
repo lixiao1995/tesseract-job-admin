@@ -4,8 +4,6 @@ import admin.entity.TesseractFiredJob;
 import admin.pojo.VO.FiredTriggerVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.net.URISyntaxException;
-
 /**
  * <p>
  * 服务类
@@ -30,5 +28,5 @@ public interface ITesseractFiredJobService extends IService<TesseractFiredJob> {
      *
      * @param firedTriggerId
      */
-    void stopFiredJob(Integer firedTriggerId) throws URISyntaxException, Exception;
+    void stopFiredJob(Integer firedTriggerId) throws Exception;
 }

@@ -20,7 +20,7 @@ import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 
 /**
- * 客户端命令分发器，用于接收服务器回复信息冰并分发
+ * 客户端命令分发器，用于接收服务器回复信息并分发
  *
  * @author nickle
  */

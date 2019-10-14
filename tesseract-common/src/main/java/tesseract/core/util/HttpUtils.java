@@ -42,7 +42,7 @@ public class HttpUtils {
     }
 
 
-    public static String buildURLPath(String url) {
+    public static String getURLPath(String url) {
         return url.substring(url.lastIndexOf("/"));
     }
 

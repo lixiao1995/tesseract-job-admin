@@ -39,7 +39,6 @@ public class TaskServiceImpl implements ITaskService {
             Channel channel = nettyClient.getActiveChannel();
             // 发送调度请求
             ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
-            //todo request 这里应该实现分发 request 需指定 mapping
             byte[] serialize = serializerService.serialize(request);
             FullHttpRequest httpRequest = HttpUtils.buildDefaultFullHttpRequest(uri, serialize);
             channel.writeAndFlush(httpRequest).sync();

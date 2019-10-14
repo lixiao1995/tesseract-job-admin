@@ -18,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
 
 /**
@@ -33,10 +32,8 @@ public class GeneralTest {
 
     @Test
     public void test() throws Exception {
-        Random random = new Random();
-        for (int i = 0; i < 20; i++) {
-            System.out.println(random.nextInt(20));
-        }
+        String str="http://www.baidu.com/exe";
+        System.out.println(str.substring(str.lastIndexOf("/")));
     }
 
     @Test

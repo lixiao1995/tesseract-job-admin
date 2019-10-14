@@ -23,7 +23,7 @@ public class ClientRegistryHandler implements ICommandHandler {
             return;
         }
         TesseractExecutor.registryThread.pauseThread();
-        log.info("注册成功");
+        log.info("注册成功：{}", executorResponse);
         TesseractExecutor.heartbeatThread.interruptThread();
     }
 }

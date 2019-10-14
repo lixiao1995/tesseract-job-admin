@@ -14,6 +14,6 @@ public class TestJob implements JobHandler {
 
     @Override
     public void execute(ExecutorContext executorContext) throws Exception {
-        throw new Exception("测试失败重试");
+        Thread.sleep(10 * 1000);
     }
 }

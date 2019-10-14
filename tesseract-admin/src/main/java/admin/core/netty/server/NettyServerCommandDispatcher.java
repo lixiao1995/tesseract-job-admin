@@ -43,7 +43,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
 //        log.info("接收到请求:{}", fullHttpRequest);
         String uri = fullHttpRequest.uri();
-        String path = HttpUtils.buildURLPath(uri);
+        String path = HttpUtils.getURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
         if (iCommandHandler == null) {
             log.error("找不到处理器,path:{}", path);

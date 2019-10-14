@@ -14,9 +14,11 @@ import tesseract.core.util.HttpUtils;
 
 import java.util.Map;
 
-import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING;
-import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
+import static tesseract.core.constant.CommonConstant.*;
 
+/**
+ * http server 接收http 请求并分发
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
@@ -30,15 +32,15 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
      * 初始化处理器
      */
     private static void init() {
-        COMMAND_HANDLER_MAP.put(REGISTRY_MAPPING, new ExecuteTaskCommandHandler());
-        COMMAND_HANDLER_MAP.put(NOTIFY_MAPPING, new StopTaskCommandHandler());
+        COMMAND_HANDLER_MAP.put(EXECUTE_MAPPING, new ExecuteTaskCommandHandler());
+        COMMAND_HANDLER_MAP.put(STOP_MAPPING, new StopTaskCommandHandler());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
         String uri = fullHttpRequest.uri();
-        String path = HttpUtils.buildURLPath(uri);
+        String path = HttpUtils.getURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
         if (iCommandHandler == null) {
             log.error("找不到处理器,path:{}", path);
@@ -47,11 +49,11 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
         handleBean.setData(fullHttpRequest.content());
         handleBean.setUrl(uri);
         iCommandHandler.handleCommand(handleBean, ctx.channel());
-        super.channelRead(ctx, msg);
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("发生异常:{},\r异常信息:{}", ctx.channel(), cause.getMessage());
+        super.exceptionCaught(ctx, cause);
     }
 }

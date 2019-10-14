@@ -72,6 +72,7 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
      * 1、删除fired job
      * 2、设置日志为失败状态
      * 3、通知执行器停止任务
+     * 4、发送报警邮件
      *
      * @param firedTriggerId
      */
@@ -80,9 +81,12 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         log.info("停止firedTriggerId:{}", firedTriggerId);
         TesseractFiredJob firedJob = this.getById(firedTriggerId);
         if (firedJob == null) {
-            throw new TesseractException("fired job 查询为空");
+            throw new TesseractException("任务已执行完毕，请刷新后重试");
         }
-        this.removeById(firedTriggerId);
+        boolean isDelete = this.removeById(firedTriggerId);
+        if (!isDelete) {
+            throw new TesseractException("任务已执行完毕，请刷新后重试");
+        }
         TesseractLog log = logService.getById(firedJob.getLogId());
         if (log == null) {
             throw new TesseractException("log 查询为空");
@@ -96,6 +100,10 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
 
     private void notifyExecutor(TesseractFiredJob firedJob) throws URISyntaxException, InterruptedException {
         NettyClient nettyClient = CHANNEL_MAP.get(firedJob.getSocket());
+        if (nettyClient == null) {
+            log.error("当前执行器已失效");
+            return;
+        }
         Channel activeChannel = nettyClient.getActiveChannel();
         ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
         TesseractStopTaskRequest tesseractStopTaskRequest = new TesseractStopTaskRequest();

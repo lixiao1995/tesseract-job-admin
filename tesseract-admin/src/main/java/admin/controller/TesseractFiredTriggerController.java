@@ -40,7 +40,7 @@ public class TesseractFiredTriggerController {
 
     @TokenCheck
     @RequestMapping("/stop")
-    public CommonResponseVO stopFiredTrigger(@NotNull Integer firedTriggerId) {
+    public CommonResponseVO stopFiredTrigger(@NotNull Integer firedTriggerId) throws Exception {
         firedJobService.stopFiredJob(firedTriggerId);
         return CommonResponseVO.SUCCESS;
     }
