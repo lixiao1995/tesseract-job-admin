@@ -1,6 +1,7 @@
 package admin.core;
 
 import admin.core.mail.TesseractMailSender;
+import admin.core.scheduler.TesseractFutureTask;
 import admin.core.scheduler.service.ITaskService;
 import admin.service.*;
 import com.google.common.eventbus.EventBus;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TesseractJobServiceDelegator {
 
     public static final Map<String, NettyClient> CHANNEL_MAP = new ConcurrentHashMap<>();
+    public static final Map<Integer, TesseractFutureTask> FUTURE_TASK_MAP = new ConcurrentHashMap<>();
 
     public static ITesseractExecutorService executorService;
 

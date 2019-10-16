@@ -166,10 +166,10 @@ public class TaskExecutorDelegate {
         } catch (TesseractException e) {
             TaskExecutorDelegate.log.error("发起调度异常", e);
             TesseractJobServiceDelegator.taskService.errorHandle(socket);
-            response = TesseractExecutorResponse.builder().body(e.getMsg()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            response = TesseractExecutorResponse.builder().msg(e.getMsg()).status(TesseractExecutorResponse.FAIL_STATUS).build();
         } catch (Exception e) {
             TaskExecutorDelegate.log.error("发起调度异常", e);
-            response = TesseractExecutorResponse.builder().body(e.getMessage()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            response = TesseractExecutorResponse.builder().msg(e.getMessage()).status(TesseractExecutorResponse.FAIL_STATUS).build();
         }
         //发送任务成功直接返回等待执行后更新日志状态
         if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
@@ -178,9 +178,9 @@ public class TaskExecutorDelegate {
         //执行失败逻辑，执行到这一步必定是网络问题如，netty client失败，uri异常等
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setEndTime(System.currentTimeMillis());
-        Object body = response.getBody();
-        if (body != null) {
-            tesseractLog.setMsg(body.toString());
+        String msg = response.getMsg();
+        if (msg != null) {
+            tesseractLog.setMsg(msg);
         }
         /**
          * 循环执行，直到所有机器不可用，非任务执行异常

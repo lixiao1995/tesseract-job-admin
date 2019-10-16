@@ -79,22 +79,17 @@ public class TesseractExecutor {
      * @return
      */
     public TesseractExecutorResponse execute(TesseractExecutorRequest tesseractExecutorRequest) {
+        TesseractExecutorResponse executorResponse = TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS)
+                .msg("成功进入队列").body(tesseractExecutorRequest.getFireJobId()).build();
         try {
             threadPoolExecutor.execute(new WorkRunnable(tesseractExecutorRequest, clientFeignService, this.adminServerAddress));
         } catch (RejectedExecutionException e) {
             String msg = "执行队列已满";
             log.error(msg);
-            try {
-                TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
-                tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
-                tesseractAdminJobNotify.setFireJobId(tesseractExecutorRequest.getFireJobId());
-                tesseractAdminJobNotify.setException(msg);
-                clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
-            } catch (Exception ex) {
-                log.error("回调异常:{}", ex.getMessage());
-            }
+            executorResponse.setMsg(msg);
+            executorResponse.setStatus(TesseractExecutorResponse.FAIL_STATUS);
         }
-        return TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS).body("成功进入队列").build();
+        return executorResponse;
     }
 
     /**

@@ -1,5 +1,6 @@
 package nickle.tesseract;
 
+import admin.core.scheduler.TesseractFutureTask;
 import admin.core.scheduler.router.impl.LoadFactorRouter;
 import admin.entity.TesseractExecutorDetail;
 import admin.entity.TesseractLog;
@@ -32,8 +33,10 @@ public class GeneralTest {
 
     @Test
     public void test() throws Exception {
-        String str="http://www.baidu.com/exe";
-        System.out.println(str.substring(str.lastIndexOf("/")));
+        TesseractFutureTask<String> tesseractFutureTask = new TesseractFutureTask<>();
+        tesseractFutureTask.lock();
+        tesseractFutureTask.get();
+        System.out.println(1);
     }
 
     @Test
