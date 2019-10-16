@@ -5,7 +5,10 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import lombok.extern.slf4j.Slf4j;
+import tesseract.core.dto.TesseractExecutorResponse;
+import tesseract.core.executor.ClientServiceDelegator;
 import tesseract.core.executor.netty.server.handler.ExecuteTaskCommandHandler;
 import tesseract.core.executor.netty.server.handler.StopTaskCommandHandler;
 import tesseract.core.netty.HandleBean;
@@ -14,7 +17,8 @@ import tesseract.core.util.HttpUtils;
 
 import java.util.Map;
 
-import static tesseract.core.constant.CommonConstant.*;
+import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
+import static tesseract.core.constant.CommonConstant.STOP_MAPPING;
 
 /**
  * http server 接收http 请求并分发
@@ -44,6 +48,12 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
         if (iCommandHandler == null) {
             log.error("找不到处理器,path:{}", path);
+            TesseractExecutorResponse executorResponse = TesseractExecutorResponse.FAIL;
+            executorResponse.setBody(String.format("找不到处理器,path:%s", path));
+            FullHttpResponse httpResponse = HttpUtils.buildFullHttpResponse(ClientServiceDelegator.serializerService.serialize(executorResponse),
+                    null);
+            ctx.writeAndFlush(httpResponse).sync();
+            return;
         }
         HandleBean handleBean = new HandleBean();
         handleBean.setData(fullHttpRequest.content());

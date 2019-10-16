@@ -14,6 +14,8 @@ public class TestJob implements JobHandler {
 
     @Override
     public void execute(ExecutorContext executorContext) throws Exception {
-        Thread.sleep(10 * 1000);
+        System.out.println("开始任务");
+        Thread.sleep(2 * 1000);
+        System.out.println("任务结束");
     }
 }

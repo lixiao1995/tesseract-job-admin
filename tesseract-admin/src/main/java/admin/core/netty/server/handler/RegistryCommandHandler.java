@@ -31,7 +31,7 @@ public class RegistryCommandHandler implements ICommandHandler {
         tesseractAdminRegistryRequest.setIp(socketAddress.getHostName());
         tesseractAdminRegistryRequest.setPort(tesseractAdminRegistryRequest.getPort());
         TesseractAdminRegistryResDTO registry = TesseractJobServiceDelegator.executorService.registry(tesseractAdminRegistryRequest);
-        TesseractExecutorResponse success = new TesseractExecutorResponse(TesseractExecutorResponse.SUCCESS_STATUS, registry, CommonConstant.REGISTRY_MAPPING);
+        TesseractExecutorResponse success = TesseractExecutorResponse.builder().status(TesseractExecutorResponse.SUCCESS_STATUS).body(registry).handlerPath(CommonConstant.REGISTRY_MAPPING).build();
         byte[] serialize = serializerService.serialize(success);
         FullHttpResponse fullHttpResponse = HttpUtils.buildFullHttpResponse(serialize, null);
         channel.writeAndFlush(fullHttpResponse).sync();
