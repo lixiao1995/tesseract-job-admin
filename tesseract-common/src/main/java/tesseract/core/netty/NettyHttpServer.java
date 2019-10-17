@@ -22,7 +22,7 @@ import tesseract.exception.TesseractException;
  */
 @Slf4j
 @AllArgsConstructor
-public class NettyServer {
+public class NettyHttpServer {
     private int port;
     private ChannelInboundHandlerAdapter dispatcher;
 

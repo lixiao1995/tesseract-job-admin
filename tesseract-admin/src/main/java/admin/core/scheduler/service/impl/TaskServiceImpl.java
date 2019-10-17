@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.netty.NettyClient;
+import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.core.util.HttpUtils;
 import tesseract.exception.TesseractException;
@@ -36,12 +36,12 @@ public class TaskServiceImpl implements ITaskService {
         TesseractExecutorResponse executorResponse;
         String socket = uri.getHost() + ":" + uri.getPort();
         try {
-            NettyClient nettyClient = CHANNEL_MAP.get(socket);
-            if (nettyClient == null) {
-                nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
-                CHANNEL_MAP.put(socket, nettyClient);
+            NettyHttpClient nettyHttpClient = CHANNEL_MAP.get(socket);
+            if (nettyHttpClient == null) {
+                nettyHttpClient = new NettyHttpClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
+                CHANNEL_MAP.put(socket, nettyHttpClient);
             }
-            Channel channel = nettyClient.getActiveChannel();
+            Channel channel = nettyHttpClient.getActiveChannel();
             // 发送调度请求
             ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
             byte[] serialize = serializerService.serialize(request);

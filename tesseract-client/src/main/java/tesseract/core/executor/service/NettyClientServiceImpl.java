@@ -22,19 +22,19 @@ import static tesseract.core.executor.ClientServiceDelegator.serializerService;
 public class NettyClientServiceImpl implements IClientService {
     @Override
     public void registry(URI uri, TesseractAdminRegistryRequest request) throws InterruptedException {
-        Channel channel = ClientServiceDelegator.getNettyClient().getActiveChannel();
+        Channel channel = ClientServiceDelegator.getNettyHttpClient().getActiveChannel();
         channel.writeAndFlush(buildGeneralFullHttpRequest(uri, request)).sync();
     }
 
     @Override
     public void notify(URI uri, TesseractAdminJobNotify tesseractAdminJobNotify) throws InterruptedException {
-        Channel channel = ClientServiceDelegator.getNettyClient().getActiveChannel();
+        Channel channel = ClientServiceDelegator.getNettyHttpClient().getActiveChannel();
         channel.writeAndFlush(buildGeneralFullHttpRequest(uri, tesseractAdminJobNotify)).sync();
     }
 
     @Override
     public void heartbeat(URI uri, TesseractHeartbeatRequest heartBeatRequest) throws InterruptedException {
-        Channel channel = ClientServiceDelegator.getNettyClient().getActiveChannel();
+        Channel channel = ClientServiceDelegator.getNettyHttpClient().getActiveChannel();
         channel.writeAndFlush(buildGeneralFullHttpRequest(uri, heartBeatRequest)).sync();
     }
 

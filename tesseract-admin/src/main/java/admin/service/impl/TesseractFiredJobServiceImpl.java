@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tesseract.core.dto.TesseractStopTaskRequest;
-import tesseract.core.netty.NettyClient;
+import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.core.util.HttpUtils;
 import tesseract.exception.TesseractException;
@@ -99,12 +99,12 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
     }
 
     private void notifyExecutor(TesseractFiredJob firedJob) throws URISyntaxException, InterruptedException {
-        NettyClient nettyClient = CHANNEL_MAP.get(firedJob.getSocket());
-        if (nettyClient == null) {
+        NettyHttpClient nettyHttpClient = CHANNEL_MAP.get(firedJob.getSocket());
+        if (nettyHttpClient == null) {
             log.error("当前执行器已失效");
             return;
         }
-        Channel activeChannel = nettyClient.getActiveChannel();
+        Channel activeChannel = nettyHttpClient.getActiveChannel();
         ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
         TesseractStopTaskRequest tesseractStopTaskRequest = new TesseractStopTaskRequest();
         tesseractStopTaskRequest.setFireJobId(firedJob.getId());
