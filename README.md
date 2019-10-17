@@ -10,11 +10,9 @@
 ### 八、提供任务分片机制
 ## 系统架构图：
 ![tesseract-job架构](https://github.com/tesseract-job/tesseract-job-admin/blob/master/%E6%9E%B6%E6%9E%84/tesseract-job.jpg)
-## 下一个版本展望：
-### 一、心跳、注册、任务发放 netty 支持（目前采用http tomcat支持）
-### 二、任务网格调度支持
-### 三、动态下线执行机器
 ## 运行步骤：
 ### 一、运行db下的两个sql脚本创建数据库和表
-### 二、访问地址:http://localhost:8080/static/index.html 访问控制台，调度端启动会自动注册
+### 二、访问地址:http://localhost:8080/index 访问控制台，调度端启动会自动注册
 ### 三、可根据需要指定profile和log.path的路径
+### 四、系统管理员账号和密码:super_admin admin
+
