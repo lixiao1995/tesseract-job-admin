@@ -14,14 +14,14 @@ import tesseract.exception.TesseractException;
 
 @Slf4j
 @Data
-public class NettyClient {
+public class NettyHttpClient {
     private EventLoopGroup eventLoopGroup;
     private ChannelInboundHandlerAdapter handlerAdapter;
     private String host;
     private int port;
     private Channel channel;
 
-    public NettyClient(String host, int port, ChannelInboundHandlerAdapter handlerAdapter) {
+    public NettyHttpClient(String host, int port, ChannelInboundHandlerAdapter handlerAdapter) {
         this.host = host;
         this.port = port;
         this.handlerAdapter = handlerAdapter;

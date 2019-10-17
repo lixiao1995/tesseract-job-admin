@@ -3,7 +3,7 @@ package tesseract.core.executor;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.executor.netty.client.NettyClientCommandDispatcher;
 import tesseract.core.executor.service.IClientService;
-import tesseract.core.netty.NettyClient;
+import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.serializer.ISerializerService;
 
 import java.net.URI;
@@ -25,7 +25,7 @@ public class ClientServiceDelegator {
 
     public static ISerializerService serializerService;
 
-    public static NettyClient nettyClient;
+    public static NettyHttpClient nettyHttpClient;
 
     public static TesseractExecutor tesseractExecutor;
 
@@ -34,11 +34,11 @@ public class ClientServiceDelegator {
      *
      * @return
      */
-    public static NettyClient getNettyClient() {
-        if (nettyClient == null) {
+    public static NettyHttpClient getNettyHttpClient() {
+        if (nettyHttpClient == null) {
             URI uri = URI.create(adminServerAddress);
-            nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new NettyClientCommandDispatcher());
+            nettyHttpClient = new NettyHttpClient(uri.getHost(), uri.getPort(), new NettyClientCommandDispatcher());
         }
-        return nettyClient;
+        return nettyHttpClient;
     }
 }

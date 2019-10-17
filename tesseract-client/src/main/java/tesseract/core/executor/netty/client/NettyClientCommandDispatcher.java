@@ -57,11 +57,4 @@ public class NettyClientCommandDispatcher extends ChannelInboundHandlerAdapter {
         iCommandHandler.handleCommand(handleBean, ctx.channel());
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
-        cause.printStackTrace();
-        log.error("NettyClientCommandDispatcher 发生异常:{}", cause.getMessage());
-        ctx.fireExceptionCaught(cause);
-    }
 }

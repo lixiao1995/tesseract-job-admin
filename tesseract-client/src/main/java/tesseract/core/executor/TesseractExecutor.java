@@ -18,7 +18,7 @@ import tesseract.core.executor.service.IClientService;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
 import tesseract.core.handler.JobHandler;
-import tesseract.core.netty.NettyServer;
+import tesseract.core.netty.NettyHttpServer;
 import tesseract.core.serializer.ISerializerService;
 
 import java.net.URI;
@@ -127,8 +127,8 @@ public class TesseractExecutor {
      * 初始化Netty Sever
      */
     private void initNettyServer() {
-        NettyServer nettyServer = new NettyServer(nettyServerPort, new NettyClientCommandDispatcher());
-        Thread thread = new Thread(() -> nettyServer.startServer());
+        NettyHttpServer nettyHttpServer = new NettyHttpServer(nettyServerPort, new NettyClientCommandDispatcher());
+        Thread thread = new Thread(() -> nettyHttpServer.startServer());
         thread.start();
     }
 

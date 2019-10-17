@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.CollectionUtils;
-import tesseract.core.netty.NettyServer;
+import tesseract.core.netty.NettyHttpServer;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.exception.TesseractException;
 
@@ -152,7 +152,7 @@ public class TesseractScheduleBoot {
             scheduleGroupInfo.startThreadGroup();
         });
         //启动netty server
-        new Thread(() -> new NettyServer(port, new NettyServerCommandDispatcher()).startServer()).start();
+        new Thread(() -> new NettyHttpServer(port, new NettyServerCommandDispatcher()).startServer()).start();
     }
     /***********************************spring 相关 end*************************************/
 
