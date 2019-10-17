@@ -2,6 +2,7 @@ package tesseract.core.serializer;
 
 import com.caucho.hessian.io.HessianInput;
 import com.caucho.hessian.io.HessianOutput;
+import lombok.extern.slf4j.Slf4j;
 import tesseract.exception.TesseractException;
 
 import java.io.ByteArrayInputStream;
@@ -13,6 +14,7 @@ import java.io.IOException;
  * @author: nickle
  * @create: 2019-09-09 10:53
  **/
+@Slf4j
 public class HessianSerializerService implements ISerializerService {
     @Override
     public byte[] serialize(Object obj) {
@@ -22,13 +24,14 @@ public class HessianSerializerService implements ISerializerService {
             hessianOutput.writeObject(obj);
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
-
-            throw new TesseractException("序列化异常");
+            throw new TesseractException("序列化异常: " + e.getMessage());
         } finally {
             try {
-                hessianOutput.close();
+                if (hessianOutput != null) {
+                    hessianOutput.close();
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
         }
     }
@@ -40,13 +43,14 @@ public class HessianSerializerService implements ISerializerService {
             hessianInput = new HessianInput(byteArrayInputStream);
             return hessianInput.readObject();
         } catch (IOException e) {
-           e.printStackTrace();
-            throw new TesseractException("反序列化异常");
+            throw new TesseractException("序列化异常: " + e.getMessage());
         } finally {
             try {
-                hessianInput.close();
+                if (hessianInput != null) {
+                    hessianInput.close();
+                }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
         }
     }
