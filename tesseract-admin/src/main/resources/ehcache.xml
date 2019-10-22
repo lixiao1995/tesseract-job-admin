@@ -1,0 +1,22 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd">
+
+
+    <!--defaultCache:echcache的默认缓存策略  -->
+    <defaultCache
+            maxElementsInMemory="10000"
+            eternal="false"
+            overflowToDisk="false"
+            timeToIdleSeconds="1800"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LRU">
+    </defaultCache>
+
+    <cache name="tesseract-cache"
+           maxElementsInMemory="10000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="1800"
+           timeToLiveSeconds="1800"
+           memoryStoreEvictionPolicy="LRU">
+    </cache>
+</ehcache>

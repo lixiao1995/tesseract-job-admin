@@ -2,9 +2,8 @@ package admin.security;
 
 import admin.entity.TesseractRole;
 import admin.entity.TesseractUser;
-import admin.mapper.TesseractRoleMapper;
-import admin.mapper.TesseractUserMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import admin.service.ITesseractRoleService;
+import admin.service.ITesseractUserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +19,7 @@ import static admin.constant.AdminConstant.USER_INVALID;
 
 /**
  * @description: security 登录
- * @author: LeoLee
+ * @author: LeoLee nickle
  * @company: ***
  * @version:
  * @date: 2019/7/9 14:28
@@ -29,9 +28,9 @@ import static admin.constant.AdminConstant.USER_INVALID;
 public class SecurityUserDetailsServiceImpl implements UserDetailsService {
 
     @Resource
-    private TesseractUserMapper tesseractUserMapper;
+    private ITesseractUserService userService;
     @Resource
-    private TesseractRoleMapper tesseractRoleMapper;
+    private ITesseractRoleService roleService;
 
     /**
      * 根据用户名登录
@@ -43,9 +42,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // TODO 数据库中获取用户密码，角色，资源等信息
-        QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper();
-        queryWrapper.lambda().eq(TesseractUser::getName, username);
-        TesseractUser tesseractUser = tesseractUserMapper.selectOne(queryWrapper);
+        TesseractUser tesseractUser = userService.getUserByName(username);
         if (ObjectUtils.isEmpty(tesseractUser)) {
             throw new UsernameNotFoundException("用户登录，用户信息查询失败");
         }
@@ -54,8 +51,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
             throw new TesseractException("用户已停用");
         }
         Integer userId = tesseractUser.getId();
-        List<TesseractRole> roleList = tesseractRoleMapper.listRoleByUserId(userId);
-
+        List<TesseractRole> roleList = roleService.getRoleByUserId(userId);
         // TODO 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
         SecurityUserDetail webUserDetail = new SecurityUserDetail();
         webUserDetail.setId(userId);

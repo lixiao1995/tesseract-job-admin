@@ -1,23 +1,15 @@
 package admin.config;
 
 import admin.constant.AdminConstant;
-import admin.entity.Permission;
-import admin.entity.TesseractRole;
-import admin.mapper.TesseractRoleMapper;
 import admin.service.ITesseractRoleBtnService;
-import admin.service.ITesseractRoleService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,8 +26,6 @@ import java.util.List;
 @Configuration
 public class CustomPermissionEvaluator implements PermissionEvaluator {
 
-    @Autowired
-    private ITesseractRoleService tesseractRoleService;
     @Autowired
     private ITesseractRoleBtnService tesseractRoleBtnService;
 
@@ -57,7 +47,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
             // 操作资源对象 - 对应角色
             // String privilege = targetDomainObject + "-" + permission;
             // 为空，说明不需要进行权限鉴权
-            if(targetDomainObject == null || StringUtils.isEmpty(permission)){
+            if (targetDomainObject == null || StringUtils.isEmpty(permission)) {
                 return true;
             }
 
@@ -68,13 +58,13 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
                 roleNames.add(authority.getAuthority());
             }
             // 角色为空，无权限
-            if(roleNames.isEmpty()){
+            if (roleNames.isEmpty()) {
                 return false;
             }
             String menuCode = (String) targetDomainObject;
-            String btnCode = (String)permission;
-            int count  = tesseractRoleBtnService.countPermissions(roleNames,menuCode,btnCode);
-            if(count > 0){
+            String btnCode = (String) permission;
+            int count = tesseractRoleBtnService.countPermissions(roleNames, menuCode, btnCode);
+            if (count > 0) {
                 accessable = true;
             }
             return accessable;
