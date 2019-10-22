@@ -115,6 +115,7 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         return map;
     }
 
+    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
     @Override
     public void saveOrUpdateRole(TesseractRoleDO tesseractRoleDO) {
         //超级管理员不允许修改

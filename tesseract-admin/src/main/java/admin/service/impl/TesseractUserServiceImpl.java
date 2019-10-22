@@ -146,7 +146,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return page(page, queryWrapper);
     }
 
-    @CacheEvict(cacheNames = "tesseract-cache",key = "'user_'+#username")
+    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public void saveOrUpdateUser(TesseractUserDO tesseractUserDO) {
         long currentTimeMillis = System.currentTimeMillis();
@@ -219,7 +219,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return !(tokenService.getOne(tokenQueryWrapper) == null);
     }
 
-    @Cacheable(cacheNames = "tesseract-cache",key = "'user_'+#username")
+    @Cacheable(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public TesseractUser getUserByName(String username) {
         QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper<>();
@@ -229,7 +229,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
 
     @Override
     public void validUser(Integer userId) {
-
         TesseractUser user = getById(userId);
         if (user == null) {
             throw new TesseractException("用户不存在");
@@ -237,8 +236,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user.getStatus().equals(USER_VALID)) {
             throw new TesseractException("用户已经是激活状态");
         }
-        user.setStatus(USER_VALID);
-        updateById(user);
+        TesseractUserDO tesseractUserDO = new TesseractUserDO();
+        tesseractUserDO.setStatus(USER_VALID);
+        tesseractUserDO.setUpdateTime(System.currentTimeMillis());
+        tesseractUserDO.setId(user.getId());
+        saveOrUpdateUser(tesseractUserDO);
     }
 
     @Override
@@ -250,8 +252,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user.getStatus().equals(USER_INVALID)) {
             throw new TesseractException("用户已经是禁用状态");
         }
-        user.setStatus(USER_INVALID);
-        updateById(user);
+        TesseractUserDO tesseractUserDO = new TesseractUserDO();
+        tesseractUserDO.setStatus(USER_INVALID);
+        tesseractUserDO.setUpdateTime(System.currentTimeMillis());
+        tesseractUserDO.setId(user.getId());
+        saveOrUpdateUser(tesseractUserDO);
     }
 
     @Override
@@ -263,6 +268,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return AdminUtils.buildStatisticsList(statisticsLogDOList, statisticsDays);
     }
 
+    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public void deleteUser(Integer userId) {
         TesseractUser user = getById(userId);
