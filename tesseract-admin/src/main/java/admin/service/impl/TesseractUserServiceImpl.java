@@ -21,11 +21,12 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -63,8 +64,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     private ITesseractTokenService tokenService;
 
     private int statisticsDays = 7;
-    @Autowired
-    private UserDetailsService webUserDetailsService;
+
     @Autowired
     private ITesseractUserRoleService userRoleService;
     @Autowired
@@ -146,13 +146,12 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return page(page, queryWrapper);
     }
 
+    @CacheEvict(cacheNames = "tesseract-cache",key = "'user_'+#username")
     @Override
     public void saveOrUpdateUser(TesseractUserDO tesseractUserDO) {
         long currentTimeMillis = System.currentTimeMillis();
         TesseractUser tesseractUser = new TesseractUser();
         List<Integer> roleIdList = tesseractUserDO.getRoleIdList();
-//        BeanCopier beanCopier = BeanCopier.create(TesseractUserDO.class, TesseractUser.class, false);
-//        beanCopier.copy(tesseractUserDO, tesseractUser, null);
         BeanUtils.copyProperties(tesseractUserDO, tesseractUser);
         Integer userId = tesseractUser.getId();
         if (userId != null) {
@@ -182,7 +181,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         }
         tesseractUser.setStatus(USER_VALID);
         tesseractUser.setUpdateTime(currentTimeMillis);
-        tesseractUser.setPassword(getDefaultPasswordCode());
+        tesseractUser.setPassword(DEFAULT_PASSWORD_CODE);
         tesseractUser.setCreateTime(currentTimeMillis);
         this.save(tesseractUser);
         //保存用户角色关联表
@@ -197,9 +196,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         }
     }
 
-    private String getDefaultPasswordCode() {
-        return DEFAULT_PASSWORD_CODE;
-    }
 
     @Override
     public void passwordRevert(Integer userId) {
@@ -207,9 +203,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user == null) {
             throw new TesseractException("用户为空");
         }
-        user.setPassword(getDefaultPasswordCode());
-        user.setUpdateTime(System.currentTimeMillis());
-        updateById(user);
+        TesseractUserDO tesseractUserDO = new TesseractUserDO();
+        tesseractUserDO.setPassword(DEFAULT_PASSWORD);
+        tesseractUserDO.setUpdateTime(System.currentTimeMillis());
+        tesseractUserDO.setId(user.getId());
+        saveOrUpdateUser(tesseractUserDO);
     }
 
     @Override
@@ -219,6 +217,14 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
                 .eq(TesseractToken::getToken, token)
                 .gt(TesseractToken::getExpireTime, System.currentTimeMillis());
         return !(tokenService.getOne(tokenQueryWrapper) == null);
+    }
+
+    @Cacheable(cacheNames = "tesseract-cache",key = "'user_'+#username")
+    @Override
+    public TesseractUser getUserByName(String username) {
+        QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(TesseractUser::getName, username);
+        return this.getOne(queryWrapper);
     }
 
     @Override

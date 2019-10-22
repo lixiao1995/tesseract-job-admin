@@ -48,4 +48,13 @@ public interface ITesseractUserService extends IService<TesseractUser> {
     void passwordRevert(Integer userId);
 
     boolean checkToken(String token);
+
+    /**
+     * 根据用户名获取用户，供security使用
+     *
+     * @param username
+     * @return
+     */
+    TesseractUser getUserByName(String username);
+
 }

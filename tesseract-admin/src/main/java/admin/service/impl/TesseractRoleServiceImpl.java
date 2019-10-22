@@ -20,6 +20,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -205,7 +207,7 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         }
     }
 
-
+    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
     @Override
     public void deleteRole(Integer roleId) {
         //超级管理员不允许删除
@@ -235,6 +237,7 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         return roleResourcesService.list(roleResourcesQueryWrapper).stream().map(TesseractRoleResources::getMenuId).collect(Collectors.toList());
     }
 
+    @Cacheable(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
     @Override
     public List<TesseractRole> getRoleByUserId(Integer userId) {
         List<TesseractRole> roleList = Lists.newArrayList();
