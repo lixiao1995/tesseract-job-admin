@@ -8,12 +8,14 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author nickle
  * @since 2019-07-10
  */
 public interface ITesseractUserRoleService extends IService<TesseractUserRole> {
+    void deleteRoleByUserId(Integer userId);
 
+    List<TesseractRole> getRoleByUserId(Integer userId);
 }

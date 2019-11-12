@@ -3,6 +3,7 @@ package admin.security;
 import admin.entity.TesseractRole;
 import admin.entity.TesseractUser;
 import admin.service.ITesseractRoleService;
+import admin.service.ITesseractUserRoleService;
 import admin.service.ITesseractUserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,7 +32,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
     @Resource
     private ITesseractUserService userService;
     @Resource
-    private ITesseractRoleService roleService;
+    private ITesseractUserRoleService userRoleService;
 
     /**
      * 根据用户名登录
@@ -52,7 +53,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
             throw new TesseractException("用户已停用");
         }
         Integer userId = tesseractUser.getId();
-        List<TesseractRole> roleList = roleService.getRoleByUserId(userId);
+        List<TesseractRole> roleList = userRoleService.getRoleByUserId(userId);
         if (CollectionUtils.isEmpty(roleList)) {
             throw new TesseractException("用户角色为空");
         }

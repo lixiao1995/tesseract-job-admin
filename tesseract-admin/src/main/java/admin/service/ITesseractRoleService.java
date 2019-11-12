@@ -25,6 +25,4 @@ public interface ITesseractRoleService extends IService<TesseractRole> {
 
     List<Integer> getRoleMenuIdList(Integer roleId);
 
-    List<TesseractRole> getRoleByUserId(Integer userId);
-
 }

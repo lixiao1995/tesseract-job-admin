@@ -51,8 +51,6 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
     private ITesseractUserRoleService userRoleService;
 
     @Autowired
-    private ITesseractRoleService roleService;
-    @Autowired
     private ITesseractRoleBtnService roleBtnService;
 
     @Override
@@ -73,53 +71,11 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         return page(page, queryWrapper);
     }
 
-    private Map<String, List> buildRoleMap(TesseractRoleDO tesseractRoleDO) {
-        Map<String, List> map = Maps.newHashMap();
-        Integer roleId = tesseractRoleDO.getRoleId();
-        List<TesseractMenuDO> menuDOList = tesseractRoleDO.getMenuInfo();
-        if (!CollectionUtils.isEmpty(menuDOList)) {
-            //角色菜单关联
-            List<TesseractRoleResources> roleResourcesList = Lists.newArrayList();
-            //角色按钮关联
-            List<TesseractRoleBtn> roleBtnList = Lists.newArrayList();
-            //空按钮菜单
-            List<Integer> nullMenuIdList = Lists.newArrayList();
-            //修改后的按钮
-            List<Integer> btnIdList = Lists.newArrayList();
 
-            menuDOList.stream().forEach(menuDO -> {
-                List<BtnDO> btnList = menuDO.getBtnList();
-                TesseractRoleResources tesseractMenuResource = new TesseractRoleResources();
-                tesseractMenuResource.setMenuId(menuDO.getMenuId());
-                tesseractMenuResource.setRoleId(roleId);
-                if (btnList != null) {
-                    if (btnList.size() == 0) {
-                        nullMenuIdList.add(menuDO.getMenuId());
-                    }
-                    btnList.forEach(btnDO -> {
-                        TesseractRoleBtn tesseractRoleBtn = new TesseractRoleBtn();
-                        tesseractRoleBtn.setBtnId(btnDO.getId());
-                        tesseractRoleBtn.setRoleId(roleId);
-                        tesseractRoleBtn.setMenuId(menuDO.getMenuId());
-                        btnIdList.add(btnDO.getId());
-                        roleBtnList.add(tesseractRoleBtn);
-                    });
-                }
-                roleResourcesList.add(tesseractMenuResource);
-            });
-            map.put("roleResourcesList", roleResourcesList);
-            map.put("roleBtnList", roleBtnList);
-            map.put("nullMenuIdList", nullMenuIdList);
-            map.put("btnIdList", btnIdList);
-        }
-        return map;
-    }
-
-    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
     @Override
     public void saveOrUpdateRole(TesseractRoleDO tesseractRoleDO) {
         //超级管理员不允许修改
-        if (SUPER_ADMIN_NAME.equals(tesseractRoleDO.getRoleName())) {
+        if (SUPER_ADMIN_ROLE_NAME.equals(tesseractRoleDO.getRoleName())) {
             throw new TesseractException("超级管理员角色不允许修改");
         }
 
@@ -208,7 +164,6 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         }
     }
 
-    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
     @Override
     public void deleteRole(Integer roleId) {
         //超级管理员不允许删除
@@ -238,18 +193,47 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         return roleResourcesService.list(roleResourcesQueryWrapper).stream().map(TesseractRoleResources::getMenuId).collect(Collectors.toList());
     }
 
-    @Cacheable(cacheNames = "tesseract-cache", key = "'user_role_'+#userId")
-    @Override
-    public List<TesseractRole> getRoleByUserId(Integer userId) {
-        List<TesseractRole> roleList = Lists.newArrayList();
-        QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
-        userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
-        List<Integer> roleIdList = userRoleService.list(userRoleQueryWrapper).stream().map(TesseractUserRole::getRoleId).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(roleIdList)) {
-            QueryWrapper<TesseractRole> roleQueryWrapper = new QueryWrapper<>();
-            roleQueryWrapper.lambda().in(TesseractRole::getId, roleIdList);
-            roleList = roleService.list(roleQueryWrapper);
+    private Map<String, List> buildRoleMap(TesseractRoleDO tesseractRoleDO) {
+        Map<String, List> map = Maps.newHashMap();
+        Integer roleId = tesseractRoleDO.getRoleId();
+        List<TesseractMenuDO> menuDOList = tesseractRoleDO.getMenuInfo();
+        if (!CollectionUtils.isEmpty(menuDOList)) {
+            //角色菜单关联
+            List<TesseractRoleResources> roleResourcesList = Lists.newArrayList();
+            //角色按钮关联
+            List<TesseractRoleBtn> roleBtnList = Lists.newArrayList();
+            //空按钮菜单
+            List<Integer> nullMenuIdList = Lists.newArrayList();
+            //修改后的按钮
+            List<Integer> btnIdList = Lists.newArrayList();
+
+            menuDOList.stream().forEach(menuDO -> {
+                List<BtnDO> btnList = menuDO.getBtnList();
+                TesseractRoleResources tesseractMenuResource = new TesseractRoleResources();
+                tesseractMenuResource.setMenuId(menuDO.getMenuId());
+                tesseractMenuResource.setRoleId(roleId);
+                if (btnList != null) {
+                    if (btnList.size() == 0) {
+                        nullMenuIdList.add(menuDO.getMenuId());
+                    }
+                    btnList.forEach(btnDO -> {
+                        TesseractRoleBtn tesseractRoleBtn = new TesseractRoleBtn();
+                        tesseractRoleBtn.setBtnId(btnDO.getId());
+                        tesseractRoleBtn.setRoleId(roleId);
+                        tesseractRoleBtn.setMenuId(menuDO.getMenuId());
+                        btnIdList.add(btnDO.getId());
+                        roleBtnList.add(tesseractRoleBtn);
+                    });
+                }
+                roleResourcesList.add(tesseractMenuResource);
+            });
+            map.put("roleResourcesList", roleResourcesList);
+            map.put("roleBtnList", roleBtnList);
+            map.put("nullMenuIdList", nullMenuIdList);
+            map.put("btnIdList", btnIdList);
         }
-        return roleList;
+        return map;
     }
+
+
 }

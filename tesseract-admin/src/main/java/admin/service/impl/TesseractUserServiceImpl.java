@@ -8,6 +8,7 @@ import admin.pojo.DO.TesseractUserDO;
 import admin.pojo.DO.UserDO;
 import admin.pojo.VO.UserAuthVO;
 import admin.pojo.VO.UserLoginVO;
+import admin.security.SecurityUserContextHolder;
 import admin.security.SecurityUserDetail;
 import admin.service.*;
 import admin.util.AdminUtils;
@@ -78,8 +79,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     private ITesseractRoleService roleService;
     @Autowired
     private ITesseractBtnResourceService btnResourceService;
-    @Autowired
-    private ITesseractMenuResourceService menuResourceService;
 
 
     @Override
@@ -156,7 +155,8 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         BeanUtils.copyProperties(tesseractUserDO, tesseractUser);
         Integer userId = tesseractUser.getId();
         if (userId != null) {
-            checkAdmin(tesseractUser.getName());
+            TesseractUser user = this.getById(userId);
+            checkAdmin(user.getName());
             //如果是修改密码
             if (!StringUtils.isEmpty(tesseractUser.getPassword())) {
                 tesseractUser.setPassword(bcryptEncode(tesseractUser.getPassword()));
@@ -165,12 +165,11 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
             updateById(tesseractUser);
             //如果角色id不为空则重建
             if (roleIdList != null) {
-                //删除原有角色管理表并重建
-                QueryWrapper<TesseractUserRole> userRoleQueryWrapper = new QueryWrapper<>();
-                userRoleQueryWrapper.lambda().eq(TesseractUserRole::getUserId, userId);
-                userRoleService.remove(userRoleQueryWrapper);
+                //删除原有用户角色关联表并重建
+                userRoleService.deleteRoleByUserId(userId);
                 if (roleIdList.size() != 0) {
-                    List<TesseractUserRole> userRoleList = roleIdList.stream().map(roleId -> {
+                    HashSet<Integer> hashSet = new HashSet(roleIdList);
+                    List<TesseractUserRole> userRoleList = hashSet.stream().map(roleId -> {
                         TesseractUserRole tesseractUserRole = new TesseractUserRole();
                         tesseractUserRole.setRoleId(roleId);
                         tesseractUserRole.setUserId(userId);
@@ -313,7 +312,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         // 获取用户信息
         TesseractUser tesseractUser = this.getById(userId);
         userAuthVO.setName(tesseractUser.getName());
-        List<TesseractRole> tesseractRoles = roleService.getRoleByUserId(userId);
+        List<TesseractRole> tesseractRoles = userRoleService.getRoleByUserId(userId);
         List<Integer> roleIds = new ArrayList<>(tesseractRoles.size());
         List<String> roleNames = new ArrayList<>(tesseractRoles.size());
         tesseractRoles.stream().forEach(role -> {

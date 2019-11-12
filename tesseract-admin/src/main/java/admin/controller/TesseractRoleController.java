@@ -8,6 +8,7 @@ import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.PageVO;
 import admin.pojo.VO.RoleVO;
 import admin.service.ITesseractRoleService;
+import admin.service.ITesseractUserRoleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +36,8 @@ public class TesseractRoleController {
 
     @Autowired
     private ITesseractRoleService tesseractRoleService;
+    @Autowired
+    private ITesseractUserRoleService userRoleService;
 
     /**
      * 角色列表
@@ -95,6 +98,6 @@ public class TesseractRoleController {
     @RequestMapping("/getRoleByUserId")
     @TokenCheck
     public CommonResponseVO getRoleByUserId(@NotNull Integer userId) throws Exception {
-        return CommonResponseVO.success(tesseractRoleService.getRoleByUserId(userId));
+        return CommonResponseVO.success(userRoleService.getRoleByUserId(userId));
     }
 }
