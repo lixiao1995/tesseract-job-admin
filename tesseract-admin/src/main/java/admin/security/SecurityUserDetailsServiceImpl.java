@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import tesseract.exception.TesseractException;
 
@@ -52,6 +53,9 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         }
         Integer userId = tesseractUser.getId();
         List<TesseractRole> roleList = roleService.getRoleByUserId(userId);
+        if (CollectionUtils.isEmpty(roleList)) {
+            throw new TesseractException("用户角色为空");
+        }
         // TODO 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
         SecurityUserDetail webUserDetail = new SecurityUserDetail();
         webUserDetail.setId(userId);

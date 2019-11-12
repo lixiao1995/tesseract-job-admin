@@ -15,6 +15,7 @@ public class ControllerExceptionAdvice {
 
     /**
      * Authorization   授权，鉴权
+     *
      * @param e
      * @return
      */
@@ -27,15 +28,17 @@ public class ControllerExceptionAdvice {
 
 
     /**
-     *
      * Authentication  身份验证
+     *
      * @param e
      * @return
      */
     @ExceptionHandler(AuthenticationException.class)
     public CommonResponseVO authenticationExceptionHandler(Exception e) {
-        e.printStackTrace();
-        log.error(e.getMessage());
+        log.error(e.toString());
+        if (e.getMessage() != null) {
+            return CommonResponseVO.fail(401, e.getMessage(), null);
+        }
         return CommonResponseVO.fail(401, "身份验证失败", null);
     }
 
@@ -53,7 +56,6 @@ public class ControllerExceptionAdvice {
         log.error(e.getMessage());
         return CommonResponseVO.FAIL;
     }
-
 
 
 }

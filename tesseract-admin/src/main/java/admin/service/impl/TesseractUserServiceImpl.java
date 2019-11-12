@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static admin.constant.AdminConstant.*;
 import static admin.util.AdminUtils.bcryptEncode;
+import static admin.util.AdminUtils.checkAdmin;
 
 /**
  * <p>
@@ -155,6 +156,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         BeanUtils.copyProperties(tesseractUserDO, tesseractUser);
         Integer userId = tesseractUser.getId();
         if (userId != null) {
+            checkAdmin(tesseractUser.getName());
             //如果是修改密码
             if (!StringUtils.isEmpty(tesseractUser.getPassword())) {
                 tesseractUser.setPassword(bcryptEncode(tesseractUser.getPassword()));
@@ -233,6 +235,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user == null) {
             throw new TesseractException("用户不存在");
         }
+        checkAdmin(user.getName());
         if (user.getStatus().equals(USER_VALID)) {
             throw new TesseractException("用户已经是激活状态");
         }
@@ -249,6 +252,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         if (user == null) {
             throw new TesseractException("用户不存在");
         }
+        checkAdmin(user.getName());
         if (user.getStatus().equals(USER_INVALID)) {
             throw new TesseractException("用户已经是禁用状态");
         }

@@ -204,4 +204,18 @@ public class AdminUtils {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         return bCryptPasswordEncoder.encode(string);
     }
+
+    /**
+     * 检测是否为管理员，如果为管理员则抛出异常
+     *
+     * @param username
+     * @return
+     */
+    public static void checkAdmin(String username) {
+        if (SUPER_ADMIN_NAME.equals(username)) {
+            throw new TesseractException("超级管理员不能修改");
+        }
+    }
+
+
 }
