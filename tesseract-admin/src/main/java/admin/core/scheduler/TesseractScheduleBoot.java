@@ -76,7 +76,7 @@ public class TesseractScheduleBoot {
      * threadlist
      */
 
-    private static final Map<String, ScheduleGroupInfo> SCHEDULE_GROUP_INFO_MAP = Maps.newHashMap();
+    private static final Map<Integer, ScheduleGroupInfo> SCHEDULE_GROUP_INFO_MAP = Maps.newHashMap();
 
     private static final ReentrantReadWriteLock REENTRANT_READ_WRITE_LOCK = new ReentrantReadWriteLock();
     private static final ReentrantReadWriteLock.ReadLock READ_LOCK = REENTRANT_READ_WRITE_LOCK.readLock();
@@ -119,9 +119,8 @@ public class TesseractScheduleBoot {
                 if (group.getThreadPoolNum() == 0) {
                     continue;
                 }
-                String groupName = group.getName();
                 ScheduleGroupInfo scheduleGroupInfo = createScheduleGroupInfo(group);
-                SCHEDULE_GROUP_INFO_MAP.put(groupName, scheduleGroupInfo);
+                SCHEDULE_GROUP_INFO_MAP.put(group.getId(), scheduleGroupInfo);
             }
             log.info("组调度器初始化完成:{}", SCHEDULE_GROUP_INFO_MAP);
             return;
@@ -167,7 +166,7 @@ public class TesseractScheduleBoot {
     public static void deleteGroupScheduler(TesseractGroup tesseractGroup) {
         WRITE_LOCK.lock();
         try {
-            ScheduleGroupInfo scheduleGroupInfo = SCHEDULE_GROUP_INFO_MAP.remove(tesseractGroup.getName());
+            ScheduleGroupInfo scheduleGroupInfo = SCHEDULE_GROUP_INFO_MAP.remove(tesseractGroup.getId());
             scheduleGroupInfo.stopThreadGroup();
         } finally {
             WRITE_LOCK.unlock();
@@ -183,9 +182,8 @@ public class TesseractScheduleBoot {
     public static void addGroupScheduler(TesseractGroup tesseractGroup) {
         WRITE_LOCK.lock();
         try {
-            String groupName = tesseractGroup.getName();
             ScheduleGroupInfo scheduleGroupInfo = createScheduleGroupInfo(tesseractGroup);
-            SCHEDULE_GROUP_INFO_MAP.put(groupName, scheduleGroupInfo);
+            SCHEDULE_GROUP_INFO_MAP.put(tesseractGroup.getId(), scheduleGroupInfo);
         } finally {
             WRITE_LOCK.unlock();
         }
@@ -216,21 +214,25 @@ public class TesseractScheduleBoot {
     /**
      * 更新执行线程池大小
      *
-     * @param groupName
+     * @param group
      * @param threadNum
      */
-    public static void updateThreadNum(String groupName, Integer threadNum) {
-        READ_LOCK.lock();
-        SchedulerThread schedulerThread = SCHEDULE_GROUP_INFO_MAP.get(groupName).getSchedulerThread();
+    public static void updateThreadNum(TesseractGroup group, Integer threadNum) {
+        WRITE_LOCK.lock();
+        ScheduleGroupInfo scheduleGroupInfo = SCHEDULE_GROUP_INFO_MAP.get(group.getId());
         try {
-            if (schedulerThread == null) {
-                log.error("找不到组:{} SchedulerThread", groupName);
-                throw new TesseractException("找不到SchedulerThread");
+            SchedulerThread schedulerThread;
+            if (scheduleGroupInfo == null) {
+                log.debug("找不到组:{} SchedulerThread", group.getName());
+                //不存在添加
+                addGroupScheduler(group);
+                return;
             }
+            schedulerThread = scheduleGroupInfo.getSchedulerThread();
             ISchedulerThreadPool threadPool = schedulerThread.getTesseractTriggerDispatcher().getThreadPool();
             threadPool.changeSize(threadNum);
         } finally {
-            READ_LOCK.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 

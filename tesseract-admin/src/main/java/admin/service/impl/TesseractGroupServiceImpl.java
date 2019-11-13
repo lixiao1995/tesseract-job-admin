@@ -94,15 +94,7 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
             if (oldGroup == null) {
                 throw new TesseractException("TesseractGroup为空");
             }
-            Integer oldThreadPoolNum = oldGroup.getThreadPoolNum();
-            Integer newThreadPoolNum = tesseractGroup.getThreadPoolNum();
-            if (newThreadPoolNum <= 0) {
-                throw new TesseractException("线程数不能为小于等于0");
-            }
-            if (!oldThreadPoolNum.equals(newThreadPoolNum)) {
-                //更新线程数
-                TesseractScheduleBoot.updateThreadNum(tesseractGroup.getName(), newThreadPoolNum);
-            }
+            this.modifyThreadPool(oldGroup, tesseractGroup);
             tesseractGroup.setUpdateTime(currentTimeMillis);
             updateById(tesseractGroup);
             return;
@@ -114,6 +106,26 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
         this.save(tesseractGroup);
         //新增组调度器
         TesseractScheduleBoot.addGroupScheduler(tesseractGroup);
+    }
+
+    /**
+     * 修改线程池
+     *
+     * @param oldGroup
+     * @param newGroup
+     */
+    private void modifyThreadPool(TesseractGroup oldGroup, TesseractGroup newGroup) {
+        Integer oldThreadPoolNum = oldGroup.getThreadPoolNum();
+        Integer newThreadPoolNum = newGroup.getThreadPoolNum();
+        if (!oldThreadPoolNum.equals(newThreadPoolNum)) {
+            if (newThreadPoolNum == 0) {
+                //删除线程池
+                TesseractScheduleBoot.deleteGroupScheduler(oldGroup);
+            } else {
+                //更新线程池
+                TesseractScheduleBoot.updateThreadNum(newGroup, newThreadPoolNum);
+            }
+        }
     }
 
     @Override

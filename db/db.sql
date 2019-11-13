@@ -172,7 +172,7 @@ insert into tesseract_trigger( name, next_trigger_time, prev_trigger_time, cron,
 values ( 'testTrigger-1', 1562512500000, 0, '*/15 * * * * ?', 0, 0, 0, 0, 'admin', 'test', 1, 'testExecutor'
        , 1562512500000, 1562512500000, 2, 'dev1');
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
-values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 2, '');
+values (1, 'testExecutor', 'admin', 'test', 1562512500000, 'defaultGroup', 1, '');
 
 
 
