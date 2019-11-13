@@ -17,6 +17,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -90,7 +92,6 @@ public class TesseractBtnResourceServiceImpl extends ServiceImpl<TesseractBtnRes
         //删除按钮
         removeById(btnId);
     }
-
     @Override
     public Collection<TesseractBtnResource> btnListByMenuIdAndRoleId(Integer roleId, Integer menuId) {
         QueryWrapper<TesseractRoleBtn> btnResourceQueryWrapper = new QueryWrapper<>();

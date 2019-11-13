@@ -25,5 +25,12 @@ public interface ITesseractBtnResourceService extends IService<TesseractBtnResou
 
     void deleteBtn(Integer btnId);
 
+    /**
+     * 根据菜单和角色获取按钮权限
+     *
+     * @param roleId
+     * @param menuId
+     * @return
+     */
     Collection<TesseractBtnResource> btnListByMenuIdAndRoleId(Integer roleId, Integer menuId);
 }
