@@ -78,7 +78,7 @@
 
     <!--开发环境:打印控制台-->
     <springProfile name="dev">
-        <logger name="admin" level="debug"/>
+        <logger name="admin" level="info"/>
     </springProfile>
 
     <root level="info">
