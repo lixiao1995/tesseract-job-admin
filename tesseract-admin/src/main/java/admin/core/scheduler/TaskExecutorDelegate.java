@@ -129,6 +129,7 @@ public class TaskExecutorDelegate {
             TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
             tesseractLog.setRetryCount(firedJob.getRetryCount());
         }
+        log.info("tesseractLog:{}", tesseractLog);
         logService.save(tesseractLog);
         currentTaskInfo.setLog(tesseractLog);
         //如果不是重试任务，设置firedTrigger.重试任务 已经拥有fire job
