@@ -40,7 +40,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = request.getHeader(AdminConstant.TOKEN);
-        String servletPath = request.getServletPath();
         try {
             if (!StringUtils.isEmpty(token)) {
                 // final String authToken = authHeader.substring(tokenHead.length()); // The part after "Bearer "

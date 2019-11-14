@@ -30,7 +30,7 @@ public class MissfireScanner extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("MisfireScanner-{} start", tesseractGroup.getName());
+        log.info("线程: {} 启动", this.getName());
         while (!isStop) {
             boolean hasMore = TesseractJobServiceDelegator.triggerService.resovleMissfireTrigger(tesseractGroup,
                     misfireTriggerBatchSize, System.currentTimeMillis() - SCAN_MISFIRE_JOB_INTERVAL_TIME);
@@ -42,6 +42,7 @@ public class MissfireScanner extends Thread implements IThreadLifycycle {
             } catch (InterruptedException e) {
             }
         }
+        log.info("线程: {} 停止", this.getName());
     }
 
 
@@ -59,6 +60,5 @@ public class MissfireScanner extends Thread implements IThreadLifycycle {
     public void stopThread() {
         this.isStop = true;
         this.interrupt();
-
     }
 }

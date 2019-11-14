@@ -53,7 +53,7 @@ public class UserAuthInterceptor extends HandlerInterceptorAdapter {
             }
             //校验
             if (!tesseractUserService.checkToken(token)) {
-                throw new TesseractException("token 过期，请重新登录");
+                throw new TesseractException(TesseractException.TOKEN_INVALID_STATUS, "token 过期，请重新登录");
             }
             return super.preHandle(request, response, handler);
         }

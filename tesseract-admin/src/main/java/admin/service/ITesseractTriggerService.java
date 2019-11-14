@@ -35,8 +35,20 @@ public interface ITesseractTriggerService extends IService<TesseractTrigger> {
                          Long startCreateTime,
                          Long endCreateTime);
 
-    void executeTrigger(String groupName, Integer triggerId);
+    /**
+     * 手动触发任务执行一次
+     *
+     * @param groupId
+     * @param triggerId
+     */
+    void executeTrigger(Integer groupId, Integer triggerId);
 
+    /**
+     * 启动触发器
+     *
+     * @param triggerId
+     * @throws ParseException
+     */
     void startTrigger(Integer triggerId) throws ParseException;
 
     void stopTrigger(Integer triggerId);

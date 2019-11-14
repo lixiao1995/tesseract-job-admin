@@ -117,7 +117,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     @Override
     public void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception {
         Integer triggerId = tesseractTrigger.getId();
-        TesseractExecutor executor;
+        TesseractExecutor executor = executorService.getById(tesseractTrigger.getExecutorId());
         //更新
         if (triggerId != null) {
             TesseractTrigger trigger = getById(triggerId);
@@ -128,7 +128,6 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
             }
             //如果更新了执行器则更新组名
             if (!trigger.getExecutorId().equals(tesseractTrigger.getExecutorId())) {
-                executor = executorService.getById(tesseractTrigger.getExecutorId());
                 tesseractTrigger.setGroupId(executor.getGroupId());
                 tesseractTrigger.setGroupName(executor.getGroupName());
             }
@@ -137,13 +136,15 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         }
         //新增
         long currentTimeMillis = System.currentTimeMillis();
-        executor = executorService.getById(tesseractTrigger.getExecutorId());
         tesseractTrigger.setGroupId(executor.getGroupId());
         tesseractTrigger.setGroupName(executor.getGroupName());
         tesseractTrigger.setPrevTriggerTime(0L);
         tesseractTrigger.setCreator(SecurityUserContextHolder.getUser().getUsername());
         tesseractTrigger.setNextTriggerTime(AdminUtils.caculateNextTime(tesseractTrigger.getCron()));
         tesseractTrigger.setCreateTime(currentTimeMillis);
+        if (StringUtils.isEmpty(tesseractTrigger.getExecuteParam())) {
+            tesseractTrigger.setExecuteParam("");
+        }
         tesseractTrigger.setStatus(TRGGER_STATUS_STOPING);
         tesseractTrigger.setUpdateTime(currentTimeMillis);
         this.save(tesseractTrigger);
@@ -257,8 +258,12 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
     }
 
     @Override
-    public void executeTrigger(String groupName, Integer triggerId) {
-        TesseractScheduleBoot.executeTrigger(groupName, Arrays.asList(getTriggerById(triggerId)));
+    public void executeTrigger(Integer groupId, Integer triggerId) {
+        TesseractGroup group = groupService.getById(groupId);
+        if (group == null) {
+            throw new TesseractException(String.format("组为空,id: %s", groupId));
+        }
+        TesseractScheduleBoot.executeTrigger(group, Arrays.asList(getTriggerById(triggerId)));
     }
 
     @Override

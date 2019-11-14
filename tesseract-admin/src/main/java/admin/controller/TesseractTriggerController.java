@@ -14,6 +14,7 @@ import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 
@@ -55,11 +56,8 @@ public class TesseractTriggerController {
 
     @RequestMapping("/execute")
     @TokenCheck
-    public CommonResponseVO execute(String groupName, @NotNull Integer triggerId) {
-        if (StringUtils.isEmpty(groupName)) {
-            throw new TesseractException("请先给触发器所属执行器添加组");
-        }
-        triggerService.executeTrigger(groupName, triggerId);
+    public CommonResponseVO execute(@NotNull Integer groupId, @NotNull Integer triggerId) {
+        triggerService.executeTrigger(groupId, triggerId);
         return CommonResponseVO.SUCCESS;
     }
 

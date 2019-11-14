@@ -184,6 +184,7 @@ public class TesseractScheduleBoot {
         try {
             ScheduleGroupInfo scheduleGroupInfo = createScheduleGroupInfo(tesseractGroup);
             SCHEDULE_GROUP_INFO_MAP.put(tesseractGroup.getId(), scheduleGroupInfo);
+            scheduleGroupInfo.startThreadGroup();
         } finally {
             WRITE_LOCK.unlock();
         }
@@ -193,17 +194,17 @@ public class TesseractScheduleBoot {
     /**
      * 执行触发器
      *
-     * @param groupName
+     * @param group
      * @param tesseractTriggerList
      */
-    public static void executeTrigger(String groupName, List<TesseractTrigger> tesseractTriggerList) {
+    public static void executeTrigger(TesseractGroup group, List<TesseractTrigger> tesseractTriggerList) {
         READ_LOCK.lock();
-        SchedulerThread schedulerThread = SCHEDULE_GROUP_INFO_MAP.get(groupName).getSchedulerThread();
+        ScheduleGroupInfo scheduleGroupInfo = SCHEDULE_GROUP_INFO_MAP.get(group.getId());
         try {
-            if (schedulerThread == null) {
-                log.error("找不到组:{} SchedulerThread", groupName);
-                throw new TesseractException("找不到SchedulerThread");
+            if (scheduleGroupInfo == null) {
+                throw new TesseractException(String.format("找不到组: %s 的调度线程，请先设置调度线程", group.getName()));
             }
+            SchedulerThread schedulerThread = scheduleGroupInfo.getSchedulerThread();
             TesseractTriggerDispatcher tesseractTriggerDispatcher = schedulerThread.getTesseractTriggerDispatcher();
             tesseractTriggerDispatcher.dispatchTrigger(tesseractTriggerList);
         } finally {

@@ -306,7 +306,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getToken, token);
         TesseractToken tesseractToken = tokenService.getOne(tesseractTokenQueryWrapper);
         if (tesseractToken == null) {
-            throw new TesseractException("token过期,请重新登陆");
+            throw new TesseractException(TesseractException.TOKEN_INVALID_STATUS, "token过期,请重新登陆");
         }
         Integer userId = tesseractToken.getUserId();
         // 获取用户信息

@@ -47,7 +47,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("SchedulerThread-{} start", tesseractGroup.getName());
+        log.info("线程: {} 启动", this.getName());
         while (!isStop) {
             int blockGetAvailableThreadNum = tesseractTriggerDispatcher.blockGetAvailableThreadNum();
             log.info("可用线程数:{}", blockGetAvailableThreadNum);
@@ -80,6 +80,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
             } catch (InterruptedException e) {
             }
         }
+        log.info("线程: {} 停止", this.getName());
     }
 
     @Override
