@@ -130,10 +130,20 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
             return;
         }
         //新增操作
+        doSave(tesseractExecutor);
+    }
+
+    private void doSave(TesseractExecutor tesseractExecutor) {
+        QueryWrapper<TesseractExecutor> executorQueryWrapper = new QueryWrapper<>();
+        executorQueryWrapper.lambda().eq(TesseractExecutor::getName, tesseractExecutor.getName());
+        if (this.getOne(executorQueryWrapper) != null) {
+            throw new TesseractException("执行器名称重复");
+        }
         tesseractExecutor.setCreateTime(System.currentTimeMillis());
         tesseractExecutor.setCreator(SecurityUserContextHolder.getUser().getUsername());
         save(tesseractExecutor);
     }
+
 
     @Override
     public void deleteExecutor(Integer executorId) {
