@@ -1,6 +1,7 @@
 package admin.util;
 
 import admin.core.scheduler.CronExpression;
+import admin.entity.TesseractExecutor;
 import admin.entity.TesseractRole;
 import admin.pojo.DO.StatisticsLogDO;
 import admin.security.SecurityUserContextHolder;
@@ -176,9 +177,14 @@ public class AdminUtils {
      * @return
      * @throws Exception
      */
-    public static Long caculateNextTime(String cron) throws Exception {
-        CronExpression cronExpression = new CronExpression(cron);
-        return cronExpression.getTimeAfter(new Date()).getTime();
+    public static Long caculateNextTime(String cron) {
+        try {
+            CronExpression cronExpression = new CronExpression(cron);
+            return cronExpression.getTimeAfter(new Date()).getTime();
+        } catch (Exception e) {
+            throw new TesseractException("cron 表达式错误");
+        }
+
     }
 
     public static String epochMiliToString(Long epochMilli, DateTimeFormatter dateTimeFormatter) {

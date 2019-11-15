@@ -8,6 +8,7 @@ import admin.service.ITesseractUserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -16,8 +17,7 @@ import tesseract.exception.TesseractException;
 import javax.annotation.Resource;
 import java.util.List;
 
-import static admin.constant.AdminConstant.DEFAULT_PASSWORD_CODE;
-import static admin.constant.AdminConstant.USER_INVALID;
+import static admin.constant.AdminConstant.*;
 
 /**
  * @description: security 登录
@@ -65,7 +65,8 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         webUserDetail.setRoleList(roleList);
         webUserDetail.setGroupId(tesseractUser.getGroupId());
         webUserDetail.setGroupName(tesseractUser.getGroupName());
-        webUserDetail.setPasswordInitial(DEFAULT_PASSWORD_CODE.equals(tesseractUser.getPassword()));
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        webUserDetail.setPasswordInitial(bCryptPasswordEncoder.matches(DEFAULT_PASSWORD, tesseractUser.getPassword()));
         return webUserDetail;
     }
 }

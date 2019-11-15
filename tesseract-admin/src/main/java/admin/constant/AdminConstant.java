@@ -20,7 +20,6 @@ public class AdminConstant {
     public static final String SUPER_ADMIN_NAME = "super_admin";
     public static final String SUPER_ADMIN_ROLE_NAME = SUPER_ADMIN_NAME;
     public static final String DEFAULT_PASSWORD = "666666";
-    public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
 
     /**
      * 日志相关

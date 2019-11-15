@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Function;
 
+import static admin.constant.AdminConstant.DEFAULT_PASSWORD;
+
 /**
  * 〈〉
  *
@@ -64,11 +66,8 @@ public class GeneralTest {
     @Test
     public void testPass() {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        //加密"0"
-        //String encode = bCryptPasswordEncoder.encode("admin");
-        //System.out.println(encode);
-        //结果：$2a$10$/eEV4X7hXPzYGzOLXfCizu6h7iRisp7I116wPA3P9uRcHAKJyY4TK
-        System.out.println(bCryptPasswordEncoder.encode("666666"));
+        System.out.println(bCryptPasswordEncoder.matches("666666","$2a$10$gm4Q2j0qsTV.6CQnHiPZ4uqmMpg7QDcOe/wA/6cSB5M24tVM7W51S"));
+
     }
 
     @Test

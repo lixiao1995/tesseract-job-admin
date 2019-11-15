@@ -28,6 +28,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -146,43 +147,53 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return page(page, queryWrapper);
     }
 
-    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public void saveOrUpdateUser(TesseractUserDO tesseractUserDO) {
+        if (tesseractUserDO.getId() != null) {
+            doUpdate(tesseractUserDO);
+            return;
+        }
+        doSave(tesseractUserDO);
+    }
+
+    private void doUpdate(TesseractUserDO tesseractUserDO) {
+        Integer userId = tesseractUserDO.getId();
+        TesseractUser oldUser = this.getById(userId);
+        checkAdmin(oldUser.getName());
+        //如果是修改密码
+        if (!StringUtils.isEmpty(tesseractUserDO.getPassword())) {
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+            oldUser.setPassword(bCryptPasswordEncoder.encode(tesseractUserDO.getPassword()));
+        }
+        oldUser.setUpdateTime(System.currentTimeMillis());
+        updateById(oldUser);
+        //如果角色id不为空则重建
+        List<Integer> roleIdList = tesseractUserDO.getRoleIdList();
+        if (roleIdList != null) {
+            //删除原有用户角色关联表并重建
+            userRoleService.deleteRoleByUserId(userId);
+            if (roleIdList.size() != 0) {
+                HashSet<Integer> hashSet = new HashSet(roleIdList);
+                List<TesseractUserRole> userRoleList = hashSet.stream().map(roleId -> {
+                    TesseractUserRole tesseractUserRole = new TesseractUserRole();
+                    tesseractUserRole.setRoleId(roleId);
+                    tesseractUserRole.setUserId(userId);
+                    return tesseractUserRole;
+                }).collect(Collectors.toList());
+                userRoleService.saveBatch(userRoleList);
+            }
+        }
+    }
+
+    private void doSave(TesseractUserDO tesseractUserDO) {
         long currentTimeMillis = System.currentTimeMillis();
         TesseractUser tesseractUser = new TesseractUser();
         List<Integer> roleIdList = tesseractUserDO.getRoleIdList();
         BeanUtils.copyProperties(tesseractUserDO, tesseractUser);
-        Integer userId = tesseractUser.getId();
-        if (userId != null) {
-            TesseractUser user = this.getById(userId);
-            checkAdmin(user.getName());
-            //如果是修改密码
-            if (!StringUtils.isEmpty(tesseractUser.getPassword())) {
-                tesseractUser.setPassword(bcryptEncode(tesseractUser.getPassword()));
-            }
-            tesseractUser.setUpdateTime(currentTimeMillis);
-            updateById(tesseractUser);
-            //如果角色id不为空则重建
-            if (roleIdList != null) {
-                //删除原有用户角色关联表并重建
-                userRoleService.deleteRoleByUserId(userId);
-                if (roleIdList.size() != 0) {
-                    HashSet<Integer> hashSet = new HashSet(roleIdList);
-                    List<TesseractUserRole> userRoleList = hashSet.stream().map(roleId -> {
-                        TesseractUserRole tesseractUserRole = new TesseractUserRole();
-                        tesseractUserRole.setRoleId(roleId);
-                        tesseractUserRole.setUserId(userId);
-                        return tesseractUserRole;
-                    }).collect(Collectors.toList());
-                    userRoleService.saveBatch(userRoleList);
-                }
-            }
-            return;
-        }
         tesseractUser.setStatus(USER_VALID);
         tesseractUser.setUpdateTime(currentTimeMillis);
-        tesseractUser.setPassword(DEFAULT_PASSWORD_CODE);
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        tesseractUser.setPassword(bCryptPasswordEncoder.encode(DEFAULT_PASSWORD));
         tesseractUser.setCreateTime(currentTimeMillis);
         this.save(tesseractUser);
         //保存用户角色关联表
@@ -196,7 +207,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
             userRoleService.saveBatch(userRoleList);
         }
     }
-
 
     @Override
     public void passwordRevert(Integer userId) {
@@ -220,7 +230,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return !(tokenService.getOne(tokenQueryWrapper) == null);
     }
 
-    @Cacheable(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public TesseractUser getUserByName(String username) {
         QueryWrapper<TesseractUser> queryWrapper = new QueryWrapper<>();
@@ -271,7 +280,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
         return AdminUtils.buildStatisticsList(statisticsLogDOList, statisticsDays);
     }
 
-    @CacheEvict(cacheNames = "tesseract-cache", key = "'user_'+#username")
     @Override
     public void deleteUser(Integer userId) {
         TesseractUser user = getById(userId);
