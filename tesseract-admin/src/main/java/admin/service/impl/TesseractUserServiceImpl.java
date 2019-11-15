@@ -297,7 +297,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
 
     @Override
     public UserAuthVO getUserAuthInfo(String token) {
-        // TODO 统一做 token 的校验拦截，包括是否存在、已过期、token刷新等问题
+        //  统一做 token 的校验拦截，包括是否存在、已过期、token刷新等问题
         if (StringUtils.isEmpty(token)) {
             throw new TesseractException("token为空");
         }

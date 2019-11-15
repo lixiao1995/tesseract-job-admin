@@ -43,12 +43,12 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO 数据库中获取用户密码，角色，资源等信息
+        //  数据库中获取用户密码，角色，资源等信息
         TesseractUser tesseractUser = userService.getUserByName(username);
         if (ObjectUtils.isEmpty(tesseractUser)) {
             throw new UsernameNotFoundException("用户登录，用户信息查询失败");
         }
-        //验证是否停用
+        // 验证是否停用
         if (USER_INVALID.equals(tesseractUser.getStatus())) {
             throw new TesseractException("用户已停用");
         }
@@ -57,7 +57,7 @@ public class SecurityUserDetailsServiceImpl implements UserDetailsService {
         if (CollectionUtils.isEmpty(roleList)) {
             throw new TesseractException("用户角色为空");
         }
-        // TODO 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
+        // 封装为框架使用的 userDetail，如果需要额外的用户信息，自行添加
         SecurityUserDetail webUserDetail = new SecurityUserDetail();
         webUserDetail.setId(userId);
         webUserDetail.setPassword(tesseractUser.getPassword());

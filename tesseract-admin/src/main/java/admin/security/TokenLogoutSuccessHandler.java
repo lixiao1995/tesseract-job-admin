@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * @description: TODO-Eden.Lee
+ * @description: 登出成功回调处理器
  * @author: 李明
  * @company: 朴新教育
  * @version:
