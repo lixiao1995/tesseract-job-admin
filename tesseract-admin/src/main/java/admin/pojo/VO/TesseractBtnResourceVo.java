@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * @description: TODO-Eden.Lee
+ * @description: 按钮资源类
  * @author: 李明
  * @company: 朴新教育
  * @version:

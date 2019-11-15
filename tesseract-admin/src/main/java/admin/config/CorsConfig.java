@@ -18,7 +18,6 @@ public class CorsConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // TODO 该拦截器的功能，security已经有实现，暂时不配置
         registry.addInterceptor(userAuthInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns("/tesseract-user/login**");

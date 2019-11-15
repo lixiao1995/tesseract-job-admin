@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @description: TODO-Eden.Lee
+ * @description: 登出控制器
  * @author: 李明
  * @company: 朴新教育
  * @version:
