@@ -38,7 +38,7 @@ public class MailListener {
             helper.setText(mailEvent.getBody(), true);
             mailSender.send(mimeMessage);
         } catch (Exception e) {
-            log.error("发送邮件异常:{}", e.getMessage());
+            log.error("发送邮件异常:{}", e.toString());
         }
     }
 }
