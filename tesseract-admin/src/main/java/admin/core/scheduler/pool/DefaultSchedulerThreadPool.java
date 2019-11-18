@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * 〈默认执行器线程池〉
@@ -65,12 +66,14 @@ public class DefaultSchedulerThreadPool implements ISchedulerThreadPool {
             WorkerThread worker;
             if (availableWorkerList.size() > 0) {
                 worker = availableWorkerList.remove(0);
+                worker.setRunnable(runnable);
+                LockSupport.unpark(worker);
             } else {
                 worker = new WorkerThread(availableWorkerList, busyWorkerList);
-                worker.start();
                 busyWorkerList.add(worker);
+                worker.setRunnable(runnable);
+                worker.start();
             }
-            worker.setRunnable(runnable);
         }
     }
 
@@ -145,22 +148,17 @@ public class DefaultSchedulerThreadPool implements ISchedulerThreadPool {
 
         @Override
         public void run() {
-            while (!stop && !Thread.currentThread().isInterrupted()) {
+            while (!stop) {
                 if (runnable == null) {
-                    //响应是否关闭
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                    }
+                    LockSupport.park();
+                    //唤醒后需要重试，避免线程已停止
                     continue;
                 }
                 try {
                     runnable.run();
                 } catch (Exception e) {
+                    log.error(e.toString());
                 } finally {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
                     runnable = null;
                     //移动自己到空闲线程队列
                     busyWorkerList.remove(this);

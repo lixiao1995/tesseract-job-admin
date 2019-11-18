@@ -10,13 +10,16 @@ import tesseract.core.handler.JobHandler;
 @Component
 @Slf4j
 public class TestJob implements JobHandler {
-
+    private static long count;
 
     @Override
     public void execute(ExecutorContext executorContext) throws Exception {
         System.out.println("开始任务");
         Thread.sleep(2 * 1000);
-        throw new RuntimeException();
-        //  System.out.println("任务结束");
+        count++;
+        if (count % 10 == 0) {
+            throw new RuntimeException();
+        }
+        System.out.println("任务结束");
     }
 }

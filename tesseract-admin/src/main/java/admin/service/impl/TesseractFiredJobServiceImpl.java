@@ -92,6 +92,7 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         }
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         log.setStatus(AdminConstant.LOG_FAIL);
+        log.setEndTime(System.currentTimeMillis());
         log.setMsg("用户:" + user.getUsername() + " 取消");
         logService.updateById(log);
         notifyExecutor(firedJob);

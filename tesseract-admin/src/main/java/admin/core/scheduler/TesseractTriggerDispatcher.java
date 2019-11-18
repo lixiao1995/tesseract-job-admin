@@ -84,6 +84,7 @@ public class TesseractTriggerDispatcher {
                 log.info("任务上下文信息:{}", taskContextInfo);
                 TaskExecutorDelegate.routerExecute(taskContextInfo);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("任务执行异常:{},上下文信息:{}", e.toString(), taskContextInfo);
                 TaskExecutorDelegate.doFail("发生未知异常", taskContextInfo);
             }
