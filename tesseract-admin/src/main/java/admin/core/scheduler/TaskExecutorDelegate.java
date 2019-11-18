@@ -214,7 +214,6 @@ public class TaskExecutorDelegate {
      */
     private static void doRetry(CurrentTaskInfo currentTaskInfo, boolean incrRetryCount) {
         log.info("进入重试逻辑");
-        TesseractLog tesseractLog = currentTaskInfo.getLog();
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
         TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
@@ -228,7 +227,6 @@ public class TaskExecutorDelegate {
         //更新正在执行触发器的重试次数
         if (incrRetryCount) {
             firedJob.setRetryCount(firedJob.getRetryCount() + 1);
-            tesseractLog.setRetryCount(firedJob.getRetryCount() + 1);
             firedJobService.updateById(firedJob);
         }
         doFailWithoutFireJob(currentTaskInfo);

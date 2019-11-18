@@ -16,6 +16,7 @@ public class TestJob implements JobHandler {
     public void execute(ExecutorContext executorContext) throws Exception {
         System.out.println("开始任务");
         Thread.sleep(2 * 1000);
-        System.out.println("任务结束");
+        throw new RuntimeException();
+        //  System.out.println("任务结束");
     }
 }

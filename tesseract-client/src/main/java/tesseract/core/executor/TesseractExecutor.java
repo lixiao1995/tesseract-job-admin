@@ -225,8 +225,8 @@ public class TesseractExecutor {
                 jobHandler.execute(executorContext);
                 clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
             } catch (Exception e) {
-                log.error("执行异常:{}", e.getMessage());
-                tesseractAdminJobNotify.setException(e.getMessage());
+                log.error("执行异常:{}", e.toString());
+                tesseractAdminJobNotify.setException(e.toString());
                 try {
                     clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
                 } catch (URISyntaxException ex) {
