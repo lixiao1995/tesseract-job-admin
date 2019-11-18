@@ -99,24 +99,4 @@ public class TesseractMailSender {
         mailEventBus.post(mailEvent);
     }
 
-    /**
-     * 失败后发送报警邮件
-     *
-     * @param tesseractLogId
-     */
-    public void logSendMail(Long tesseractLogId) {
-        TesseractLog tesseractLog = tesseractLogService.getById(tesseractLogId);
-        logSendMail(tesseractLog);
-    }
-
-    /**
-     * 任务失败发送报警邮件
-     *
-     * @param tesseractAdminJobNotify
-     */
-    public void missionFailedSendMail(TesseractAdminJobNotify tesseractAdminJobNotify) {
-        logSendMail(tesseractAdminJobNotify.getLogId());
-    }
-
-
 }

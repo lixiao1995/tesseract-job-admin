@@ -15,7 +15,7 @@ public class TestJob implements JobHandler {
     @Override
     public void execute(ExecutorContext executorContext) throws Exception {
         System.out.println("开始任务");
-        Thread.sleep(2 * 1000);
+        Thread.sleep(20 * 1000);
         count++;
         if (count % 10 == 0) {
             throw new RuntimeException();

@@ -43,7 +43,6 @@ public class TesseractBeanFactory {
         }
         tesseractLog.setCreateTime(System.currentTimeMillis());
         tesseractLog.setRetryCount(0);
-        tesseractLog.setEndTime(System.currentTimeMillis());
         tesseractLog.setExecutorDetailId(0);
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setSocket("");

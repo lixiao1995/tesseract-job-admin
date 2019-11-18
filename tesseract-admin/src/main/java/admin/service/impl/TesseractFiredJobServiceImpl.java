@@ -20,8 +20,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tesseract.core.dto.TesseractStopTaskRequest;
 import tesseract.core.netty.NettyHttpClient;
@@ -95,11 +97,19 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         log.setEndTime(System.currentTimeMillis());
         log.setMsg("用户:" + user.getUsername() + " 取消");
         logService.updateById(log);
-        notifyExecutor(firedJob);
-        mailSender.logSendMail(log.getId());
+        this.notifyExecutor(firedJob);
+        this.sendMail(log);
     }
 
-    private void notifyExecutor(TesseractFiredJob firedJob) throws URISyntaxException, InterruptedException {
+    private void sendMail(TesseractLog tesseractLog) {
+        try {
+            mailSender.logSendMail(tesseractLog);
+        } catch (Exception e) {
+            log.error("发送邮件出错:{}", e.toString());
+        }
+    }
+
+    private void notifyExecutor(TesseractFiredJob firedJob) {
         NettyHttpClient nettyHttpClient = CHANNEL_MAP.get(firedJob.getSocket());
         if (nettyHttpClient == null) {
             log.error("当前执行器已失效");
@@ -110,8 +120,12 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         TesseractStopTaskRequest tesseractStopTaskRequest = new TesseractStopTaskRequest();
         tesseractStopTaskRequest.setFireJobId(firedJob.getId());
         byte[] serialize = serializerService.serialize(tesseractStopTaskRequest);
-        URI uri = new URI(HTTP_PREFIX + firedJob.getSocket() + STOP_MAPPING);
-        FullHttpRequest httpRequest = HttpUtils.buildDefaultFullHttpRequest(uri, serialize);
-        activeChannel.writeAndFlush(httpRequest).sync();
+        try {
+            URI uri = new URI(HTTP_PREFIX + firedJob.getSocket() + STOP_MAPPING);
+            FullHttpRequest httpRequest = HttpUtils.buildDefaultFullHttpRequest(uri, serialize);
+            activeChannel.writeAndFlush(httpRequest).sync();
+        } catch (Exception e) {
+            log.error("通知执行器出错:{}", e.toString());
+        }
     }
 }
