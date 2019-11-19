@@ -1,7 +1,6 @@
 package admin.controller;
 
 
-import admin.annotation.TokenCheck;
 import admin.constant.AdminConstant;
 import admin.entity.TesseractMenuResource;
 import admin.pojo.VO.CommonResponseVO;
@@ -47,7 +46,7 @@ public class TesseractMenuResourceController {
      * @author: LeoLee
      * @date: 2019/7/12
      */
-    @TokenCheck
+
     @PreAuthorize("hasPermission('menu', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/menuList")
     public CommonResponseVO menuList(@NotNull @Min(1) Integer currentPage
@@ -70,7 +69,7 @@ public class TesseractMenuResourceController {
      *
      * @return
      */
-    @TokenCheck
+
     @PreAuthorize("hasPermission('menu', 'select') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/allMenu")
     public CommonResponseVO allMenu() {
@@ -84,14 +83,14 @@ public class TesseractMenuResourceController {
      * @return
      * @throws Exception
      */
-    @TokenCheck
+
     @PreAuthorize("hasPermission('menu', 'add') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/saveOrUpdateMenu")
     public CommonResponseVO saveOrUpdateMenu(@Validated @RequestBody TesseractMenuResource tesseractMenuResource) throws Exception {
         tesseractMenuResourceService.saveOrUpdateMenu(tesseractMenuResource);
         return CommonResponseVO.SUCCESS;
     }
-    @TokenCheck
+
     @PreAuthorize("hasPermission('menu', 'delete') and hasRole('" + AdminConstant.SUPER_ADMIN_NAME + "')")
     @RequestMapping("/deleteMenu")
     public CommonResponseVO deleteMenu(@NotNull Integer menuId) throws Exception {

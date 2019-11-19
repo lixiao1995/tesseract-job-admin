@@ -222,12 +222,12 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
-    public boolean checkToken(String token) {
+    public TesseractToken getUserToken(String token) {
         QueryWrapper<TesseractToken> tokenQueryWrapper = new QueryWrapper<>();
         tokenQueryWrapper.lambda()
                 .eq(TesseractToken::getToken, token)
                 .gt(TesseractToken::getExpireTime, System.currentTimeMillis());
-        return !(tokenService.getOne(tokenQueryWrapper) == null);
+        return tokenService.getOne(tokenQueryWrapper);
     }
 
     @Override
@@ -306,9 +306,6 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     @Override
     public UserAuthVO getUserAuthInfo(String token) {
         //  统一做 token 的校验拦截，包括是否存在、已过期、token刷新等问题
-        if (StringUtils.isEmpty(token)) {
-            throw new TesseractException("token为空");
-        }
         UserAuthVO userAuthVO = new UserAuthVO();
         QueryWrapper<TesseractToken> tesseractTokenQueryWrapper = new QueryWrapper<>();
         tesseractTokenQueryWrapper.lambda().eq(TesseractToken::getToken, token);

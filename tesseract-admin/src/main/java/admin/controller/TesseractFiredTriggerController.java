@@ -1,7 +1,6 @@
 package admin.controller;
 
 
-import admin.annotation.TokenCheck;
 import admin.entity.TesseractFiredJob;
 import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.FiredTriggerVO;
@@ -30,7 +29,7 @@ public class TesseractFiredTriggerController {
     @Autowired
     private ITesseractFiredJobService firedJobService;
 
-    @TokenCheck
+
     @RequestMapping("/firedTriggerList")
     public CommonResponseVO firedTriggerList(@NotNull @Min(1) Long currentPage
             , @NotNull @Min(1) @Max(50) Long pageSize, TesseractFiredJob condition) {
@@ -38,7 +37,7 @@ public class TesseractFiredTriggerController {
         return CommonResponseVO.success(firedTrigger);
     }
 
-    @TokenCheck
+
     @RequestMapping("/stop")
     public CommonResponseVO stopFiredTrigger(@NotNull Integer firedTriggerId) throws Exception {
         firedJobService.stopFiredJob(firedTriggerId);

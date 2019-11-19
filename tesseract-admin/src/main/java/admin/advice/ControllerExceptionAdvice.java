@@ -21,7 +21,6 @@ public class ControllerExceptionAdvice {
      */
     @ExceptionHandler(value = {AccessDeniedException.class, AuthorizationServiceException.class})
     public CommonResponseVO accessDeniedExceptionHandler(Exception e) {
-        e.printStackTrace();
         log.error(e.getMessage());
         return CommonResponseVO.fail(401, "鉴权失败", null);
     }
@@ -36,24 +35,19 @@ public class ControllerExceptionAdvice {
     @ExceptionHandler(AuthenticationException.class)
     public CommonResponseVO authenticationExceptionHandler(Exception e) {
         log.error(e.toString());
-        if (e.getMessage() != null) {
-            return CommonResponseVO.fail(401, e.getMessage(), null);
-        }
         return CommonResponseVO.fail(401, "身份验证失败", null);
     }
 
 
     @ExceptionHandler(TesseractException.class)
     public CommonResponseVO tesseractExceptionExceptionHandler(TesseractException e) {
-        e.printStackTrace();
-        log.error(e.getMsg());
+        log.error(e.toString());
         return CommonResponseVO.fail(e.getStatus(), e.getMsg(), null);
     }
 
     @ExceptionHandler(Exception.class)
     public CommonResponseVO commonExceptionHandler(Exception e) {
-        e.printStackTrace();
-        log.error(e.getMessage());
+        log.error(e.toString());
         return CommonResponseVO.FAIL;
     }
 

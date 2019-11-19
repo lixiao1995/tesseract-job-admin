@@ -1,5 +1,6 @@
 package admin.service;
 
+import admin.entity.TesseractToken;
 import admin.entity.TesseractUser;
 import admin.pojo.DO.TesseractUserDO;
 import admin.pojo.VO.UserAuthVO;
@@ -47,7 +48,13 @@ public interface ITesseractUserService extends IService<TesseractUser> {
 
     void passwordRevert(Integer userId);
 
-    boolean checkToken(String token);
+    /**
+     * 获取用户token
+     *
+     * @param token
+     * @return
+     */
+    TesseractToken getUserToken(String token);
 
     /**
      * 根据用户名获取用户，供security使用
