@@ -38,7 +38,7 @@ public class TaskServiceImpl implements ITaskService {
         try {
             NettyHttpClient nettyHttpClient = CHANNEL_MAP.get(socket);
             if (nettyHttpClient == null) {
-                nettyHttpClient = new NettyHttpClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
+                nettyHttpClient = new NettyHttpClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler());
                 CHANNEL_MAP.put(socket, nettyHttpClient);
             }
             Channel channel = nettyHttpClient.getActiveChannel();

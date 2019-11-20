@@ -20,6 +20,12 @@ import java.util.Collection;
  * @since 2019-07-03
  */
 public interface ITesseractUserService extends IService<TesseractUser> {
+    /**
+     * 用户登录
+     *
+     * @param userDO
+     * @return
+     */
     UserLoginVO userLogin(UserDO userDO);
 
     void userLogout(String token);
@@ -28,12 +34,27 @@ public interface ITesseractUserService extends IService<TesseractUser> {
 
     void saveOrUpdateUser(TesseractUserDO tesseractUserDO);
 
+    /**
+     * 激活用户
+     *
+     * @param userId
+     */
     void validUser(Integer userId);
 
+    /**
+     * 失效用户
+     *
+     * @param userId
+     */
     void invalidUser(Integer userId);
 
     Collection<Integer> statisticsUser();
 
+    /**
+     * 删除用户
+     *
+     * @param userId
+     */
     void deleteUser(Integer userId);
 
     /**

@@ -12,19 +12,16 @@ import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.util.CommonUtils;
 
 /**
- * @description:
+ * @description: 收到执行器回复接收到任务时唤醒执行线程
  * @author: nickle
  * @create: 2019-09-25 16:14
  **/
 @ChannelHandler.Sharable
 @Slf4j
-@AllArgsConstructor
 public class TesseractTaskExecutorHandler extends ChannelInboundHandlerAdapter {
-    private String socket;
-    private Integer executorDetailId;
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         FullHttpResponse fullHttpResponse = (FullHttpResponse) msg;
         byte[] bytes = CommonUtils.byteBufToByteArr(fullHttpResponse.content());
         TesseractExecutorResponse response = (TesseractExecutorResponse) TesseractJobServiceDelegator.serializerService.deserialize(bytes);
@@ -35,10 +32,5 @@ public class TesseractTaskExecutorHandler extends ChannelInboundHandlerAdapter {
         }
         tesseractFutureTask.setT(response);
         tesseractFutureTask.unlock();
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.toString());
     }
 }
