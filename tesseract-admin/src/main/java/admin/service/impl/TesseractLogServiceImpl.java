@@ -2,6 +2,7 @@
 package admin.service.impl;
 
 import admin.core.event.RetryEvent;
+import admin.entity.TesseractFiredJob;
 import admin.entity.TesseractLog;
 import admin.mapper.TesseractLogMapper;
 import admin.pojo.DO.StatisticsLogDO;
@@ -54,9 +55,14 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     @Autowired
     @Qualifier("retryEventBus")
     private EventBus retryEventBus;
-
+    /**
+     * 分析天数
+     */
     private int statisticsDays = 7;
-
+    /**
+     * 角色属性名
+     */
+    private String roleFieldName = "roleName";
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -65,9 +71,19 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         Integer fireJobId = tesseractAdminJobNotify.getFireJobId();
         String exception = tesseractAdminJobNotify.getException();
         TesseractLog tesseractLog = this.getById(logId);
+        if (fireJobId == null) {
+            log.error("fireJobId为空:{}", tesseractAdminJobNotify);
+            throw new TesseractException("fireJobId为空");
+        }
         if (tesseractLog == null) {
             log.error("获取日志为空:{}", tesseractAdminJobNotify);
-            throw new TesseractException("获取日志为空" + tesseractAdminJobNotify);
+            throw new TesseractException("获取日志为空");
+        }
+        TesseractFiredJob firedJob = firedJobService.getById(fireJobId);
+        if (firedJob == null) {
+            //这里可能由用户取消,只需要打印日志即可
+            log.error("任务:{},用户已取消", tesseractAdminJobNotify);
+            return;
         }
         if (!StringUtils.isEmpty(exception)) {
             tesseractLog.setStatus(LOG_FAIL);
@@ -128,7 +144,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         startDate.setTime(endTime);
         log.info("startTime:{},endTime:{}", startDate, endDate);
         Integer groupId = null;
-        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+        if (checkListItem(user.getRoleList(), roleFieldName, SUPER_ADMIN_ROLE_NAME)) {
             groupId = user.getGroupId();
         }
         List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime, groupId);
@@ -146,13 +162,13 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         List<Map<String, Object>> list = Lists.newArrayList();
         Integer groupId = null;
-        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+        if (checkListItem(user.getRoleList(), roleFieldName, SUPER_ADMIN_ROLE_NAME)) {
             groupId = user.getGroupId();
         }
         List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie(groupId);
         statisticsLogDOList.forEach(statisticsLogDO -> {
             HashMap<String, Object> hashMap = Maps.newHashMap();
-            hashMap.put("name", statisticsLogDO.getDataStr());
+            hashMap.put("status", statisticsLogDO.getStatus());
             hashMap.put("value", statisticsLogDO.getNum());
             list.add(hashMap);
         });

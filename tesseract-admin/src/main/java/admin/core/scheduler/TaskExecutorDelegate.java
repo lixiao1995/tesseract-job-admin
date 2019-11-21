@@ -1,7 +1,7 @@
 package admin.core.scheduler;
 
 import admin.constant.AdminConstant;
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.scheduler.bean.CurrentTaskInfo;
 import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.router.impl.HashRouter;
@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static admin.constant.AdminConstant.*;
-import static admin.core.netty.server.TesseractJobServiceDelegator.*;
+import static admin.core.TesseractJobServiceDelegator.*;
 import static tesseract.core.constant.CommonConstant.EXECUTE_MAPPING;
 import static tesseract.core.constant.CommonConstant.HTTP_PREFIX;
 
@@ -129,6 +129,7 @@ public class TaskExecutorDelegate {
             TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
             tesseractLog.setRetryCount(firedJob.getRetryCount());
         }
+        log.info("tesseractLog:{}", tesseractLog);
         logService.save(tesseractLog);
         currentTaskInfo.setLog(tesseractLog);
         //如果不是重试任务，设置firedTrigger.重试任务 已经拥有fire job
@@ -166,10 +167,10 @@ public class TaskExecutorDelegate {
         } catch (TesseractException e) {
             TaskExecutorDelegate.log.error("发起调度异常", e);
             TesseractJobServiceDelegator.taskService.errorHandle(socket);
-            response = TesseractExecutorResponse.builder().body(e.getMsg()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            response = TesseractExecutorResponse.builder().msg(e.getMsg()).status(TesseractExecutorResponse.FAIL_STATUS).build();
         } catch (Exception e) {
             TaskExecutorDelegate.log.error("发起调度异常", e);
-            response = TesseractExecutorResponse.builder().body(e.getMessage()).status(TesseractExecutorResponse.FAIL_STAUTS).build();
+            response = TesseractExecutorResponse.builder().msg(e.getMessage()).status(TesseractExecutorResponse.FAIL_STATUS).build();
         }
         //发送任务成功直接返回等待执行后更新日志状态
         if (response.getStatus() == TesseractExecutorResponse.SUCCESS_STATUS) {
@@ -178,9 +179,9 @@ public class TaskExecutorDelegate {
         //执行失败逻辑，执行到这一步必定是网络问题如，netty client失败，uri异常等
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setEndTime(System.currentTimeMillis());
-        Object body = response.getBody();
-        if (body != null) {
-            tesseractLog.setMsg(body.toString());
+        String msg = response.getMsg();
+        if (msg != null) {
+            tesseractLog.setMsg(msg);
         }
         /**
          * 循环执行，直到所有机器不可用，非任务执行异常
@@ -200,6 +201,11 @@ public class TaskExecutorDelegate {
         if (executorDetailList.size() > 1) {
             doRetry(currentTaskInfo, incrRetryCount);
         } else {
+            TesseractLog log = currentTaskInfo.getLog();
+            @NotNull Integer retryCount = currentTaskInfo.getTaskContextInfo().getTrigger().getRetryCount();
+            if (retryCount > 0) {
+                log.setMsg(log.getMsg() + String.format("<执行器不足不能重试,重试次数: %d>", retryCount));
+            }
             doFailWithFireJob(currentTaskInfo);
         }
     }
@@ -213,10 +219,10 @@ public class TaskExecutorDelegate {
      */
     private static void doRetry(CurrentTaskInfo currentTaskInfo, boolean incrRetryCount) {
         log.info("进入重试逻辑");
-        TesseractLog tesseractLog = currentTaskInfo.getLog();
         List<TesseractExecutorDetail> executorDetailList = currentTaskInfo.getTaskContextInfo().getExecutorDetailList();
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
         TesseractTrigger trigger = currentTaskInfo.getTaskContextInfo().getTrigger();
+        doFailWithoutFireJob(currentTaskInfo);
         //广播策略不重试
         if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_BROADCAST)) {
             doFailWithoutFireJob(currentTaskInfo);
@@ -227,10 +233,8 @@ public class TaskExecutorDelegate {
         //更新正在执行触发器的重试次数
         if (incrRetryCount) {
             firedJob.setRetryCount(firedJob.getRetryCount() + 1);
-            tesseractLog.setRetryCount(firedJob.getRetryCount() + 1);
             firedJobService.updateById(firedJob);
         }
-        doFailWithoutFireJob(currentTaskInfo);
         if (trigger.getStrategy().equals(SCHEDULER_STRATEGY_SHARDING)) {
             //分片仅重试当前分片索引,通过hash策略随机选择一台机器重试
             TesseractExecutorDetail tesseractExecutorDetail = SCHEDULE_ROUTER_MAP.get(SCHEDULER_STRATEGY_HASH).routerExecutor(executorDetailList);
@@ -272,6 +276,7 @@ public class TaskExecutorDelegate {
         CurrentTaskInfo currentTaskInfo = new CurrentTaskInfo(taskContextInfo);
         TesseractLog tesseractLog = TesseractBeanFactory.createDefaultLog(currentTaskInfo);
         tesseractLog.setMsg(msg);
+        tesseractLog.setEndTime(System.currentTimeMillis());
         tesseractLog.setStatus(LOG_FAIL);
         logService.save(tesseractLog);
         mailSender.logSendMail(tesseractLog);
@@ -287,6 +292,7 @@ public class TaskExecutorDelegate {
     private static void doFailWithoutFireJob(CurrentTaskInfo currentTaskInfo) {
         log.info("执行任务失败:{},开始记录日志并发送邮件", currentTaskInfo);
         TesseractLog tesseractLog = currentTaskInfo.getLog();
+        tesseractLog.setEndTime(System.currentTimeMillis());
         logService.updateById(tesseractLog);
         mailSender.logSendMail(tesseractLog);
     }

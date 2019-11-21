@@ -11,6 +11,11 @@ import java.util.Map;
 
 import static admin.util.AdminUtils.bcryptEncode;
 
+/**
+ * 服务端所有常量
+ *
+ * @author nickle
+ */
 public class AdminConstant {
     /**
      * 用户相关
@@ -20,7 +25,6 @@ public class AdminConstant {
     public static final String SUPER_ADMIN_NAME = "super_admin";
     public static final String SUPER_ADMIN_ROLE_NAME = SUPER_ADMIN_NAME;
     public static final String DEFAULT_PASSWORD = "666666";
-    public static final String DEFAULT_PASSWORD_CODE = bcryptEncode(DEFAULT_PASSWORD);
 
     /**
      * 日志相关

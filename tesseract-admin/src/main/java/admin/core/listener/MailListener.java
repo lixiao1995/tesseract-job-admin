@@ -27,7 +27,7 @@ public class MailListener {
 
     @Subscribe
     @AllowConcurrentEvents
-    public void sendMail(MailEvent mailEvent) throws Exception {
+    public void sendMail(MailEvent mailEvent) {
         //建立邮件消息
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -36,9 +36,10 @@ public class MailListener {
             helper.setTo(mailEvent.getTo());
             helper.setSubject(mailEvent.getSubject());
             helper.setText(mailEvent.getBody(), true);
+            log.debug("发送邮件:{}", mailEvent.getBody());
             mailSender.send(mimeMessage);
         } catch (Exception e) {
-            log.error("发送邮件异常");
+            log.error("发送邮件异常:{}", e.toString());
         }
     }
 }

@@ -1,6 +1,6 @@
 package admin.core.scheduler.scanner;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.entity.TesseractGroup;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.lifecycle.IThreadLifycycle;
@@ -31,7 +31,7 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
      */
     @Override
     public void run() {
-        log.info("ExecutorScanner-{} start", tesseractGroup.getName());
+        log.info("线程: {} 启动", this.getName());
         while (!isStop) {
             try {
                 boolean hasMore = TesseractJobServiceDelegator.executorDetailService.clearInvalidMachine(tesseractGroup,
@@ -47,6 +47,7 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
             } catch (InterruptedException e) {
             }
         }
+        log.info("线程: {} 停止", this.getName());
     }
 
     @Override
@@ -57,10 +58,12 @@ public class ExecutorScanner extends Thread implements IThreadLifycycle {
     @Override
     public void startThread() {
         this.start();
+        log.info("线程: {} 启动", this.getName());
     }
 
     @Override
     public void stopThread() {
+        log.info("线程: {} 停止", this.getName());
         this.isStop = true;
         this.interrupt();
     }

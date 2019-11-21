@@ -1,22 +1,24 @@
 package admin.core.scheduler.service.impl;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.netty.server.handler.TesseractTaskExecutorHandler;
+import admin.core.scheduler.TesseractFutureTask;
 import admin.core.scheduler.service.ITaskService;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractExecutorRequest;
 import tesseract.core.dto.TesseractExecutorResponse;
-import tesseract.core.netty.NettyClient;
+import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.serializer.ISerializerService;
 import tesseract.core.util.HttpUtils;
+import tesseract.exception.TesseractException;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
-import static admin.core.netty.server.TesseractJobServiceDelegator.CHANNEL_MAP;
+import static admin.core.TesseractJobServiceDelegator.CHANNEL_MAP;
+import static admin.core.TesseractJobServiceDelegator.FUTURE_TASK_MAP;
 
 /**
  * <p>Title TaskServiceImpl </p>
@@ -31,28 +33,35 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TesseractExecutorResponse sendToExecutor(URI uri, TesseractExecutorRequest request) throws InterruptedException {
+        TesseractExecutorResponse executorResponse;
         String socket = uri.getHost() + ":" + uri.getPort();
         try {
-            NettyClient nettyClient = CHANNEL_MAP.get(socket);
-            if (nettyClient == null) {
-                nettyClient = new NettyClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler(socket, request.getExecutorDetailId()));
-                CHANNEL_MAP.put(socket, nettyClient);
+            NettyHttpClient nettyHttpClient = CHANNEL_MAP.get(socket);
+            if (nettyHttpClient == null) {
+                nettyHttpClient = new NettyHttpClient(uri.getHost(), uri.getPort(), new TesseractTaskExecutorHandler());
+                CHANNEL_MAP.put(socket, nettyHttpClient);
             }
-            Channel channel = nettyClient.getActiveChannel();
+            Channel channel = nettyHttpClient.getActiveChannel();
             // 发送调度请求
             ISerializerService serializerService = TesseractJobServiceDelegator.serializerService;
             byte[] serialize = serializerService.serialize(request);
-            FullHttpRequest httpRequest = HttpUtils.buildFullHttpRequest(uri, serialize, (fullHttpRequest) -> {
-                fullHttpRequest.headers().set(HttpHeaderNames.HOST, uri.getHost());
-                fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
-            });
+            FullHttpRequest httpRequest = HttpUtils.buildDefaultFullHttpRequest(uri, serialize);
             channel.writeAndFlush(httpRequest).sync();
+            TesseractFutureTask<TesseractExecutorResponse> futureTask = new TesseractFutureTask<>();
+            //同步等待客户端接收到任务回复信息
+            FUTURE_TASK_MAP.put(request.getFireJobId(), futureTask);
+            futureTask.lock();
+            executorResponse = futureTask.get(2, TimeUnit.SECONDS);
+            if (executorResponse == null) {
+                throw new TesseractException("客户端响应超时");
+            }
         } catch (Exception e) {
             CHANNEL_MAP.remove(socket);
             throw e;
+        } finally {
+            FUTURE_TASK_MAP.remove(request.getFireJobId());
         }
-        return TesseractExecutorResponse.SUCCESS;
+        return executorResponse;
     }
 
     @Override

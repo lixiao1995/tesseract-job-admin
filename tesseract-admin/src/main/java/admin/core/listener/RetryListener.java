@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import static admin.core.netty.server.TesseractJobServiceDelegator.*;
+import static admin.core.TesseractJobServiceDelegator.*;
 import static admin.core.scheduler.TaskExecutorDelegate.doFailWithFireJob;
 
 /**

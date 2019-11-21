@@ -4,6 +4,11 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 任务执行请求
+ *
+ * @author nickle
+ */
 @Data
 public class TesseractExecutorRequest implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -12,18 +17,9 @@ public class TesseractExecutorRequest implements Serializable {
 
     private Integer shardingIndex;
 
+    private Object param;
 
     private Long logId;
-
-
-    private Integer triggerId;
-
-
-    private Integer jobId;
-
-
-    private Integer executorDetailId;
-
 
     private Integer fireJobId;
 }

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TesseractLockServiceImpl extends ServiceImpl<TesseractLockMapper, TesseractLock> implements ITesseractLockService {
     private ConcurrentHashMap<String, Boolean> checkMap = new ConcurrentHashMap<>();
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public TesseractLock lock(String lockName, String groupName) {
         String key = lockName + groupName;

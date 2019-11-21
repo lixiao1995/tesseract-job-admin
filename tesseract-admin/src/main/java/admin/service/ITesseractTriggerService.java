@@ -35,16 +35,51 @@ public interface ITesseractTriggerService extends IService<TesseractTrigger> {
                          Long startCreateTime,
                          Long endCreateTime);
 
-    void executeTrigger(String groupName, Integer triggerId);
+    /**
+     * 手动触发任务执行一次
+     *
+     * @param groupId
+     * @param triggerId
+     */
+    void executeTrigger(Integer groupId, Integer triggerId);
 
+    /**
+     * 启动触发器
+     *
+     * @param triggerId
+     * @throws ParseException
+     */
     void startTrigger(Integer triggerId) throws ParseException;
 
+    /**
+     * 停止触发器
+     *
+     * @param triggerId
+     */
     void stopTrigger(Integer triggerId);
 
+    /**
+     * 删除触发器
+     *
+     * @param triggerId
+     */
     void deleteTrigger(Integer triggerId);
 
+    /**
+     * 保存或更新触发器
+     *
+     * @param tesseractTrigger
+     * @throws Exception
+     */
     void saveOrUpdateTrigger(TesseractTrigger tesseractTrigger) throws Exception;
 
-
+    /**
+     * 解析错过执行时间的触发器
+     *
+     * @param tesseractGroup
+     * @param pageSize
+     * @param time           临界时间
+     * @return
+     */
     boolean resovleMissfireTrigger(TesseractGroup tesseractGroup, Integer pageSize, Long time);
 }

@@ -1,5 +1,6 @@
 package admin.core.netty.server;
 
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.netty.server.handler.HeartBeatCommandHandler;
 import admin.core.netty.server.handler.NotifyCommandHandler;
 import admin.core.netty.server.handler.RegistryCommandHandler;
@@ -19,6 +20,11 @@ import java.util.Map;
 
 import static tesseract.core.constant.CommonConstant.*;
 
+/**
+ * 服务端命令分发器，类似于spring mvc的 @see DispatchServlet
+ *
+ * @author nickle
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
@@ -42,7 +48,7 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
         FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
 //        log.info("接收到请求:{}", fullHttpRequest);
         String uri = fullHttpRequest.uri();
-        String path = HttpUtils.buildURLPath(uri);
+        String path = HttpUtils.getURLPath(uri);
         ICommandHandler iCommandHandler = COMMAND_HANDLER_MAP.get(path);
         if (iCommandHandler == null) {
             log.error("找不到处理器,path:{}", path);
@@ -57,8 +63,4 @@ public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {
         iCommandHandler.handleCommand(handleBean, ctx.channel());
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("发生异常:{},\r异常信息:{}", ctx.channel(), cause.getMessage());
-    }
 }

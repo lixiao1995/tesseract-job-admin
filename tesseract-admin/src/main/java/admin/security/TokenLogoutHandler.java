@@ -2,6 +2,7 @@ package admin.security;
 
 import admin.entity.TesseractToken;
 import admin.service.ITesseractTokenService;
+import admin.service.ITesseractUserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -14,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @description: TODO-Eden.Lee
+ * @description: 登出控制器
  * @author: 李明
  * @company: 朴新教育
  * @version:
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 public class TokenLogoutHandler implements LogoutHandler {
 
     @Autowired
-    private ITesseractTokenService tokenService;
+    private ITesseractUserService userService;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
@@ -32,9 +33,6 @@ public class TokenLogoutHandler implements LogoutHandler {
         if (StringUtils.isEmpty(token)) {
             throw new TesseractException("token为空");
         }
-        QueryWrapper<TesseractToken> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(TesseractToken::getToken, token);
-        tokenService.remove(queryWrapper);
-        System.out.println("自定义登出:" + tokenService);
+        userService.userLogout(token);
     }
 }

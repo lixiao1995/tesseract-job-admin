@@ -14,6 +14,11 @@ import java.util.List;
 import static admin.constant.AdminConstant.LOG_FAIL;
 import static admin.constant.AdminConstant.SCHEDULER_NAME_MAP;
 
+/**
+ * 调度所需所有bean 工厂
+ *
+ * @author nickle
+ */
 public class TesseractBeanFactory {
     /**
      * 构建默认日志
@@ -43,7 +48,6 @@ public class TesseractBeanFactory {
         }
         tesseractLog.setCreateTime(System.currentTimeMillis());
         tesseractLog.setRetryCount(0);
-        tesseractLog.setEndTime(System.currentTimeMillis());
         tesseractLog.setExecutorDetailId(0);
         tesseractLog.setStatus(LOG_FAIL);
         tesseractLog.setSocket("");
@@ -68,13 +72,11 @@ public class TesseractBeanFactory {
         TesseractFiredJob firedJob = currentTaskInfo.getFiredJob();
         TesseractLog log = currentTaskInfo.getLog();
         TesseractExecutorRequest executorRequest = new TesseractExecutorRequest();
-        executorRequest.setJobId(jobDetail.getId());
         executorRequest.setClassName(jobDetail.getClassName());
         executorRequest.setLogId(log.getId());
         executorRequest.setFireJobId(firedJob.getId());
-        executorRequest.setTriggerId(trigger.getId());
         executorRequest.setShardingIndex(currentTaskInfo.getShardingIndex());
-        executorRequest.setExecutorDetailId(currentTaskInfo.getCurrentExecutorDetail().getId());
+        executorRequest.setParam(trigger.getExecuteParam());
         return executorRequest;
     }
 
@@ -93,8 +95,12 @@ public class TesseractBeanFactory {
         tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
         tesseractFiredTrigger.setTriggerName(trigger.getName());
         tesseractFiredTrigger.setTriggerId(trigger.getId());
+        tesseractFiredTrigger.setGroupId(trigger.getGroupId());
+        tesseractFiredTrigger.setGroupName(trigger.getGroupName());
         tesseractFiredTrigger.setJobId(jobDetail.getId());
         tesseractFiredTrigger.setClassName(jobDetail.getClassName());
+        tesseractFiredTrigger.setCreator(trigger.getCreator());
+        tesseractFiredTrigger.setCreateTime(System.currentTimeMillis());
         tesseractFiredTrigger.setSocket(currentExecutorDetail.getSocket());
         tesseractFiredTrigger.setExecutorDetailId(currentExecutorDetail.getId());
         tesseractFiredTrigger.setLogId(log.getId());

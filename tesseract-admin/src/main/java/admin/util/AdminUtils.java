@@ -1,6 +1,7 @@
 package admin.util;
 
 import admin.core.scheduler.CronExpression;
+import admin.entity.TesseractExecutor;
 import admin.entity.TesseractRole;
 import admin.pojo.DO.StatisticsLogDO;
 import admin.security.SecurityUserContextHolder;
@@ -86,8 +87,10 @@ public class AdminUtils {
                 if (!"serialVersionUID".equals(name) && value != null) {
                     //添加进查询条件
                     //String 采用like处理
-                    if (value instanceof String && !"".equals(((String) value).trim())) {
-                        queryWrapper.like(StringUtils.camelToUnderline(name), value);
+                    if (value instanceof String) {
+                        if (!"".equals(((String) value).trim())) {
+                            queryWrapper.like(StringUtils.camelToUnderline(name), value);
+                        }
                     } else {
                         queryWrapper.eq(StringUtils.camelToUnderline(name), value);
                     }
@@ -174,9 +177,14 @@ public class AdminUtils {
      * @return
      * @throws Exception
      */
-    public static Long caculateNextTime(String cron) throws Exception {
-        CronExpression cronExpression = new CronExpression(cron);
-        return cronExpression.getTimeAfter(new Date()).getTime();
+    public static Long caculateNextTime(String cron) {
+        try {
+            CronExpression cronExpression = new CronExpression(cron);
+            return cronExpression.getTimeAfter(new Date()).getTime();
+        } catch (Exception e) {
+            throw new TesseractException("cron 表达式错误");
+        }
+
     }
 
     public static String epochMiliToString(Long epochMilli, DateTimeFormatter dateTimeFormatter) {
@@ -202,4 +210,18 @@ public class AdminUtils {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         return bCryptPasswordEncoder.encode(string);
     }
+
+    /**
+     * 检测是否为管理员，如果为管理员则抛出异常
+     *
+     * @param username
+     * @return
+     */
+    public static void checkAdmin(String username) {
+        if (SUPER_ADMIN_NAME.equals(username)) {
+            throw new TesseractException("超级管理员不能修改");
+        }
+    }
+
+
 }

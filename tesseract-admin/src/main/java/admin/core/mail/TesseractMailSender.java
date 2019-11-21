@@ -39,17 +39,13 @@ public class TesseractMailSender {
     @Autowired
     private TesseractMailTemplate mailTemplate;
     @Autowired
-    private ITesseractLogService tesseractLogService;
-    @Autowired
     private ITesseractTriggerService tesseractTriggerService;
     @Autowired
     private ITesseractFiredJobService tesseractFiredJobService;
 
     private static final String EXECUTOR_TEMPLATE_NAME = "executorTemplate.html";
     private static final String EXECUTOR_SUBJECT = "Tesseract-job 执行器报警邮件";
-
-    private static final String MISSIONFAILED_TEMPLATE_NAME = "missionFailedTemplate.html";
-    private static final String MISSIONFAILED_SUBJECT = "任务执行失败邮件报警";
+    
 
     private static final String LOG_TEMPLATE_NAME = "logTemplate.html";
     private static final String LOG_SUBJECT = "Tesseract-job日志报警邮件";
@@ -98,25 +94,5 @@ public class TesseractMailSender {
         mailEvent.setTo(group.getMail());
         mailEventBus.post(mailEvent);
     }
-
-    /**
-     * 失败后发送报警邮件
-     *
-     * @param tesseractLogId
-     */
-    public void logSendMail(Long tesseractLogId) {
-        TesseractLog tesseractLog = tesseractLogService.getById(tesseractLogId);
-        logSendMail(tesseractLog);
-    }
-
-    /**
-     * 任务失败发送报警邮件
-     *
-     * @param tesseractAdminJobNotify
-     */
-    public void missionFailedSendMail(TesseractAdminJobNotify tesseractAdminJobNotify) {
-        logSendMail(tesseractAdminJobNotify.getLogId());
-    }
-
 
 }

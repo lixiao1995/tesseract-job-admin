@@ -1,6 +1,6 @@
 package admin.core.scheduler;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.core.scheduler.bean.TaskContextInfo;
 import admin.core.scheduler.pool.ISchedulerThreadPool;
 import admin.entity.TesseractExecutor;
@@ -85,7 +85,8 @@ public class TesseractTriggerDispatcher {
                 TaskExecutorDelegate.routerExecute(taskContextInfo);
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("任务执行异常:{},上下文信息:{}", e.getMessage(), taskContextInfo);
+                log.error("任务执行异常:{},上下文信息:{}", e.toString(), taskContextInfo);
+                TaskExecutorDelegate.doFail("发生未知异常", taskContextInfo);
             }
         }
 

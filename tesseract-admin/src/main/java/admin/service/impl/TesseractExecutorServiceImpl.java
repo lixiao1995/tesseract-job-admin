@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorMapper, TesseractExecutor> implements ITesseractExecutorService {
     @Autowired
     private ITesseractTriggerService triggerService;
@@ -56,7 +56,7 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
     private ITesseractJobDetailService jobDetailService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public TesseractAdminRegistryResDTO registry(TesseractAdminRegistryRequest tesseractAdminRegistryRequest) throws Exception {
         @NotBlank String ip = tesseractAdminRegistryRequest.getIp();
         @NotNull Integer port = tesseractAdminRegistryRequest.getPort();
@@ -83,6 +83,7 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
 
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
+        lambda.orderByDesc(TesseractExecutor::getCreateTime);
         IPage<TesseractExecutor> page = page(tesseractExecutorPage, queryWrapper);
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(currentPage);
@@ -130,10 +131,20 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
             return;
         }
         //新增操作
+        doSave(tesseractExecutor);
+    }
+
+    private void doSave(TesseractExecutor tesseractExecutor) {
+        QueryWrapper<TesseractExecutor> executorQueryWrapper = new QueryWrapper<>();
+        executorQueryWrapper.lambda().eq(TesseractExecutor::getName, tesseractExecutor.getName());
+        if (this.getOne(executorQueryWrapper) != null) {
+            throw new TesseractException("执行器名称重复");
+        }
         tesseractExecutor.setCreateTime(System.currentTimeMillis());
         tesseractExecutor.setCreator(SecurityUserContextHolder.getUser().getUsername());
         save(tesseractExecutor);
     }
+
 
     @Override
     public void deleteExecutor(Integer executorId) {

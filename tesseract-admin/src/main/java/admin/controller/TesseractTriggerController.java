@@ -1,16 +1,13 @@
 package admin.controller;
 
 
-import admin.annotation.TokenCheck;
 import admin.entity.TesseractTrigger;
 import admin.pojo.VO.CommonResponseVO;
 import admin.pojo.VO.TriggerVO;
 import admin.service.ITesseractTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import tesseract.exception.TesseractException;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -34,7 +31,6 @@ public class TesseractTriggerController {
 
 
     @GetMapping("/triggerList")
-    @TokenCheck
     public CommonResponseVO tesseractTriggerList(@NotNull @Min(1) Integer currentPage
             , @NotNull @Min(1) @Max(50) Integer pageSize, TesseractTrigger condition,
                                                  Long startCreateTime,
@@ -47,38 +43,30 @@ public class TesseractTriggerController {
     }
 
     @PostMapping("/addTrigger")
-    @TokenCheck
     public CommonResponseVO addTrigger(@Validated @RequestBody TesseractTrigger tesseractTrigger) throws Exception {
         triggerService.saveOrUpdateTrigger(tesseractTrigger);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/execute")
-    @TokenCheck
-    public CommonResponseVO execute(String groupName, @NotNull Integer triggerId) {
-        if (StringUtils.isEmpty(groupName)) {
-            throw new TesseractException("请先给触发器所属执行器添加组");
-        }
-        triggerService.executeTrigger(groupName, triggerId);
+    public CommonResponseVO execute(@NotNull Integer groupId, @NotNull Integer triggerId) {
+        triggerService.executeTrigger(groupId, triggerId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/start")
-    @TokenCheck
     public CommonResponseVO start(@NotNull Integer triggerId) throws ParseException {
         triggerService.startTrigger(triggerId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/stop")
-    @TokenCheck
     public CommonResponseVO stop(@NotNull Integer triggerId) {
         triggerService.stopTrigger(triggerId);
         return CommonResponseVO.SUCCESS;
     }
 
     @RequestMapping("/delete")
-    @TokenCheck
     public CommonResponseVO delete(@NotNull Integer triggerId) {
         triggerService.deleteTrigger(triggerId);
         return CommonResponseVO.SUCCESS;

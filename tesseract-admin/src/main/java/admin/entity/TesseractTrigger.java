@@ -47,6 +47,8 @@ public class TesseractTrigger implements Serializable {
     @NotBlank
     private String description;
 
+    private String executeParam;
+
     /**
      * 触发器的组跟随执行器
      */

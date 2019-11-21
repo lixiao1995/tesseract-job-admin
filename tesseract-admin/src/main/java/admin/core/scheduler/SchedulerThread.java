@@ -1,6 +1,6 @@
 package admin.core.scheduler;
 
-import admin.core.netty.server.TesseractJobServiceDelegator;
+import admin.core.TesseractJobServiceDelegator;
 import admin.entity.TesseractGroup;
 import admin.entity.TesseractTrigger;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author nickle
@@ -27,12 +28,18 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
     /**
      * 调度间隔时间
      */
-    private int sleepTime = 5 * 1000;
-
+    private int sleepTime = 20 * 1000;
+    private Random sleepRandom = new Random();
     /**
      * 触发容错时间
      */
     private int accurateTime = 1 * 1000;
+
+    /**
+     * 最小睡眠时间 单位 S
+     */
+    private int minSleepTime = 2;
+
 
     public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher) {
         this.tesseractTriggerDispatcher = tesseractTriggerDispatcher;
@@ -46,7 +53,7 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("SchedulerThread-{} start", tesseractGroup.getName());
+        log.info("线程: {} 启动", this.getName());
         while (!isStop) {
             int blockGetAvailableThreadNum = tesseractTriggerDispatcher.blockGetAvailableThreadNum();
             log.info("可用线程数:{}", blockGetAvailableThreadNum);
@@ -63,18 +70,23 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
                         try {
                             this.wait(time);
                         } catch (InterruptedException e) {
+                            //这里中断，可能是spring的destroy生命周期调用
+                            log.info("调度线程-{}中断,将取消调度:{}", tesseractGroup.getName(), triggerList);
+                            continue;
                         }
                     }
                 }
                 tesseractTriggerDispatcher.dispatchTrigger(triggerList);
+                //这里继续调度，由于上面采用分页处理，可能后面还需要调度的触发器
                 continue;
             }
-            // 下一次发起调度是20s之后
+            //随机睡眠
             try {
-                Thread.sleep(sleepTime);
+                Thread.sleep(nextScheduleTime());
             } catch (InterruptedException e) {
             }
         }
+        log.info("线程: {} 停止", this.getName());
     }
 
     @Override
@@ -87,5 +99,18 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
         this.isStop = true;
         this.tesseractTriggerDispatcher.stop();
         this.interrupt();
+    }
+
+    /**
+     * 返回下一次调度时间，最低为2s
+     *
+     * @return
+     */
+    private long nextScheduleTime() {
+        long sleepTime = sleepRandom.nextInt(this.sleepTime);
+        if (sleepTime < minSleepTime) {
+            sleepTime = minSleepTime;
+        }
+        return sleepTime;
     }
 }

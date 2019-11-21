@@ -41,7 +41,8 @@
     </select>
 
     <select id="statisticsSuccessLogPie" resultType="admin.pojo.DO.StatisticsLogDO">
-        select case status when 0 then '失败' when 1 then '成功' when 2 then '等待执行' when 3 then '未收到执行器确认' end as dataStr,
+        select
+        status,
         count(*) as num
         from tesseract_log
         <if test="groupId != null">
