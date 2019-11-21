@@ -118,11 +118,7 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
     }
 
     @Override
-    @Deprecated
     public void userLogout(String token) {
-        if (StringUtils.isEmpty(token)) {
-            return;
-        }
         QueryWrapper<TesseractToken> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TesseractToken::getToken, token);
         tokenService.remove(queryWrapper);

@@ -45,6 +45,13 @@ public class TesseractUserController {
         return CommonResponseVO.success(tesseractUserService.userLogin(userDO));
     }
 
+    /**
+     * 改由spring security来做
+     *
+     * @param httpServletRequest
+     * @return
+     */
+    @Deprecated
     @RequestMapping("/logout")
     public CommonResponseVO logout(HttpServletRequest httpServletRequest) {
         String token = httpServletRequest.getHeader("X-Token");

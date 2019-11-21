@@ -35,12 +35,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-
     @Autowired
     private UserDetailsService userDetailsService;
-    @Autowired
-    private ITesseractUserService tesseractUserService;
     @Autowired
     private TokenAuthenticationFilter tokenAuthenticationFilter;
     @Autowired
@@ -75,7 +71,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/tesseract-user/getUserAuthInfo").permitAll()
                 .antMatchers("/tesseract-user/login").permitAll()
                 .antMatchers("/tesseract-user/register").permitAll()
-                .antMatchers("/tesseract-user/logout").permitAll()
                 .antMatchers("/tesseract-menu").permitAll()
                 .antMatchers("/instances/**").permitAll()
                 .antMatchers("/actuator/**").permitAll()

@@ -28,10 +28,30 @@ public interface ITesseractUserService extends IService<TesseractUser> {
      */
     UserLoginVO userLogin(UserDO userDO);
 
+    /**
+     * 用户退出
+     *
+     * @param token
+     */
     void userLogout(String token);
 
+    /**
+     * 分页获取用户列表
+     *
+     * @param currentPage
+     * @param pageSize
+     * @param condition
+     * @param startCreateTime
+     * @param endCreateTime
+     * @return
+     */
     IPage<TesseractUser> listByPage(Integer currentPage, Integer pageSize, TesseractUser condition, Long startCreateTime, Long endCreateTime);
 
+    /**
+     * 根据用户ID判断更新与保存
+     *
+     * @param tesseractUserDO
+     */
     void saveOrUpdateUser(TesseractUserDO tesseractUserDO);
 
     /**
