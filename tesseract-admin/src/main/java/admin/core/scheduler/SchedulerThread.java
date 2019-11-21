@@ -35,6 +35,12 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
      */
     private int accurateTime = 1 * 1000;
 
+    /**
+     * 最小睡眠时间 单位 S
+     */
+    private int minSleepTime = 2;
+
+
     public SchedulerThread(TesseractGroup tesseractGroup, TesseractTriggerDispatcher tesseractTriggerDispatcher) {
         this.tesseractTriggerDispatcher = tesseractTriggerDispatcher;
         this.tesseractGroup = tesseractGroup;
@@ -102,8 +108,8 @@ public class SchedulerThread extends Thread implements IThreadLifycycle {
      */
     private long nextScheduleTime() {
         long sleepTime = sleepRandom.nextInt(this.sleepTime);
-        if (sleepTime < 2) {
-            sleepTime = 2;
+        if (sleepTime < minSleepTime) {
+            sleepTime = minSleepTime;
         }
         return sleepTime;
     }

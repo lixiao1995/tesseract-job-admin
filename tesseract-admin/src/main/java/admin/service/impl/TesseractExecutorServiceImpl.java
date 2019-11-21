@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorMapper, TesseractExecutor> implements ITesseractExecutorService {
     @Autowired
     private ITesseractTriggerService triggerService;
@@ -56,7 +56,7 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
     private ITesseractJobDetailService jobDetailService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public TesseractAdminRegistryResDTO registry(TesseractAdminRegistryRequest tesseractAdminRegistryRequest) throws Exception {
         @NotBlank String ip = tesseractAdminRegistryRequest.getIp();
         @NotNull Integer port = tesseractAdminRegistryRequest.getPort();

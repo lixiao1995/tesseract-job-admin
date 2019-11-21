@@ -55,9 +55,14 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
     @Autowired
     @Qualifier("retryEventBus")
     private EventBus retryEventBus;
-
+    /**
+     * 分析天数
+     */
     private int statisticsDays = 7;
-
+    /**
+     * 角色属性名
+     */
+    private String roleFieldName = "roleName";
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -139,7 +144,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         startDate.setTime(endTime);
         log.info("startTime:{},endTime:{}", startDate, endDate);
         Integer groupId = null;
-        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+        if (checkListItem(user.getRoleList(), roleFieldName, SUPER_ADMIN_ROLE_NAME)) {
             groupId = user.getGroupId();
         }
         List<StatisticsLogDO> failStatisticsLogDOList = this.getBaseMapper().statisticsFailLog(startTime, endTime, groupId);
@@ -157,7 +162,7 @@ public class TesseractLogServiceImpl extends ServiceImpl<TesseractLogMapper, Tes
         SecurityUserDetail user = SecurityUserContextHolder.getUser();
         List<Map<String, Object>> list = Lists.newArrayList();
         Integer groupId = null;
-        if (checkListItem(user.getRoleList(), "roleName", SUPER_ADMIN_ROLE_NAME)) {
+        if (checkListItem(user.getRoleList(), roleFieldName, SUPER_ADMIN_ROLE_NAME)) {
             groupId = user.getGroupId();
         }
         List<StatisticsLogDO> statisticsLogDOList = this.getBaseMapper().statisticsSuccessLogPie(groupId);

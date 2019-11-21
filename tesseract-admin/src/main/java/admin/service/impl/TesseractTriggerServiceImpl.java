@@ -76,7 +76,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
      * @param timeWindowSize
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<TesseractTrigger> findTriggerWithLock(TesseractGroup tesseractGroup, int batchSize, long time, Integer timeWindowSize) {
         lockService.lock(TRIGGER_LOCK_NAME, tesseractGroup.getName());
@@ -168,7 +168,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
         if (!CollectionUtils.isEmpty(triggerList)) {
             flag = true;
             //按组分类后发送邮件，避免发送多个邮件
-            Map<Integer, List<TesseractTrigger>> map = new HashMap<>();
+            Map<Integer, List<TesseractTrigger>> map = new HashMap<>(16);
             triggerList.forEach(trigger -> {
                 Integer groupId = trigger.getGroupId();
                 List<TesseractTrigger> tmpTriggerList = map.get(groupId);
