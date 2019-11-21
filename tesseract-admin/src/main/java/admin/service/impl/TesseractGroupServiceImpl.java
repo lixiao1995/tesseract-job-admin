@@ -144,6 +144,7 @@ public class TesseractGroupServiceImpl extends ServiceImpl<TesseractGroupMapper,
         checkRoleAndCallback(groupId -> lambda.eq(TesseractGroup::getId, groupId));
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
+        lambda.orderByDesc(TesseractGroup::getCreateTime);
         return page(page, queryWrapper);
     }
 

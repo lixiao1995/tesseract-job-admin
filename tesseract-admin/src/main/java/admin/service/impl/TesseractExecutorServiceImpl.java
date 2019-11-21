@@ -83,6 +83,7 @@ public class TesseractExecutorServiceImpl extends ServiceImpl<TesseractExecutorM
 
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
+        lambda.orderByDesc(TesseractExecutor::getCreateTime);
         IPage<TesseractExecutor> page = page(tesseractExecutorPage, queryWrapper);
         PageVO pageVO = new PageVO();
         pageVO.setCurrentPage(currentPage);

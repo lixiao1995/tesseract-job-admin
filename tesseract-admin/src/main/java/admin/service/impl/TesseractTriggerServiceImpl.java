@@ -239,6 +239,7 @@ public class TesseractTriggerServiceImpl extends ServiceImpl<TesseractTriggerMap
             lambda.le(TesseractTrigger::getCreateTime, endCreateTime);
         }
         AdminUtils.buildCondition(queryWrapper, condition);
+        lambda.orderByDesc(TesseractTrigger::getCreateTime);
         IPage<TesseractTrigger> pageInfo = page(page, queryWrapper);
         TriggerVO triggerVO = new TriggerVO();
         PageVO pageVO = new PageVO();

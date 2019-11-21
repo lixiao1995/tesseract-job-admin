@@ -140,6 +140,8 @@ public class TesseractUserServiceImpl extends ServiceImpl<TesseractUserMapper, T
 
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
+        //按时间排序
+        lambda.orderByAsc(TesseractUser::getCreateTime);
         return page(page, queryWrapper);
     }
 

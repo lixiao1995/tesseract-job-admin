@@ -68,6 +68,7 @@ public class TesseractRoleServiceImpl extends ServiceImpl<TesseractRoleMapper, T
         }
         //其他
         AdminUtils.buildCondition(queryWrapper, condition);
+        lambda.orderByDesc(TesseractRole::getCreateTime);
         return page(page, queryWrapper);
     }
 

@@ -154,7 +154,8 @@ create table tesseract_group
     description     varchar(255) not null default '' COMMENT '描述',
     creator         varchar(255) not null COMMENT '创建者',
     create_time     bigint       not null COMMENT '创建时间',
-    update_time     bigint       not null COMMENT '更新时间'
+    update_time     bigint       not null COMMENT '更新时间',
+    unique (name)
 ) engine = InnoDB
   default charset = utf8;
 
@@ -162,7 +163,7 @@ create table tesseract_group
 
 insert into tesseract_group(id, name, mail, thread_pool_num, description, creator, create_time, update_time)
 values (1, '默认调度组', '', 0, '默认调度将不会发送任何邮件', 'super_admin', 1562512500000, 1562512500000),
-       (2, 'dev1', '', 10, 'liangxuekai@koolearn-inc.com', 'super_admin', 1562512500000, 1562512500000);
+       (2, 'dev1', '', 10, 'demo@koolearn-inc.com', 'super_admin', 1562512500000, 1562512500000);
 insert into tesseract_user(id, name, password, status, create_time, update_time, group_name, group_id)
 values (1, 'super_admin', '$2a$10$uVpmOfuXvWt7bKsD9VQJa.fSfuuLAt94a/e1WNlJ691aJ7rTWfni.', 1, 1562336661000,
         1562336661000,
@@ -174,33 +175,3 @@ values ( 'testTrigger-1', 1562512500000, 0, '*/15 * * * * ?', 0, 0, 0, 0, 'super
        , 1562512500000, 1562512500000, 2, 'dev1');
 insert into tesseract_executor(id, name, creator, description, create_time, group_name, group_id, mail)
 values (1, 'testExecutor', 'super_admin', 'test', 1562512500000, 'defaultGroup', 1, '');
-
-
-
-truncate table tesseract_job_detail;
-truncate table tesseract_log;
-truncate table tesseract_trigger;
-
-drop procedure insert_trigger;
-DELIMITER //
-CREATE PROCEDURE insert_trigger(IN loop_times INT)
-BEGIN
-    DECLARE var INT DEFAULT 1;
-    start transaction ;
-    WHILE var <= loop_times
-        DO
-            insert into tesseract_trigger( id, name, next_trigger_time, prev_trigger_time, cron, strategy, sharding_num
-                                         , retry_count, status, creator, description, executor_id, executor_name
-                                         , create_time
-                                         , update_time, group_name, group_id)
-            values (var, concat('testTrigger-', var), 1562512500000, 0, '*/5 * * * * ?', 0, 0, 0, 1, 'admin', 'test', 1,
-                    'testExecutor', 1562512500000, 1562512500000, 'dev1', 2);
-            insert into tesseract_job_detail(id, trigger_id, class_name, create_time, creator)
-            values (var, var, 'tesseract.sample.TestJob', 1562512500000, 'test');
-            SET var = var + 1;
-        END WHILE;
-    commit;
-END
-//
-DELIMITER ;
-call insert_trigger(2000);

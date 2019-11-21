@@ -11,7 +11,8 @@ CREATE TABLE `tesseract_btn_resource`
     `status`           tinyint(4)                                             NULL DEFAULT NULL COMMENT '状态码，保留字段',
     `create_time`      bigint(20)                                             NULL DEFAULT NULL COMMENT '创建时间',
     `update_time`      bigint(20)                                             NULL DEFAULT NULL COMMENT '更新时间',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    unique (btn_name)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 3
   CHARACTER SET = utf8
@@ -43,7 +44,8 @@ CREATE TABLE `tesseract_menu_resource`
     `create_time`      bigint(20)                                              NULL     DEFAULT NULL COMMENT '创建时间',
     `update_time`      bigint(20)                                              NULL     DEFAULT NULL COMMENT '更新时间',
     `del_flag`         tinyint(4)                                              NULL     DEFAULT NULL COMMENT '是否删除，0-未删除，1-删除',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    unique (name)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 19
   CHARACTER SET = utf8
@@ -66,7 +68,8 @@ CREATE TABLE `tesseract_role`
     `status`           tinyint(4)                                             NULL DEFAULT NULL COMMENT '状态码，保留字段',
     `create_time`      bigint(20)                                             NULL DEFAULT NULL COMMENT '创建时间',
     `update_time`      bigint(20)                                             NULL DEFAULT NULL COMMENT '更新时间',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    unique (role_name)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 3
   CHARACTER SET = utf8
@@ -127,42 +130,76 @@ INSERT INTO `tesseract_role`(id, role_name, role_desc, create_user_id, create_us
 VALUES (1, 'super_admin', '超级管理员', 1, 'admin', 1, 'admin', 0, 0, NULL, NULL);
 
 # 菜单
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (1, 'dashboard', 'dashboard', 0, '', '', '/dashboard/index', '/dashboard/index', 'documentation', '控制板', 0, '',
         1, 1, 'admin',
         1, 'admin', 0, NULL, 1563606315098, 0);
-INSERT INTO `tesseract_menu_resource`
-VALUES (2, 'executor', 'executor', 0, '', '', '/executor/index', '/executor/index', 'documentation', '执行器列表', 0, '', 2,
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
+VALUES (2, 'executor', 'executor', 0, '', '', '/executor/index', '/executor/index', 'documentation', '执行器列表', 0, '',2,
         1, 'admin',
         1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (3, 'log', 'log', 0, '', '', '/log/index', '/log/index', 'documentation', '日志列表', 0, '', 3, 1, 'admin', 1,
         'admin', 0,
         NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (4, 'group', 'group', 6, '权限管理', '', '/permission/group/index', '/permission/group/index', 'documentation',
         '用户组管理', 0, '', 6, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (5, 'trigger', 'trigger', 0, '', '', '/trigger/index', '/trigger/index', 'documentation', '触发器列表', 0, '', 4, 1,
         'admin', 1,
         'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (6, 'permission', 'permission', 0, '', '', '/permission', '/permission', 'lock', '权限管理', 0, '', 5, 1, 'admin', 1,
         'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (7, 'menu', 'menu', 6, '权限管理', '', '/permission/menuResource/index', '/permission/menuResource/index', 'lock',
         '菜单管理', 0, '', 7, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (8, 'role', 'role', 6, '权限管理', '', '/permission/role/index', '/permission/role/index', 'lock', '角色管理', 0, '', 8,
         1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (9, 'btn', 'btn', 6, '权限管理', '', '/permission/btn/index', '/permission/btn/index', 'lock', '按钮管理', 0, '', 9, 1,
         'admin', 1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
 VALUES (10, 'user', 'user', 6, '权限管理', '', '/permission/user/index', '/permission/user/index', 'documentation', '用户管理',
         0, '', 10, 1, 'admin', 1, 'admin', 0, NULL, NULL, 0);
-INSERT INTO `tesseract_menu_resource`
-VALUES (11, 'runTrigger', 'runTrigger', 0, '', '', '/runTrigger/index', '/runTrigger/index', 'documentation', '运行列表', 0, '', 3,
+INSERT INTO `tesseract_menu_resource`( id, code, name, parent_id, parent_name, redirect, path, full_path, meta_icon
+                                     , meta_title, meta_cache
+                                     , menu_desc, menu_order, create_user_id, create_user_name, update_user_id
+                                     , update_user_name, status, create_time, update_time, del_flag)
+VALUES (11, 'runTrigger', 'runTrigger', 0, '', '', '/runTrigger/index', '/runTrigger/index', 'documentation', '运行列表', 0,
+        '', 3,
         1, 'admin',
         1, 'admin', 0, NULL, NULL, 0);
 

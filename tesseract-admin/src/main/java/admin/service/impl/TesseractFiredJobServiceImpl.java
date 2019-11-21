@@ -61,6 +61,7 @@ public class TesseractFiredJobServiceImpl extends ServiceImpl<TesseractFiredJobM
         Page<TesseractFiredJob> page = new Page<>(currentPage, pageSize);
         QueryWrapper<TesseractFiredJob> firedJobQueryWrapper = new QueryWrapper<>();
         AdminUtils.buildCondition(firedJobQueryWrapper, condition);
+        firedJobQueryWrapper.lambda().orderByDesc(TesseractFiredJob::getCreateTime);
         IPage<TesseractFiredJob> pageInfo = page(page, firedJobQueryWrapper);
         FiredTriggerVO firedTriggerVO = new FiredTriggerVO();
         PageVO pageVO = new PageVO();
