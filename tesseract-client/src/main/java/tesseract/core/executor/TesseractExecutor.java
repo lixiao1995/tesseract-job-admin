@@ -33,7 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING;
 
-
+/**
+ * 任务执行器，采用线程池执行
+ *
+ * @author nickle
+ */
 @Slf4j
 public class TesseractExecutor {
     @Autowired
@@ -201,7 +205,11 @@ public class TesseractExecutor {
 //        throw new TesseractException("找不到网卡");
 //    }
 
-
+    /**
+     * 任务执行体
+     *
+     * @author nickle
+     */
     @Data
     @AllArgsConstructor
     private class WorkRunnable implements Runnable {

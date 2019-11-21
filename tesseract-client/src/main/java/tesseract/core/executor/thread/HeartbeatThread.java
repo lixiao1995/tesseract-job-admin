@@ -12,6 +12,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 
+/**
+ * 心跳处理线程
+ *
+ * @author nickle
+ */
 @Slf4j
 public class HeartbeatThread extends Thread implements IThreadLifycycle {
     private volatile boolean isStop = false;

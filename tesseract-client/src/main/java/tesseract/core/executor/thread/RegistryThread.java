@@ -16,7 +16,7 @@ import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 import static tesseract.core.executor.ClientServiceDelegator.clientJobDetailList;
 
 /**
- * 注册任务
+ * 注册任务线程
  *
  * @author nickle
  */
