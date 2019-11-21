@@ -14,6 +14,11 @@ import java.util.List;
 import static admin.constant.AdminConstant.LOG_FAIL;
 import static admin.constant.AdminConstant.SCHEDULER_NAME_MAP;
 
+/**
+ * 调度所需所有bean 工厂
+ *
+ * @author nickle
+ */
 public class TesseractBeanFactory {
     /**
      * 构建默认日志

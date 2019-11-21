@@ -28,6 +28,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static admin.core.scheduler.TesseractBeanFactory.createScheduleGroupInfo;
 
+/**
+ * 调度器启动器，包含所有结构、所有组调度器、所有组扫描器、netty server启动
+ *
+ * @author nickle
+ */
 @Slf4j
 public class TesseractScheduleBoot {
     @Autowired

@@ -11,6 +11,11 @@ import java.util.Map;
 
 import static admin.util.AdminUtils.bcryptEncode;
 
+/**
+ * 服务端所有常量
+ *
+ * @author nickle
+ */
 public class AdminConstant {
     /**
      * 用户相关

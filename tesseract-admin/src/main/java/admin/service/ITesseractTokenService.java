@@ -15,6 +15,13 @@ import java.util.List;
  * @since 2019-07-06
  */
 public interface ITesseractTokenService extends IService<TesseractToken> {
-
+    /**
+     * 分析活跃用户，目前没有使用
+     *
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @Deprecated
     List<StatisticsLogDO> statisticsActiveUser(long startTime, long endTime);
 }

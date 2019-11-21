@@ -20,6 +20,11 @@ import java.util.Map;
 
 import static tesseract.core.constant.CommonConstant.*;
 
+/**
+ * 服务端命令分发器，类似于spring mvc的 @see DispatchServlet
+ *
+ * @author nickle
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyServerCommandDispatcher extends ChannelInboundHandlerAdapter {

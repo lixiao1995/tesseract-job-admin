@@ -39,7 +39,7 @@ public class TesseractFutureTask<T> implements Future<T> {
     }
 
     @Override
-    public T get() throws InterruptedException, ExecutionException {
+    public T get() throws InterruptedException {
         semaphore.acquire();
         semaphore.release();
         return t;

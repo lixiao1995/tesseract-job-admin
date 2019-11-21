@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * 〈默认执行器线程池〉
+ * 默认执行器线程池，采用空闲列表+执行任务列表
  *
  * @author nickel
  * @create 2019/6/23
