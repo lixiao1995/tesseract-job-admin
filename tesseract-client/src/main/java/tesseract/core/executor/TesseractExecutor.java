@@ -175,36 +175,6 @@ public class TesseractExecutor {
         }
     }
 
-//    /**
-//     * 默认取本地回环地址
-//     *
-//     * @return
-//     */
-//    private String getValidIP() {
-//        if (!StringUtils.isEmpty(ip)) {
-//            return this.ip;
-//        }
-//        Enumeration<NetworkInterface> netInterfaces;
-//        try {
-//            // 拿到所有网卡
-//            netInterfaces = NetworkInterface.getNetworkInterfaces();
-//            InetAddress ip;
-//            // 遍历每个网卡，拿到ip
-//            while (netInterfaces.hasMoreElements()) {
-//                NetworkInterface ni = netInterfaces.nextElement();
-//                Enumeration<InetAddress> addresses = ni.getInetAddresses();
-//                while (addresses.hasMoreElements()) {
-//                    ip = addresses.nextElement();
-//                    if (ip.isLoopbackAddress() && ip.getHostAddress().indexOf(':') == -1) {
-//                        return ip.getHostAddress();
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        throw new TesseractException("找不到网卡");
-//    }
-
     /**
      * 任务执行体
      *
@@ -220,17 +190,23 @@ public class TesseractExecutor {
         @Override
         public void run() {
             Integer fireJobId = tesseractExecutorRequest.getFireJobId();
-            TASK_THREAD_MAP.put(fireJobId, Thread.currentThread());
+            Long logId = tesseractExecutorRequest.getLogId();
             String className = tesseractExecutorRequest.getClassName();
+            Integer shardingIndex = tesseractExecutorRequest.getShardingIndex();
+            Object param = tesseractExecutorRequest.getParam();
+
+            TASK_THREAD_MAP.put(fireJobId, Thread.currentThread());
             TesseractAdminJobNotify tesseractAdminJobNotify = new TesseractAdminJobNotify();
-            tesseractAdminJobNotify.setLogId(tesseractExecutorRequest.getLogId());
+            tesseractAdminJobNotify.setLogId(logId);
             tesseractAdminJobNotify.setFireJobId(fireJobId);
             try {
                 Class<?> aClass = Class.forName(className);
                 JobHandler jobHandler = (JobHandler) aClass.newInstance();
-                ExecutorContext executorContext = new ExecutorContext();
-                executorContext.setShardingIndex(tesseractExecutorRequest.getShardingIndex());
+                //构建执行上下文
+                ExecutorContext executorContext = new ExecutorContext(shardingIndex, param);
+                //开始执行任务
                 jobHandler.execute(executorContext);
+                //执行成功后通知调度端
                 clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
             } catch (Exception e) {
                 log.error("执行异常:{}", e.toString());

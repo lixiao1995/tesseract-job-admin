@@ -1,7 +1,5 @@
 package admin.service.impl;
 
-import admin.entity.Permission;
-import admin.entity.TesseractBtnResource;
 import admin.entity.TesseractRoleBtn;
 import admin.mapper.TesseractRoleBtnMapper;
 import admin.service.ITesseractRoleBtnService;
@@ -22,13 +20,8 @@ import java.util.List;
 public class TesseractRoleBtnServiceImpl extends ServiceImpl<TesseractRoleBtnMapper, TesseractRoleBtn> implements ITesseractRoleBtnService {
 
     @Override
-    public List<TesseractBtnResource> listBtnByRoleIdList(List<Integer> roleIdList) {
-        return getBaseMapper().listBtnByRoleIdList(roleIdList);
-    }
-
-    @Override
-    public Integer countPermissions(List<String> roleNameList,String menuCode,String btnCode) {
-        return getBaseMapper().countPermissions(roleNameList,menuCode,btnCode);
+    public Integer countPermissions(List<String> roleNameList, String menuCode, String btnCode) {
+        return getBaseMapper().countPermissions(roleNameList, menuCode, btnCode);
     }
 
 
