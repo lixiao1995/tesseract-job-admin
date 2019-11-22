@@ -4,11 +4,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import tesseract.EnableTesseractJob;
 
+/**
+ * spring boot工程使用
+ */
 @SpringBootApplication
 @EnableTesseractJob
-public class SampleApplication {
+public class ApplicationWithSpring {
 
     public static void main(String[] args) {
-        SpringApplication.run(SampleApplication.class, args);
+        SpringApplication.run(ApplicationWithSpring.class, args);
     }
 }

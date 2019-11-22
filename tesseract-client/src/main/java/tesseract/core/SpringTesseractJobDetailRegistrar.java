@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class TesseractJobDetailRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+public class SpringTesseractJobDetailRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
     private static int count = 0;
     private static final String NAME_FORMATTER = "clientJobDetail-%d";
 

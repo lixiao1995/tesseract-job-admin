@@ -1,8 +1,8 @@
 package tesseract;
 
 import org.springframework.context.annotation.Import;
-import tesseract.config.ExecutorConfig;
-import tesseract.core.TesseractJobDetailRegistrar;
+import tesseract.config.SpringExecutorConfig;
+import tesseract.core.SpringTesseractJobDetailRegistrar;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import({TesseractJobDetailRegistrar.class, ExecutorConfig.class})
+@Import({SpringTesseractJobDetailRegistrar.class, SpringExecutorConfig.class})
 public @interface EnableTesseractJob {
     String basePackage() default "";
 }

@@ -3,6 +3,7 @@ package tesseract.core.executor.netty.client.handler;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import tesseract.core.dto.TesseractExecutorResponse;
+import tesseract.core.executor.ClientServiceDelegator;
 import tesseract.core.executor.TesseractExecutor;
 import tesseract.core.netty.HandleBean;
 import tesseract.core.netty.ICommandHandler;
@@ -22,9 +23,6 @@ public class ClientHeartBeatHandler implements ICommandHandler {
             log.info("心跳成功");
             return;
         }
-        log.info("心跳失败2s后将重新注册", executorResponse);
-        Thread.sleep(2000);
-        TesseractExecutor.heartbeatThread.pauseThread();
-        TesseractExecutor.registryThread.interruptThread();
+        ClientServiceDelegator.tesseractExecutor.pingPongThread.startRegistry();
     }
 }
