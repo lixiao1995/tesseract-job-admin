@@ -84,7 +84,6 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
             ClientServiceDelegator.clientFeignService.registry(
                     new URI(ClientServiceDelegator.adminServerAddress + REGISTRY_MAPPING), tesseractAdminRegistryRequest);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("注册失败:{}", e.getMessage());
         }
     }

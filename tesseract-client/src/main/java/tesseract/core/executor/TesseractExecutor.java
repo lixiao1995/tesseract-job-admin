@@ -4,9 +4,9 @@ import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+import tesseract.Constant;
+import tesseract.config.TesseractConfiguration;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.context.ExecutorContext;
 import tesseract.core.dto.TesseractAdminJobNotify;
@@ -18,6 +18,7 @@ import tesseract.core.executor.service.IClientService;
 import tesseract.core.executor.thread.HeartbeatThread;
 import tesseract.core.executor.thread.RegistryThread;
 import tesseract.core.handler.JobHandler;
+import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.netty.NettyHttpServer;
 import tesseract.core.serializer.ISerializerService;
 
@@ -40,26 +41,38 @@ import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING;
  */
 @Slf4j
 public class TesseractExecutor {
-    @Autowired
     private IClientService clientFeignService;
-    @Value("${tesseract.admin.address}")
     private String adminServerAddress;
-    @Autowired(required = false)
     private List<ClientJobDetail> clientJobDetailList;
-    @Autowired
     private ISerializerService serializerService;
-
-    @Value("${tesseract.netty.server.port}")
     private Integer nettyServerPort;
+    private Integer corePoolSize;
+    private Integer maxPoolSize;
+    private Integer queueSize;
+
+    public TesseractExecutor(TesseractConfiguration tesseractConfiguration) {
+        log.info("使用configuration: {}", tesseractConfiguration);
+        this.clientFeignService = tesseractConfiguration.getClientFeignService();
+        this.adminServerAddress = tesseractConfiguration.getAdminServerAddress();
+        this.clientJobDetailList = tesseractConfiguration.getClientJobDetailList();
+        this.serializerService = tesseractConfiguration.getSerializerService();
+        this.nettyServerPort = tesseractConfiguration.getNettyServerPort();
+
+        this.corePoolSize = tesseractConfiguration.getCorePoolSize();
+        this.maxPoolSize = tesseractConfiguration.getMaxPoolSize();
+        this.queueSize = tesseractConfiguration.getQueueSize();
+
+        threadPoolExecutor = new ThreadPoolExecutor(corePoolSize, maxPoolSize
+                , 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(queueSize)
+                , r -> new Thread(r, String.format(THREAD_NAME_FORMATTER, ATOMIC_INTEGER.getAndIncrement())));
+    }
 
     /**
      * 线程池
      */
     private final String THREAD_NAME_FORMATTER = "TesseractExecutorThread-%d";
     private final AtomicInteger ATOMIC_INTEGER = new AtomicInteger(0);
-    private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10,
-            800, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1000)
-            , r -> new Thread(r, String.format(THREAD_NAME_FORMATTER, ATOMIC_INTEGER.getAndIncrement())));
+    private final ThreadPoolExecutor threadPoolExecutor;
 
     /**
      * 注册线程
@@ -71,10 +84,12 @@ public class TesseractExecutor {
      */
     public static HeartbeatThread heartbeatThread;
 
+    public static TesseractExecutor tesseractExecutor;
+
     /**
      * 保存任务和线程关联，用于停止任务
      */
-    private static final Map<Integer, Thread> TASK_THREAD_MAP = Maps.newConcurrentMap();
+    private final Map<Integer, Thread> TASK_THREAD_MAP = Maps.newConcurrentMap();
 
     /**
      * 开始执行任务，扔到线程池后发送成功执行通知，执行完毕后发送异步执行成功通知
@@ -122,9 +137,14 @@ public class TesseractExecutor {
      */
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
+        tesseractExecutor = this;
         initServiceDelegator();
         initNettyServer();
         initThread();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("调用shutdown 钩子");
+            tesseractExecutor.destroy();
+        }));
     }
 
     /**
@@ -172,6 +192,10 @@ public class TesseractExecutor {
         }
         if (heartbeatThread != null) {
             heartbeatThread.stopThread();
+        }
+        NettyHttpClient nettyHttpClient = ClientServiceDelegator.getNettyHttpClient();
+        if (nettyHttpClient != null) {
+            nettyHttpClient.close();
         }
     }
 
