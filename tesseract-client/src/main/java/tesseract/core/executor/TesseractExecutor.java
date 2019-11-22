@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
-import tesseract.Constant;
 import tesseract.config.TesseractConfiguration;
 import tesseract.core.annotation.ClientJobDetail;
 import tesseract.core.context.ExecutorContext;
@@ -15,8 +14,7 @@ import tesseract.core.dto.TesseractExecutorResponse;
 import tesseract.core.dto.TesseractStopTaskRequest;
 import tesseract.core.executor.netty.server.NettyClientCommandDispatcher;
 import tesseract.core.executor.service.IClientService;
-import tesseract.core.executor.thread.HeartbeatThread;
-import tesseract.core.executor.thread.RegistryThread;
+import tesseract.core.executor.thread.PingPongThread;
 import tesseract.core.handler.JobHandler;
 import tesseract.core.netty.NettyHttpClient;
 import tesseract.core.netty.NettyHttpServer;
@@ -33,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static tesseract.core.constant.CommonConstant.NOTIFY_MAPPING;
+import static tesseract.core.executor.ClientServiceDelegator.tesseractExecutor;
 
 /**
  * 任务执行器，采用线程池执行
@@ -75,21 +74,15 @@ public class TesseractExecutor {
     private final ThreadPoolExecutor threadPoolExecutor;
 
     /**
-     * 注册线程
-     */
-    public static RegistryThread registryThread;
-
-    /**
-     * 心跳线程
-     */
-    public static HeartbeatThread heartbeatThread;
-
-    public static TesseractExecutor tesseractExecutor;
-
-    /**
      * 保存任务和线程关联，用于停止任务
      */
     private final Map<Integer, Thread> TASK_THREAD_MAP = Maps.newConcurrentMap();
+
+    /**
+     * 心跳、注册线程
+     */
+    public PingPongThread pingPongThread;
+
 
     /**
      * 开始执行任务，扔到线程池后发送成功执行通知，执行完毕后发送异步执行成功通知
@@ -137,7 +130,6 @@ public class TesseractExecutor {
      */
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void init() {
-        tesseractExecutor = this;
         initServiceDelegator();
         initNettyServer();
         initThread();
@@ -157,19 +149,12 @@ public class TesseractExecutor {
     }
 
     /**
-     * 初始化 注册线程和心跳线程
+     * 初始化线程
      */
     public void initThread() {
         if (!CollectionUtils.isEmpty(clientJobDetailList)) {
-            heartbeatThread = new HeartbeatThread();
-            registryThread = new RegistryThread();
-            heartbeatThread.setDaemon(true);
-            registryThread.setDaemon(true);
-            heartbeatThread.setTesseractExecutor(this);
-            heartbeatThread.setRegistryThread(registryThread);
-            registryThread.setHeartbeatThread(heartbeatThread);
-            registryThread.startThread();
-            heartbeatThread.startThread();
+            pingPongThread = new PingPongThread(this);
+            pingPongThread.startThread();
         }
     }
 
@@ -183,15 +168,12 @@ public class TesseractExecutor {
         ClientServiceDelegator.clientJobDetailList = clientJobDetailList;
         ClientServiceDelegator.nettyServerPort = nettyServerPort;
         ClientServiceDelegator.serializerService = serializerService;
-        ClientServiceDelegator.tesseractExecutor = this;
+        tesseractExecutor = this;
     }
 
     public void destroy() {
-        if (registryThread != null) {
-            registryThread.stopThread();
-        }
-        if (heartbeatThread != null) {
-            heartbeatThread.stopThread();
+        if (pingPongThread != null) {
+            pingPongThread.stopThread();
         }
         NettyHttpClient nettyHttpClient = ClientServiceDelegator.getNettyHttpClient();
         if (nettyHttpClient != null) {
@@ -229,7 +211,9 @@ public class TesseractExecutor {
                 //构建执行上下文
                 ExecutorContext executorContext = new ExecutorContext(shardingIndex, param);
                 //开始执行任务
+                log.info("任务: {} 执行开始", tesseractExecutorRequest);
                 jobHandler.execute(executorContext);
+                log.info("任务: {} 执行结束", tesseractExecutorRequest);
                 //执行成功后通知调度端
                 clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
             } catch (Exception e) {
@@ -237,10 +221,8 @@ public class TesseractExecutor {
                 tesseractAdminJobNotify.setException(e.toString());
                 try {
                     clientFeignService.notify(new URI(adminServerAddress + NOTIFY_MAPPING), tesseractAdminJobNotify);
-                } catch (URISyntaxException ex) {
-                    log.error("执行异常URI异常:{}", e.getMessage());
-                } catch (InterruptedException ex) {
-                    log.error("中断异常");
+                } catch (Exception ex) {
+                    log.error("通知执行器出错:{}", ex.toString());
                 }
             } finally {
                 TASK_THREAD_MAP.remove(fireJobId);

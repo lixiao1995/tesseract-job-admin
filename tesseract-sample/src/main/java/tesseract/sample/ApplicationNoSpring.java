@@ -20,7 +20,7 @@ public class ApplicationNoSpring {
         ClientJobDetail jobDetail = ClientJobDetailBuilder.build(TestJob.class);
         clientJobDetailList.add(jobDetail);
         TesseractConfiguration.TesseractConfigurationBuilder builder = TesseractConfiguration.builder();
-        builder.adminServerAddress("adminServerAddress")
+        builder.adminServerAddress("http://127.0.0.1:8081")
                 .clientFeignService(new NettyClientServiceImpl())
                 .nettyServerPort(8087)
                 .serializerService(new HessianSerializerService())

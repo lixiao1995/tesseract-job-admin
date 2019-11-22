@@ -5,33 +5,45 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import tesseract.core.dto.TesseractAdminJobDetailDTO;
 import tesseract.core.dto.TesseractAdminRegistryRequest;
+import tesseract.core.dto.TesseractHeartbeatRequest;
 import tesseract.core.executor.ClientServiceDelegator;
+import tesseract.core.executor.TesseractExecutor;
 import tesseract.core.lifecycle.IThreadLifycycle;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import static tesseract.core.constant.CommonConstant.HEARTBEAT_MAPPING;
 import static tesseract.core.constant.CommonConstant.REGISTRY_MAPPING;
 import static tesseract.core.executor.ClientServiceDelegator.clientJobDetailList;
 
 /**
- * 注册任务线程
+ * 合并心跳和注册操作线程
  *
  * @author nickle
  */
 @Slf4j
-public class RegistryThread extends Thread implements IThreadLifycycle {
+public class PingPongThread extends Thread implements IThreadLifycycle {
+    /**
+     * 判断是否关闭
+     */
     private volatile boolean isStop = false;
-    private HeartbeatThread heartbeatThread;
-    public volatile boolean isPause = false;
+    /**
+     * 判断是否是心跳操作，注册成功后设置为true，断开连接后设置为false
+     */
+    private volatile boolean isHeartBeat = false;
+    /**
+     * 线程睡眠时间，用于心跳
+     */
+    private final long sleepTime = 3000;
 
-    public RegistryThread() {
-        super("RegistryThread");
-    }
+    private TesseractExecutor tesseractExecutor;
 
-    public void setHeartbeatThread(HeartbeatThread heartbeatThread) {
-        this.heartbeatThread = heartbeatThread;
+    public PingPongThread(TesseractExecutor tesseractExecutor) {
+        super("PingPongThread");
+        this.tesseractExecutor = tesseractExecutor;
     }
 
     @Override
@@ -47,30 +59,53 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
 
     @Override
     public void run() {
-        log.info("RegistryThread start");
+        log.info("PingPongThread start");
         while (!isStop) {
-            if (!isPause) {
+            if (!isHeartBeat) {
                 //注册
                 registry();
-            }
-            if (!isPause) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                }
-                continue;
+            } else {
+                //心跳
+                heartbeat();
             }
             try {
-                //注册成功后开始睡觉
-                synchronized (this) {
-                    this.wait();
-                }
+                Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
                 log.info("中断");
             }
         }
     }
 
+    /**
+     * 心跳操作
+     */
+    private void heartbeat() {
+        try {
+            TesseractHeartbeatRequest tesseractHeartbeatRequest = new TesseractHeartbeatRequest();
+            ThreadPoolExecutor threadPoolExecutor = tesseractExecutor.getThreadPoolExecutor();
+            int activeCount = threadPoolExecutor.getActiveCount();
+            int corePoolSize = threadPoolExecutor.getCorePoolSize();
+            int maximumPoolSize = threadPoolExecutor.getMaximumPoolSize();
+            int poolSize = threadPoolExecutor.getPoolSize();
+            int queueSize = threadPoolExecutor.getQueue().size();
+            tesseractHeartbeatRequest.setActiveCount(activeCount);
+            tesseractHeartbeatRequest.setCorePoolSize(corePoolSize);
+            tesseractHeartbeatRequest.setMaximumPoolSize(maximumPoolSize);
+            tesseractHeartbeatRequest.setPoolSize(poolSize);
+            tesseractHeartbeatRequest.setQueueSize(queueSize);
+            tesseractHeartbeatRequest.setPort(ClientServiceDelegator.nettyServerPort);
+            ClientServiceDelegator.clientFeignService.heartbeat(new
+                    URI(ClientServiceDelegator.adminServerAddress + HEARTBEAT_MAPPING), tesseractHeartbeatRequest);
+        } catch (Exception e) {
+            log.error("心跳失败:{},将开始重新注册", e.getMessage());
+            //设置为 false 开启注册线程
+            this.startRegistry();
+        }
+    }
+
+    /**
+     * 注册操作
+     */
     private void registry() {
         try {
             log.info("开始注册");
@@ -114,12 +149,21 @@ public class RegistryThread extends Thread implements IThreadLifycycle {
      */
     @Override
     public void interruptThread() {
-        isPause = false;
         this.interrupt();
     }
 
     @Override
     public void pauseThread() {
-        isPause = true;
+
+    }
+
+    public void startHeartBeat() {
+        //设置为开始心跳
+        this.isHeartBeat = true;
+    }
+
+    public void startRegistry() {
+        //设置为开始心跳
+        this.isHeartBeat = false;
     }
 }
